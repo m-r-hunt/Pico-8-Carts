@@ -12,7 +12,7 @@ function intro()
   if(i>10)spr(15,60,40)
   flip()
   i+=1
-  if(i>150)break
+  if(i>90)break
  end
 end
 intro()
