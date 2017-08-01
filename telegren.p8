@@ -1,6 +1,9 @@
 pico-8 cartridge // http://www.pico-8.com
 version 8
 __lua__
+-- telegren v0.1
+-- (c) 2017 max hunt (cc by-sa)
+
 function intro()
  local i=0
  sfx(0)

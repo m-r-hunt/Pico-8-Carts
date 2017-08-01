@@ -1,6 +1,9 @@
 pico-8 cartridge // http://www.pico-8.com
 version 8
 __lua__
+-- reactor v1.0
+-- (c) 2016 max hunt (cc by-sa)
+
 particles = {}
 explosions = {}
 px = 64
