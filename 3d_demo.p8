@@ -1,6 +1,9 @@
 pico-8 cartridge // http://www.pico-8.com
 version 8
 __lua__
+-- 3d tech demo
+-- (c) 2016 max hunt (cc by-sa)
+
 --tip = {64, 0, 64}
 points = {}
           
