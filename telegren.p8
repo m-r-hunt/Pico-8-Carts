@@ -70,11 +70,6 @@ function _draw()
  pset(127,0,8)
  pset(0,127,8)
  pset(127,127,8)
- 
- print(gren.xcoll)
- print(gren.ycoll)
- print(band(8,gren.xcoll))
- print(not (band(8,gren.xcoll)~=0))
 end
 
 function _update()
