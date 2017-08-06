@@ -49,7 +49,20 @@ tut1mesg={"ahoy! welcome to\ntutorial cove.",
 function tut2cor()
  tut2mesg.msg="for $10 i'll\nopen the buoys."
  yield()
- if not shovel then
+ if pmoney>=10 then
+  tut2mesg.msg="do ye want me\nto open the buoys?"
+  show_yesno()
+  yield()
+  if yesno then
+   pmoney-=10
+   fset(41,0,false)
+   tut2mesg.msg="it's done."
+   yield()
+  else
+   tut2mesg.msg="come back if ye\nchange yer mind."
+   yield()
+  end
+ elseif not shovel then
   tut2mesg.msg="take this shovel\nto find treasure."
   yield()
   tut2mesg.msg="i've heard of\nsome north"
@@ -91,7 +104,14 @@ p={x=10,
    
 shovel=false
 
-pmoney=0
+pmoney=10
+
+yesnomode=false
+yesno=false
+
+function show_yesno()
+ yesnomode=true
+end
 
 function _draw()
  cls()
@@ -127,14 +147,25 @@ function _draw()
   else
    print(message_obj[message_id])
   end
+  if yesnomode then
+   cursor(20,20)
+   if yesno then
+    print(">yes")
+    print("no")
+   else
+    print("yes")
+    print(">no")
+   end
+  end
  end
  
  cursor(0,0)
  --debug and other.todo remove
  --print(stat(0))
  --print(stat(1))
- print(man.x)
- print(man.y)
+ --print(man.x)
+ --print(man.y)
+ print(yesnomode)
  print(pmoney)
 end
 
@@ -172,19 +203,22 @@ function draw_ship()
 end
 
 function update_message()
-  if btnp(4) then
-   message_id+=1
-   if message_obj.cor!=nil then
-    coresume(message_obj.cor)
-    if costatus(message_obj.cor)=='dead' then
+ if yesnomode then
+  if (btnp(2)or btnp(3)) yesno=not yesno
+  if (btnp(4)) yesnomode=false
+ elseif btnp(4) then
+  message_id+=1
+  if message_obj.cor!=nil then
+   coresume(message_obj.cor)
+   if costatus(message_obj.cor)=='dead' then
+    message=false
+   end
+  else
+   if message_id>#message_obj then
      message=false
-    end
-   else
-    if message_id>#message_obj then
-      message=false
-    end
    end
   end
+ end
 end
 
 function move_man(dx,dy)
