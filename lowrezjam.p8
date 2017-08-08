@@ -184,22 +184,29 @@ end
 
 function draw_ship()
  local ang=p.ang%16
- if (ang==0) spr(11,p.x,p.y)
- if (ang==1) spr(10,p.x,p.y)
- if (ang==2) spr(9,p.x,p.y)
- if (ang==3) spr(8,p.x,p.y)
- if (ang==4) spr(7,p.x,p.y)
- if (ang==5) spr(8,p.x,p.y,1,1,true,false)
- if (ang==6) spr(9,p.x,p.y,1,1,true,false)
- if (ang==7) spr(10,p.x,p.y,1,1,true,false)
- if (ang==8) spr(11,p.x,p.y,1,1,true,false)
- if (ang==9) spr(10,p.x,p.y,1,1,true,true)
- if (ang==10) spr(9,p.x,p.y,1,1,true,true)
- if (ang==11) spr(8,p.x,p.y,1,1,true,true)
- if (ang==12) spr(7,p.x,p.y,1,1,true,true)
- if (ang==13) spr(8,p.x,p.y,1,1,false,true)
- if (ang==14) spr(9,p.x,p.y,1,1,false,true)
- if (ang==15) spr(10,p.x,p.y,1,1,false,true)
+ local sprn=11
+ local flipx=false
+ local flipy=false
+ if (ang==1) then sprn=10 end
+ if (ang==2) then sprn=9 end
+ if (ang==3) then sprn=8 end
+ if (ang==4) then sprn=7 end
+ if (ang==5) then sprn=8 flipx=true end
+ if (ang==6) then sprn=9 flipx=true end
+ if (ang==7) then sprn=10 flipx=true end
+ if (ang==8) then sprn=11 flipx=true end
+ if (ang==9) then sprn=10 flipx=true flipy=true end
+ if (ang==10) then sprn=9 flipx=true flipy=true end
+ if (ang==11) then sprn=8 flipx=true flipy=true end
+ if (ang==12) then sprn=7 flipx=true flipy=true end
+ if (ang==13) then sprn=8 flipy=true end
+ if (ang==14) then sprn=9 flipy=true end
+ if (ang==15) then sprn=10 flipy=true end
+ pal(4,1)
+ pal(15,1)
+ spr(sprn,p.x,p.y+1,1,1,flipx,flipy)
+ pal()
+ spr(sprn,p.x,p.y,1,1,flipx,flipy)
 end
 
 function update_message()
