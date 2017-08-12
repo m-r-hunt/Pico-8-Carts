@@ -329,6 +329,73 @@ function dock()
  check_tile_dock(1,1)
 end
 
+--docked/man movement functions
+function get_map_px(x,y)
+ s=mget(flr(x/8),flr(y/8))
+ return sget((s%16)*8+(x%8),flr(s/16)*8+(y%8))
+end
+
+function move_man(dx,dy)
+ tgt_px=get_map_px(man.x+dx,man.y+dy)
+ if tgt_px!=4 and tgt_px!=12 and tgt_px!=1 then
+  man.x+=dx
+  man.y+=dy
+  return true
+ end
+ return false
+end
+
+function try_undock()
+ if abs(man.x-p.x)<=8 and abs(man.y-p.y)<=8 then
+  docked=false
+ end
+end
+
+function update_docked()
+  local moved=false
+  local dx=0
+  local dy=0
+  if btnp(0) then dx-=1 end
+  if btnp(1) then dx+=1 end
+  if btnp(2) then dy-=1 end
+  if btnp(3) then dy+=1 end
+  if (dx!=0 or dy!=0) moved=move_man(dx,dy)
+  if (btnp(5)) try_undock()
+  if moved and manprompts[man.x]!=nil and manprompts[man.x][man.y]!=nil then
+   show_message(manprompts[man.x][man.y])
+  end
+  if (btnp(4)) dig()
+end
+
+function dig()
+ if (not shovel) return
+ if treasures[man.x] and treasures[man.x][man.y] then
+  pmoney+=treasures[man.x][man.y]
+  show_message({"you found $"..treasures[man.x][man.y]})
+  treasures[man.x][man.y]=nil
+ end
+end
+
+--map mode functions
+function draw_map()
+ xoff=flr(p.x/8)-32
+ yoff=flr(p.y/8)-32
+ for i=0,64,1 do
+  for j=0,64,1 do
+   if band(1,fget(mget((xoff+i)%128,(yoff+j)%64)))!=0 then
+    pset(i,j,5)
+   else
+    pset(i,j,15)
+   end
+  end
+ end
+ pset(32,32,8)
+end
+
+function update_mapmode()
+  if (btnp(4)) mapmode=not mapmode
+end
+
 --pico-8 interface functions
 
 function _init()
@@ -394,72 +461,6 @@ function _update()
  else --sailing around
   update_sailing()
  end
-end
-
-function draw_map()
- xoff=flr(p.x/8)-32
- yoff=flr(p.y/8)-32
- for i=0,64,1 do
-  for j=0,64,1 do
-   if band(1,fget(mget((xoff+i)%128,(yoff+j)%64)))!=0 then
-    pset(i,j,5)
-   else
-    pset(i,j,15)
-   end
-  end
- end
- pset(32,32,8)
-end
-
-function get_map_px(x,y)
- s=mget(flr(x/8),flr(y/8))
- return sget((s%16)*8+(x%8),flr(s/16)*8+(y%8))
-end
-
-function move_man(dx,dy)
- tgt_px=get_map_px(man.x+dx,man.y+dy)
- if tgt_px!=4 and tgt_px!=12 and tgt_px!=1 then
-  man.x+=dx
-  man.y+=dy
-  return true
- end
- return false
-end
-
-function try_undock()
- if abs(man.x-p.x)<=8 and abs(man.y-p.y)<=8 then
-  docked=false
- end
-end
-
-function update_docked()
-  local moved=false
-  local dx=0
-  local dy=0
-  if btnp(0) then dx-=1 end
-  if btnp(1) then dx+=1 end
-  if btnp(2) then dy-=1 end
-  if btnp(3) then dy+=1 end
-  if (dx!=0 or dy!=0) moved=move_man(dx,dy)
-  if (btnp(5)) try_undock()
-  if moved and manprompts[man.x]!=nil and manprompts[man.x][man.y]!=nil then
-   show_message(manprompts[man.x][man.y])
-  end
-  if (btnp(4)) dig()
-end
-
-
-function dig()
- if (not shovel) return
-	if treasures[man.x] and treasures[man.x][man.y] then
-	 pmoney+=treasures[man.x][man.y]
-	 show_message({"you found $"..treasures[man.x][man.y]})
-	 treasures[man.x][man.y]=nil
-	end
-end
-
-function update_mapmode()
-  if (btnp(4)) mapmode=not mapmode
 end
 
 
