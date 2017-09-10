@@ -58,6 +58,7 @@ p={x=18,
 --misc player info/flags
 shovel=false
 canoe=false
+trading=""
 
 pmoney=0
 
@@ -123,6 +124,24 @@ function canoeguy_cor()
 end
 canoemsg={corfn=canoeguy_cor}
 
+function trading_quest(item1,item2,flav)
+ return function()
+  if trading==item1 then
+   cshow_msg("ooh i want\nthat"..item1.."!")
+   local trade=show_yesno("i'll give you\na"..item2.."?")
+   if trade then
+    trading=item2
+    cshow_msg("thanks!")
+   else
+    cshow_msg("let me know if\nyou change your")
+    cshow_msg("mind!")
+   end
+  else
+   cshow_msg(flav)
+  end
+ end
+end
+
 --scripting/prompt data
 
 --sneak this helper function in
@@ -141,6 +160,8 @@ add_2d(manprompts,73,274,frogisl3)
 add_2d(manprompts,107,174,bigorbh8)
 add_2d(manprompts,147,182,litorbh8)
 add_2d(manprompts,83,158,canoemsg)
+add_2d(manprompts,883,270,
+ trading_quest("drone","sweet hat","if only i could\nsee over trees"))
 
 add_2d(treasures,89,480,10)
 add_2d(treasures,82,400,10)
