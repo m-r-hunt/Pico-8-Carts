@@ -34,10 +34,15 @@ playing=false
 
 cur_col=12
 
+brush=1
+
 ui={}
 
 function _init()
  --memset(frame_base,0x0,max_frames*frame_total_size)
+ for i=0x300,0x4300-1 do
+  --poke(i,flr(rnd(255)))
+ end
  
  poke(0x5f2d, 1)
  last_mx=stat(32)
@@ -50,7 +55,8 @@ function _init()
   {0,122,128,8,trans},
   {120,0,8,8,csave},
   {120,8,8,8,clipsave},
-  {120,16,8,8,clipload}
+  {120,16,8,8,clipload},
+  {120,32,8,40,brush}
  }
 end
 
@@ -98,7 +104,7 @@ end
 function edit(lpressed,ldown,rpressed,rdown)
  if ldown then
   copy_frame_to_screen(true)
-  circfill(curs_x,curs_y,5,cur_col)
+  circfill(curs_x,curs_y,brush,cur_col)
   copy_frame_from_screen()
  end
 end
@@ -135,6 +141,12 @@ function click()
  end
 end
 
+function brush(lpressed,ldown,rpressed,rdown)
+ if lpressed then
+  brush=flr((curs_y-32)/8)
+ end
+end
+
 function _draw()
  cls()
  
@@ -168,6 +180,12 @@ function _draw()
   spr(1,120,0)
   spr(2,120,8)
   spr(3,120,16)
+  
+  for i=0,4 do
+   rect(120,32+i*8,128,32+i*8+7,7)
+   circfill(124,32+i*8+4,i,7)
+  end
+  
  
   pset(curs_x,curs_y,15)
  
@@ -638,10 +656,29 @@ function bgset2(x,y,c)
  poke(addr,val)
 end
 
+--save/restore hardware lets us
+--have bigger clipsaves without
+--crashing
+function save_hardware_state()
+ hardware_state={}
+ for i=0x5f00,0x5f80 do
+  hardware_state[i]=peek(i)
+ end
+end
+
+function load_hardware_state()
+ for i=0x5f00,0x5f80 do
+  poke(i,hardware_state[i])
+ end
+end
+
+scratch_base=0x4300
+
 function clipsave(lpressed,ldown,rpressed,rdown)
  if lpressed then
+  save_hardware_state()
   out=""
-  mem=0x6000
+  mem=scratch_base
   for t in all(transitions) do
    for tt in all(t) do
     out=out..tt.." "
@@ -650,15 +687,17 @@ function clipsave(lpressed,ldown,rpressed,rdown)
   clen=comp(0,0,64,4*64-1,mem,bgget)
   out=out..clen.." "
   len2=comp(0,0,64,4*64-1,mem+clen,bgget2)
-  for i=0x6000,mem+clen+len2 do
+  for i=scratch_base,mem+clen+len2 do
    out=out..peek(i).." "
   end
   printh(out,"@clip")
+  load_hardware_state()
  end
 end
 
 function clipload(lpressed,ldown,rpressed,rdown)
  if lpressed then
+  save_hardware_state()
   ins=stat(4)
   strings={}
   last=0
@@ -672,17 +711,18 @@ function clipload(lpressed,ldown,rpressed,rdown)
   idx=1
   for t in all(transitions) do
    for tt,_ in pairs(t) do
-    --t[tt]=tonum(strings[idx])
+    t[tt]=tonum(strings[idx])
     idx+=1
    end
   end
   clen=strings[idx]
   idx+=1
   for i=idx,#strings do
-   poke(0x6000+i-idx,tonum(strings[i]))
+   poke(scratch_base+i-idx,tonum(strings[i]))
   end
-  decomp(0x6000,0,0,bgget,bgset)
-  decomp(0x6000+clen,0,0,bgget2,bgset2)
+  decomp(scratch_base,0,0,bgget,bgset)
+  decomp(scratch_base+clen,0,0,bgget2,bgset2)
+  load_hardware_state()
  end
 end
 __gfx__
@@ -728,6 +768,8 @@ __gfx__
 0000000000000000000000000000000000000000000ccccccccccc00000000000000000000000000000000000000000000000000000ccccccccccc0000000000
 00000000000000000000000000000000000000000000ccccccccc00000000000000000000000000000000000000000000000000000000ccccccc000000000000
 0000000000000000000000000000000000000000000000ccccc00000000000000000000000000000000000000000000000000000000000000000000000000000
+__map__
+000000000000000000000000001f000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 __sfx__
 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
