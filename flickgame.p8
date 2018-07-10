@@ -1,14 +1,20 @@
 pico-8 cartridge // http://www.pico-8.com
 version 16
 __lua__
-cur_frame=0
+--memory constants
 frame_size=64
 frame_line=frame_size/2
 frame_total_size=64*64/2
 frame_base=0x0300
 
 screen_line=128/2
-screen_frame_base=0x6000+32*screen_line+32/2
+vram_base=0x6000
+screen_frame_base=vram_base+32*screen_line+32/2
+
+scratch_base=vram_base
+
+--global variables
+cur_frame=0
 
 curs_x=32
 curs_y=32
@@ -44,24 +50,24 @@ function _init()
   --poke(i,flr(rnd(255)))
  end
  
- poke(0x5f2d, 1)
+ poke(0x5f2d,1)--magic mouse addr
  last_mx=stat(32)
  last_my=stat(33)
  
  ui={
-  {31,31,66,66,edit,draw_edit},
-  {0,0,9,65,frame,draw_frame},
-  {0,112,128,9,cols,draw_cols},
-  {0,121,128,8,trans,draw_trans},
-  {120,0,8,8,csave,draw_csave},
-  {120,8,8,8,clipsave,draw_clipsave},
-  {120,16,8,8,clipload,draw_clipload},
-  {120,32,8,40,brush,draw_brush}
+  {31, 31, 66, 66,edit,draw_edit},
+  {0,  0,  9,  65,frame,draw_frame},
+  {0,  112,128,9, cols,draw_cols},
+  {0,  121,128,8, trans,draw_trans},
+  {120,0,  8,  8, csave,draw_csave},
+  {120,8,  8,  8, clipsave,draw_clipsave},
+  {120,16, 8,  8, clipload,draw_clipload},
+  {120,32, 8,  40,brush,draw_brush}
  }
 end
 
 function copy_frame_to_screen(edit)
- local base=0x6000
+ local base=vram_base
  if (edit) base=screen_frame_base
  for i=0,frame_size-1 do
   memcpy(base+i*screen_line,frame_base+cur_frame*frame_total_size+i*frame_line,frame_line)
@@ -84,12 +90,15 @@ function _update60()
  if (btn(3)) curs_y+=1
  
  if (stat(32)~=last_mx) curs_x=stat(32) last_mx=stat(32)
- if (stat(33)~=last_mx) curs_y=stat(33) last_mx=stat(33)
-  
+ if (stat(33)~=last_my) curs_y=stat(33) last_my=stat(33)
+ 
+ curs_x=mid(0,curs_x,127)
+ curs_y=mid(0,curs_y,127)
+ 
  if playing then
   copy_frame_to_screen(false)
   if btnp(4) or (stat(34)==1 and last_mb~=1) then
-   clicked=pget(curs_x/2,curs_y/2)
+   local clicked=pget(curs_x/2,curs_y/2)
    if transitions[cur_frame+1][clicked+1]~=8 then
     cur_frame=transitions[cur_frame+1][clicked+1]
    end
@@ -130,10 +139,10 @@ function trans(lpressed,ldown,rpressed,rdown)
 end
 
 function click()
- lpressed=btnp(4) or (stat(34)==1 and last_mb~=1)
- ldown=btn(4) or stat(34)==1
- rpressed=btnp(5) or (stat(34)==2 and last_mb~=2)
- rdown=btn(5) or stat(34)==2
+ local lpressed=btnp(4) or (stat(34)==1 and last_mb~=1)
+ local ldown=btn(4) or stat(34)==1
+ local rpressed=btnp(5) or (stat(34)==2 and last_mb~=2)
+ local rdown=btn(5) or stat(34)==2
  for u in all(ui) do
   if curs_x>=u[1] and curs_x<u[1]+u[3] and curs_y>=u[2] and curs_y<u[2]+u[4] then
    u[5](lpressed,ldown,rpressed,rdown)
@@ -638,30 +647,6 @@ end
 
 --implement save to/from clipboard
 --using zep's px8
---we're kind of pushing the limits of px8
---so we need 2 custom get/set fns
---to make sure everything stays <=255
-
-function bgget(x,y)
- local addr=frame_base+flr(y)*32+flr(flr(x)/2)
- local val=peek(addr)
- if (x%2)!=0 then
-  val=shr(val,4)
- end
-  return band(val,0b1111)
-end
-
-function bgset(x,y,c)
- local addr=frame_base+flr(y)*32+flr(flr(x)/2)
- val=peek(addr)
- mask=0b11110000
- if x%2!=0 then
-  c=shl(c,4)
-  mask=0b00001111
- end
- val=bor(band(val,mask),c)
- poke(addr,val)
-end
 
 function bggetf(base)
  return function(x,y)
@@ -677,8 +662,8 @@ end
 function bgsetf(base)
  return function(x,y,c)
   local addr=base+flr(y)*32+flr(flr(x)/2)
-  val=peek(addr)
-  mask=0b11110000
+  local val=peek(addr)
+  local mask=0b11110000
   if x%2!=0 then
    c=shl(c,4)
    mask=0b00001111
@@ -704,21 +689,19 @@ function load_hardware_state()
  end
 end
 
-scratch_base=0x6000
-
 function clipsave(lpressed,ldown,rpressed,rdown)
  if lpressed then
-  save_hardware_state()
-  out=""
-  mem=scratch_base
+  --save_hardware_state()
+  local out=""
+  local mem=scratch_base
   for t in all(transitions) do
    for tt in all(t) do
     out=out..tt.." "
    end
   end
-  comps=""
+  local comps=""
   for i=0,max_frames-1 do
-   clen=comp(0,0,64,64,mem,bggetf(frame_base+i*frame_total_size))
+   local clen=comp(0,0,frame_size,frame_size,mem,bggetf(frame_base+i*frame_total_size))
    if clen>0 and clen<frame_total_size then
     out=out..clen.." "
     for i=mem,mem+clen-1 do
@@ -733,17 +716,17 @@ function clipsave(lpressed,ldown,rpressed,rdown)
    end
   end
   printh(out..comps,"@clip")
-  load_hardware_state()
+  --load_hardware_state()
  end
 end
 
 function clipload(lpressed,ldown,rpressed,rdown)
  if lpressed then
-  save_hardware_state()
-  ins=stat(4)
-  strings={}
-  last=0
-  buf=""
+  --save_hardware_state()
+  local ins=stat(4)
+  local strings={}
+  local last=0
+  local buf=""
   while #ins~=0 do
    if sub(ins,0,1)==" " then
     add(strings,buf)
@@ -754,14 +737,14 @@ function clipload(lpressed,ldown,rpressed,rdown)
    ins=sub(ins,2)
   end
   
-  idx=1
+  local idx=1
   for t in all(transitions) do
    for tt,_ in pairs(t) do
     t[tt]=tonum(strings[idx])
     idx+=1
    end
   end
-  clens={
+  local clens={
    tonum(strings[idx]),
    tonum(strings[idx+1]),
    tonum(strings[idx+2]),
@@ -772,38 +755,34 @@ function clipload(lpressed,ldown,rpressed,rdown)
    tonum(strings[idx+7])
   }
   idx+=8
-  printh(clens[1])
-  printh(clens[1]~=0)
   for f=0,max_frames-1 do
    if clens[f+1]~=0 then
     for i=idx,idx+clens[f+1]-1 do
      poke(scratch_base+i-idx,tonum(strings[i]))
     end
-    printh("decomp"..strings[idx].." "..strings[idx+1])
     idx+=clens[f+1]
     decomp(scratch_base,0,0,bggetf(frame_base+f*frame_total_size),bgsetf(frame_base+f*frame_total_size))
    else
-    printh("flat load")
     for i=idx,idx+frame_total_size-1 do
      poke(frame_base+f*frame_total_size+i-idx,tonum(strings[i]))
     end
     idx+=frame_total_size
    end
   end
-  load_hardware_state()
+  --load_hardware_state()
  end
 end
 __gfx__
-00000000777777770000070700000707000000000000000000000000000000000000000000000000000000000000000000000000000000000000000077777777
-00000000707007070000007000000070000000000000000000000000000000000000000000000000000000000000000000000000000000000000000077777777
-00700700707007070070077700700777000000000000000000000000000000000000000000000000000000000000000000000000000000000000000077777777
-00077000707777070077070707700707000000000000000000000000000000000000000000000000000000000000000000000000000000000000000077777777
-00077000700000077777770777777707000000000000000000000000000000000000000000000000000000000000000000000000000000000000000077777777
-00700700700770070077070707700707000000000000000000000000000000000000000000000000000000000000000000000000000000000000000077777777
-00000000700000070070070700700707000000000000000000000000000000000000000000000000000000000000000000000000000000000000000077777777
-00000000777777770000077700000777000000000000000000000000000000000000000000000000000000000000000000000000000000000000000077777777
-00000000444844440000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00000000444344440000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000777777770000070700000707110000000001000000010000000000007777777777777777777777770000000000000000000000000000000077777777
+00000000717117170000007000000070171000000017100000171000000000007711117771111117711111170000000000000000000000000000000077777777
+00700700717117170070077700700777177100000100010000171101000000007171171771177117771117170000000000000000000000000000000077777777
+00077000717777170077071707700717177710001700071000171717100000007117711771711717771117170000000000000000000000000000000077777777
+00077000711111177777771777777717177771000100010001177777100000007117711771711117717171170000000000000000000000000000000077777777
+00700700711771170077071707700717177110000017100017177777100000007171171771711717717171170000000000000000000000000000000077777777
+00000000711111170070071700700717011710000001000001777777100000007711117771177117711711170000000000000000000000000000000077777777
+00000000777777770000077700000777000000000000000000117771000000007777777777777777777777770000000000000000000000000000000077777777
+00000000444844440000000000000000000000000000000000017771000000000000000000000000000000000000000000000000000000000000000000000000
+00000000444344440000000000000000000000000000000000001110000000000000000000000000000000000000000000000000000000000000000000000000
 00000000444c44440000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000444944440000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
