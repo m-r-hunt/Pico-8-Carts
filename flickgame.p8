@@ -49,14 +49,14 @@ function _init()
  last_my=stat(33)
  
  ui={
-  {32,32,64,64,edit},
-  {0,0,9,65,frame},
-  {0,112,128,9,cols},
-  {0,122,128,8,trans},
-  {120,0,8,8,csave},
-  {120,8,8,8,clipsave},
-  {120,16,8,8,clipload},
-  {120,32,8,40,brush}
+  {31,31,66,66,edit,draw_edit},
+  {0,0,9,65,frame,draw_frame},
+  {0,112,128,9,cols,draw_cols},
+  {0,121,128,8,trans,draw_trans},
+  {120,0,8,8,csave,draw_csave},
+  {120,8,8,8,clipsave,draw_clipsave},
+  {120,16,8,8,clipload,draw_clipload},
+  {120,32,8,40,brush,draw_brush}
  }
 end
 
@@ -147,6 +147,56 @@ function brush(lpressed,ldown,rpressed,rdown)
  end
 end
 
+function draw_edit()
+  rect(0,0,65,65,7)
+  copy_frame_to_screen(true)
+end
+
+function draw_frame()
+  for i=0,max_frames-1 do
+   rect(0,i*8,8,i*8+8,7)
+   print(i+1,2,i*8+2,7)
+  end
+  for i=0,max_frames-1 do
+   if (i==cur_frame) rect(0,i*8,8,i*8+8,11)
+  end
+end
+
+function draw_cols()
+  line(0,0,128,0,7)
+  for i=0,15 do
+   rectfill(i*8,0,i*8+8,8,i)
+  end
+end
+
+function draw_trans()
+  for i=0,15 do
+   rect(i*8,0,i*8+7,8,7)
+   if transitions[cur_frame+1][i+1]~=8 then
+    print(transitions[cur_frame+1][i+1]+1,i*8+3,2,7)
+   end
+  end
+end
+
+function draw_csave()
+  spr(1,0,0)
+end
+
+function draw_clipsave()
+  spr(2,0,0)
+end
+
+function draw_clipload()
+  spr(3,0,0)
+end
+
+function draw_brush()
+  for i=0,4 do
+   rect(0,i*8,8,i*8+7,7)
+   circfill(3,i*8+4,i,7)
+  end
+end
+
 function _draw()
  cls()
  
@@ -157,36 +207,14 @@ function _draw()
  else
   poke(0x5f2c,0) --set 64x64 mode
   
-  rect(31,31,96,96,7)
-  copy_frame_to_screen(true)
- 
-  for i=0,max_frames-1 do
-   rect(0,i*8,8,i*8+8,7)
-   print(i+1,2,i*8+2,7)
-  end
-  for i=0,max_frames-1 do
-   if (i==cur_frame) rect(0,i*8,8,i*8+8,11)
+  for u in all(ui) do
+   clip(u[1],u[2],u[3],u[4])
+   camera(-u[1],-u[2])
+   u[6]()
   end
   
-  line(0,111,128,111,7)
-  for i=0,15 do
-   rectfill(i*8,112,i*8+8,120,i)
-   rect(i*8,121,i*8+7,128,7)
-   if transitions[cur_frame+1][i+1]~=8 then
-    print(transitions[cur_frame+1][i+1]+1,i*8+3,123,7)
-   end
-  end
-  
-  spr(1,120,0)
-  spr(2,120,8)
-  spr(3,120,16)
-  
-  for i=0,4 do
-   rect(120,32+i*8,128,32+i*8+7,7)
-   circfill(124,32+i*8+4,i,7)
-  end
-  
- 
+  clip()
+  camera()
   pset(curs_x,curs_y,15)
  
   --debug
