@@ -16,7 +16,9 @@ screen_frame_base=vram_base+32*screen_line+32/2
 
 scratch_base=vram_base
 
-brush_base=56
+brush_base=64
+
+autoplay_byte=0x0
 
 --global variables
 cur_frame=0
@@ -68,12 +70,13 @@ function _init()
   {0,  121,128,8, trans,draw_trans},
   {60, 0,  8,  8, play,draw_play},
   {120,0,  8,  8, csave,draw_csave},
-  {120,8,  8,  8, clipsave,draw_clipsave},
-  {120,16, 8,  8, clipload,draw_clipload},
-  {120,24, 8,  8, framecopy,draw_framecopy},
-  {120,32, 8,  8, framepaste,draw_framepaste},
-  {120,40, 8,  8, clearframe,draw_clearframe},
-  {120,48, 8,  8, fill,draw_fill},
+  {120,8,  8,  8, autoplay,draw_autoplay},
+  {120,16,  8,  8, clipsave,draw_clipsave},
+  {120,24, 8,  8, clipload,draw_clipload},
+  {120,32, 8,  8, framecopy,draw_framecopy},
+  {120,40, 8,  8, framepaste,draw_framepaste},
+  {120,48, 8,  8, clearframe,draw_clearframe},
+  {120,56, 8,  8, fill,draw_fill},
   {120,brush_base, 8,  40,brush,draw_brush}
  }
  
@@ -84,6 +87,11 @@ function _init()
    t[tt]=peek(trans_base+idx)
    idx+=1
   end
+ end
+ 
+ --autoplay
+ if peek(autoplay_byte)~=0 then
+  playing=true
  end
 end
 
@@ -102,9 +110,6 @@ function copy_frame_from_screen()
 end
 
 function _update60()
- if btnp(5) or (stat(34)==2 and last_mb~=2) then
-  playing=not playing
- end
  if (btn(0)) curs_x-=1
  if (btn(1)) curs_x+=1
  if (btn(2)) curs_y-=1
@@ -124,6 +129,9 @@ function _update60()
     cur_frame=transitions[cur_frame+1][clicked+1]
    end
   end
+  if btnp(5) or (stat(34)==2 and last_mb~=2) then
+   playing=not playing
+  end
  else
   click()
  end
@@ -132,27 +140,31 @@ function _update60()
 end
 
 function edit(lpressed,ldown,rpressed,rdown)
- if ldown then
+ if ldown or rdown then
   copy_frame_to_screen(true)
+  local col=cur_col
+  if rdown then
+   col=0
+  end
   if cur_brush>0 then
-   circfill(curs_x,curs_y,cur_brush,cur_col)
+   circfill(curs_x,curs_y,cur_brush,col)
   elseif cur_brush==0 then
-   pset(curs_x,curs_y,cur_col)
+   pset(curs_x,curs_y,col)
   end
   
- if lpressed and cur_brush<0 then
+ if (lpressed or rpressed) and cur_brush<0 then
    --flood fill/paint bucket
    --not super fast,could be optimised?
    local q={{curs_x,curs_y}}
    local c=pget(curs_x,curs_y)
-   pset(curs_x,curs_y,cur_col)
+   pset(curs_x,curs_y,col)
    while #q>0 do
     local px=q[1]
     del(q,px)
-    if (pget(px[1]-1,px[2])==c) pset(px[1]-1,px[2],cur_col) add(q,{px[1]-1,px[2]})
-    if (pget(px[1]+1,px[2])==c) pset(px[1]+1,px[2],cur_col) add(q,{px[1]+1,px[2]})
-    if (pget(px[1],px[2]-1)==c) pset(px[1],px[2]-1,cur_col) add(q,{px[1],px[2]-1})
-    if (pget(px[1],px[2]+1)==c) pset(px[1],px[2]+1,cur_col) add(q,{px[1],px[2]+1})
+    if (pget(px[1]-1,px[2])==c) pset(px[1]-1,px[2],col) add(q,{px[1]-1,px[2]})
+    if (pget(px[1]+1,px[2])==c) pset(px[1]+1,px[2],col) add(q,{px[1]+1,px[2]})
+    if (pget(px[1],px[2]-1)==c) pset(px[1],px[2]-1,col) add(q,{px[1],px[2]-1})
+    if (pget(px[1],px[2]+1)==c) pset(px[1],px[2]+1,col) add(q,{px[1],px[2]+1})
    end
   end
   copy_frame_from_screen()
@@ -205,7 +217,14 @@ end
 
 function play(lpressed,ldown,rpressed,rdown)
  if lpressed then
+ 	cur_frame=0
   playing=true
+ end
+end
+
+function autoplay(lpressed,ldown,rpressed,rdown)
+ if lpressed then
+  poke(autoplay_byte,bnot(peek(autoplay_byte)))
  end
 end
 
@@ -312,13 +331,29 @@ function draw_play()
  spr(12,0,0)
 end
 
+function draw_autoplay()
+ if peek(autoplay_byte)~=0 then
+  pal(7,11)
+ end
+ spr(13,0,0)
+ pal()
+end
+
 function _draw()
  cls()
  
  if playing then
   poke(0x5f2c,3) --set 64x64 mode
   copy_frame_to_screen(false)
-  pset(curs_x/2,curs_y/2,15)
+  
+  local curs,ox,oy,sw,sh=4,0,0,8,8
+  if transitions[cur_frame+1][pget(curs_x/2,curs_y/2)+1]~=8 then
+   curs=6
+   ox=-3
+   sw=9
+   sh=10
+  end
+  sspr(curs*8,0,sw,sh,curs_x/2+ox,curs_y/2+oy,sw,sh)
  else
   poke(0x5f2c,0) --set 64x64 mode
   
@@ -335,7 +370,22 @@ function _draw()
    print(l[3],l[1],l[2],7)
   end
   
-  spr(4,curs_x,curs_y)
+  local curs,ox,oy,sw,sh=4,0,0,8,8
+  for u in all(ui) do
+   if curs_x>=u[1] and curs_x<u[1]+u[3] and curs_y>=u[2] and curs_y<u[2]+u[4] then
+    if u==ui[1] then
+     curs=5
+     ox=-3
+     oy=-3
+    else
+     curs=6
+     ox=-3
+     sw=9
+     sh=10
+    end
+   end
+  end
+  sspr(curs*8,0,sw,sh,curs_x+ox,curs_y+oy,sw,sh)
  
   --debug
   for u in all(ui) do
@@ -893,14 +943,14 @@ function clipload(lpressed,ldown,rpressed,rdown)
  end
 end
 __gfx__
-00000000777777770000070700000707110000000001000000010000000000007777777777777777777777777777777777777777000000000000000077777777
-00000000717117170000007000000070171000000017100000171000000000007711117771111117711111177000000770000007000000000000000077777777
-00700700717117170070077700700777177100000100010000171101000000007171171771177117771117177110070770770007000000000000000077777777
-00077000717777170077071707700717177710001700071000171717100000007117711771711717771117171071170770777707000000000000000077777777
-00077000711111177777771777777717177771000100010001177777100000007117711771711117717171177071170770777707000000000000000077777777
-00700700711771170077071707700717177110000017100017177777100000007171171771711717717171177077770770770007000000000000000077777777
-00000000711111170070071700700717011710000001000001777777100000007711117771177117711711177000000770000007000000000000000077777777
-00000000777777770000077700000777000000000000000000117771000000007777777777777777777777777777777777777777000000000000000077777777
+00000000777777770000070700000707110000000001000000010000000000007777777777777777777777777777777777777777777777770000000077777777
+00000000717117170000007000000070171000000017100000171000000000007711117771111117711111177000000770000007700000070000000077777777
+00000000717117170070077700700777177100000100010000171101000000007171171771177117771117177110070770770007700770070000000077777777
+00000000717777170077071707700717177710001700071000171717100000007117711771711717771117171071170770777707707007070000000077777777
+00000000711111177777771777777717177771000100010001177777100000007117711771711117717171177071170770777707707777070000000077777777
+00000000711771170077071707700717177110000017100017177777100000007171171771711717717171177077770770770007707007070000000077777777
+00000000711111170070071700700717011710000001000001777777100000007711117771177117711711177000000770000007700000070000000077777777
+00000000777777770000077700000777000000000000000000117771000000007777777777777777777777777777777777777777777777770000000077777777
 00000000444844440000000000000000000000000000000000017771000000000000000000000000000000000000000000000000000000000000000000000000
 00000000444344440000000000000000000000000000000000001110000000000000000000000000000000000000000000000000000000000000000000000000
 80808080808080801080808080808080808080208080802020202080202020808080808080803080808080808080808080708080808080804080808080808080
