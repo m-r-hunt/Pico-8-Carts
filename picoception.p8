@@ -177,14 +177,16 @@ function edit(lpressed,ldown,rpressed,rdown)
    --not super fast,could be optimised?
    local q={{curs_x,curs_y}}
    local c=pget(curs_x,curs_y)
-   pset(curs_x,curs_y,col)
-   while #q>0 do
-    local px=q[1]
-    del(q,px)
-    if (pget(px[1]-1,px[2])==c) pset(px[1]-1,px[2],col) add(q,{px[1]-1,px[2]})
-    if (pget(px[1]+1,px[2])==c) pset(px[1]+1,px[2],col) add(q,{px[1]+1,px[2]})
-    if (pget(px[1],px[2]-1)==c) pset(px[1],px[2]-1,col) add(q,{px[1],px[2]-1})
-    if (pget(px[1],px[2]+1)==c) pset(px[1],px[2]+1,col) add(q,{px[1],px[2]+1})
+   if c~=col then
+    pset(curs_x,curs_y,col)
+    while #q>0 do
+     local px=q[1]
+     del(q,px)
+     if (pget(px[1]-1,px[2])==c) pset(px[1]-1,px[2],col) add(q,{px[1]-1,px[2]})
+     if (pget(px[1]+1,px[2])==c) pset(px[1]+1,px[2],col) add(q,{px[1]+1,px[2]})
+     if (pget(px[1],px[2]-1)==c) pset(px[1],px[2]-1,col) add(q,{px[1],px[2]-1})
+     if (pget(px[1],px[2]+1)==c) pset(px[1],px[2]+1,col) add(q,{px[1],px[2]+1})
+    end
    end
   end
   copy_frame_from_screen()
