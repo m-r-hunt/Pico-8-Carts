@@ -1,7 +1,7 @@
 pico-8 cartridge // http://www.pico-8.com
 version 16
 __lua__
---picoception v1.0
+--picoception v1.1
 --(c) 2018 max hunt (cc by-sa)
 
 --memory constants
