@@ -3,13 +3,19 @@ version 16
 __lua__
 --core text engine
 
+--engine constants
+chars_per_line=32
+
+devkit_addr=0x5f2d
+pause_disable_addr=0x5f30
+
 --engine state
 input=""
 history={}
 
 function add_to_history(s)
- while #s>32 do
-  for i=32,0,-1 do
+ while #s>chars_per_line do
+  for i=chars_per_line,0,-1 do
    if sub(s,i,i)==" " then
     add(history,sub(s,0,i))
     s=sub(s,i+1)
@@ -21,7 +27,7 @@ function add_to_history(s)
 end
 
 function _init()
- poke(0x5f2d,1)--enable keyboard
+ poke(devkit_addr,1)--enable keyboard
 
  initialise_ta_engine()
 end
@@ -31,7 +37,7 @@ function tokenize(i)
  local buf=""
  while #i~=0 do
   local next_c=sub(i,0,1)
-  if next_c==" " then
+  if next_c==" " or next_c=="\t" then
    if (#buf>0) add(t,buf)
    buf=""
   else
@@ -57,7 +63,7 @@ function run_game(i)
 end
 
 function _update()
- poke(0x5f30,1)--disable pause so we can use enter
+ poke(pause_disable_addr,1)--disable pause so we can use enter
  while stat(30) do
   local c=stat(31)
   if c=="\b" then
