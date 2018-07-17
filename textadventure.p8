@@ -3,6 +3,11 @@ version 16
 __lua__
 --core text engine
 
+--todo
+--software/hardware keyboard switch
+--typed command history/recall
+--cursor/line editing
+
 --engine constants
 chars_per_line=32
 
@@ -51,8 +56,8 @@ end
 
 function print_tokens(tokens)
  o=""
- for i=1,#tokens do
-  o=o.."["..tokens[i].."] "
+ for t in all(tokens) do
+  o=o.."["..t.."] "
  end
  add_to_history(o)
 end
@@ -63,7 +68,11 @@ function run_game(i)
 end
 
 function _update()
- poke(pause_disable_addr,1)--disable pause so we can use enter
+ --disable pause so we can use enter
+ --specific engine will need to expose
+ --some way of pausing via extcmd("pause")
+ poke(pause_disable_addr,1)
+
  while stat(30) do
   local c=stat(31)
   if c=="\b" then
@@ -94,11 +103,19 @@ current_room=""
 function initialise_ta_engine()
  current_room=start_room
  show_room_description()
+
+ --hard code menu command/alias
+ aliases.m={"menu"},
+ add(commands,{"menu",menu})
 end
 
 function show_room_description()
  add_to_history("== "..current_room.." ==")
  add_to_history(descriptions[current_room])
+end
+
+function menu(tokens)
+ extcmd("pause")
 end
 
 function match_token(t,expected)
@@ -120,12 +137,12 @@ end
 
 function expand_aliases(tokens)
  expanded={}
- for i=1,#tokens do
-  if aliases[tokens[i]]==nil then
-   add(expanded,tokens[i])
+ for t in all(tokens) do
+  if aliases[t]==nil then
+   add(expanded,t)
   else
-   for j=1,#aliases[tokens[i]] do
-    add(expanded,aliases[tokens[i]][j])
+   for j=1,#aliases[t] do
+    add(expanded,aliases[t][j])
    end
   end
  end
@@ -136,9 +153,9 @@ function run_ta_command(tokens)
  tokens=expand_aliases(tokens)
 
  command_done=false
- for i=1,#commands do
-  if match_command(tokens,commands[i]) then
-   commands[i][#commands[i]](tokens)
+ for c in all(commands) do
+  if match_command(tokens,c) then
+   c[#c](tokens)
    command_done=true
    break
   end
@@ -163,10 +180,6 @@ token_matchers={
 }
 
 --command functions
-function menu(tokens)
- extcmd("pause")
-end
-
 function go(tokens)
  current_room=exits[current_room][tokens[2]]
  add_to_history("you travel "..tokens[2].." to the "..current_room..".")
@@ -178,14 +191,12 @@ function look(tokens)
 end
 
 commands={
-	{"menu",menu},
 	{"look",look},
 	{"go","$direction",go},
 }
 
 aliases={
 	l={"look"},
-	m={"menu"},
 	x={"examine"},
 
 	n={"go","north"},
