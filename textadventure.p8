@@ -16,19 +16,37 @@ pause_disable_addr=0x5f30
 
 --engine state
 input=""
+
 history={}
 
 function add_to_history(s)
- while #s>chars_per_line do
-  for i=chars_per_line,0,-1 do
-   if sub(s,i,i)==" " then
-    add(history,sub(s,0,i))
-    s=sub(s,i+1)
+ local colour_chars={}
+ local current_colour=7
+ local i=1
+ while i<=#s do
+  if sub(s,i,i)=="$" then
+   current_colour=tonum(sub(s,i+1,i+1),true)
+   i+=1
+  else
+   add(colour_chars,{sub(s,i,i),current_colour})
+  end
+  i+=1
+ end
+
+ while #colour_chars>chars_per_line do
+  for i=chars_per_line,1,-1 do
+   if colour_chars[i][1]==" " then
+    local tmp={}
+    for j=1,i do
+     add(tmp,colour_chars[1])
+     del(colour_chars,colour_chars[1])
+    end
+    add(history,tmp)
     break
    end
   end
  end
- add(history,s)
+ add(history,colour_chars)
 end
 
 function _init()
@@ -90,7 +108,9 @@ end
 function _draw()
  cls()
  for i=0,#history-1 do
-  print(history[#history-i],0,117-6*i,7)
+  for j=1,#history[#history-i] do
+   print(history[#history-i][j][1],(j-1)*4,117-6*i,history[#history-i][j][2])
+  end
  end
  print("> "..input,0,123,7)
 end
