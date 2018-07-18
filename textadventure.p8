@@ -5,7 +5,6 @@ __lua__
 
 --todo
 --software/hardware keyboard switch
---typed command history/recall
 --cursor/line editing
 
 --engine constants
@@ -18,6 +17,8 @@ pause_disable_addr=0x5f30
 input=""
 
 history={}
+command_history={}
+command_history_cursor=0
 
 function add_to_history(s)
  local colour_chars={}
@@ -91,12 +92,22 @@ function _update()
  --some way of pausing via extcmd("pause")
  poke(pause_disable_addr,1)
 
+ if btnp(2) then
+  command_history_cursor=(command_history_cursor-1)%#command_history
+  if (#command_history>0) input=command_history[command_history_cursor+1]
+ elseif btnp(3) then
+  command_history_cursor=(command_history_cursor+1)%#command_history
+  if (#command_history>0) input=command_history[command_history_cursor+1]
+ end
+
  while stat(30) do
   local c=stat(31)
   if c=="\b" then
    input=sub(input,0,#input-1)
   elseif c=="\r" or c=="\n" then
    add_to_history("> "..input)
+   add(command_history,input)
+   command_history_cursor=0
    run_game(input)
    input=""
   else
