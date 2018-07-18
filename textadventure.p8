@@ -227,11 +227,24 @@ aliases={
 
 --data tables for commands
 descriptions={
- field="you're standing in a field outside a white house.",
- forest="shafts of light shine through the leaves.",
 }
 
 exits={
- field={north="forest"},
- forest={south="field"},
+}
+
+function room(t)
+ descriptions[t.name]=t.description
+ exits[t.name]=t.exits
+end
+
+room{
+ name="field",
+ description="you're standing in a field outside a white house.",
+ exits={north="forest"},
+}
+
+room{
+ name="forest",
+ description="shafts of light shine through the leaves.",
+ exits={south="field"},
 }
