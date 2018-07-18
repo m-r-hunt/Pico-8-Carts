@@ -125,8 +125,11 @@ function initialise_ta_engine()
  show_room_description()
 
  --hard code menu command/alias
- aliases.m={"menu"},
- add(commands,{"menu",menu})
+ aliases.m={"menu"}
+ commands.menu={menu}
+
+ aliases.q={"quit"}
+ commands.quit={quit}
 end
 
 function show_room_description()
@@ -138,6 +141,10 @@ function menu(tokens)
  extcmd("pause")
 end
 
+function quit(tokens)
+ stop()
+end
+
 function match_token(t,expected)
  if sub(expected,0,1)=="$" then
   return token_matchers[sub(expected,2)](t)
@@ -146,9 +153,11 @@ function match_token(t,expected)
  end
 end
 
-function match_command(tokens,c)
+function match_command(tokens)
+ c=commands[tokens[1]]
+ if (not c) return false
  for j=1,#c-1 do
-  if not match_token(tokens[j],c[j]) then
+  if not match_token(tokens[j+1],c[j]) then
    return false
   end
  end
@@ -158,7 +167,7 @@ end
 function expand_aliases(tokens)
  expanded={}
  for t in all(tokens) do
-  if aliases[t]==nil then
+  if not aliases[t] then
    add(expanded,t)
   else
    for j=1,#aliases[t] do
@@ -173,12 +182,9 @@ function run_ta_command(tokens)
  tokens=expand_aliases(tokens)
 
  command_done=false
- for c in all(commands) do
-  if match_command(tokens,c) then
-   c[#c](tokens)
-   command_done=true
-   break
-  end
+ if match_command(tokens) then
+  c[#c](tokens)
+  command_done=true
  end
 
  if not command_done then
@@ -211,8 +217,8 @@ function look(tokens)
 end
 
 commands={
-	{"look",look},
-	{"go","$direction",go},
+	look={look},
+	go={"$direction",go},
 }
 
 aliases={
