@@ -5,7 +5,6 @@ __lua__
 
 --todo
 --software/hardware keyboard switch
---cursor/line editing
 
 --engine constants
 chars_per_line=32
@@ -13,12 +12,18 @@ chars_per_line=32
 devkit_addr=0x5f2d
 pause_disable_addr=0x5f30
 
+input_text_colour=15
+input_text_colour_ctrl="f"
+
 --engine state
+timer=0
+
 input=""
+input_cursor=0
 
 history={}
-command_history={}
-command_history_cursor=0
+command_history={""}
+command_history_cursor=1
 
 function add_to_history(s)
  local colour_chars={}
@@ -26,7 +31,7 @@ function add_to_history(s)
  local i=1
  while i<=#s do
   if sub(s,i,i)=="$" then
-   current_colour=tonum(sub(s,i+1,i+1),true)
+   current_colour=tonum("0x"..sub(s,i+1,i+1))
    i+=1
   else
    add(colour_chars,{sub(s,i,i),current_colour})
@@ -87,31 +92,49 @@ function run_game(i)
 end
 
 function _update()
+ timer+=1
+
  --disable pause so we can use enter
  --specific engine will need to expose
  --some way of pausing via extcmd("pause")
  poke(pause_disable_addr,1)
 
  if btnp(2) then
-  command_history_cursor=(command_history_cursor-1)%#command_history
-  if (#command_history>0) input=command_history[command_history_cursor+1]
+  command_history_cursor=(command_history_cursor-1)
+  command_history_cursor=mid(1,command_history_cursor,#command_history)
+  input=command_history[command_history_cursor]
+  input_cursor=#input
  elseif btnp(3) then
-  command_history_cursor=(command_history_cursor+1)%#command_history
-  if (#command_history>0) input=command_history[command_history_cursor+1]
+  command_history_cursor=(command_history_cursor+1)
+  command_history_cursor=mid(1,command_history_cursor,#command_history)
+  input=command_history[command_history_cursor]
+  input_cursor=#input
+ elseif btnp(0) then
+  input_cursor-=1
+  input_cursor=mid(0,input_cursor,#input)
+ elseif btnp(1) then
+  input_cursor+=1
+  input_cursor=mid(0,input_cursor,#input)
  end
 
  while stat(30) do
   local c=stat(31)
   if c=="\b" then
-   input=sub(input,0,#input-1)
+   input=sub(input,0,max(0,input_cursor-1))..sub(input,input_cursor+1,#input)
+   input_cursor-=1
+  input_cursor=mid(0,input_cursor,#input)
+   if (input_cursor<0) input_cursor=0
   elseif c=="\r" or c=="\n" then
-   add_to_history("> "..input)
-   add(command_history,input)
-   command_history_cursor=0
+   add_to_history("$"..input_text_colour_ctrl.."> "..input)
+   command_history[#command_history]=input
+   add(command_history,"")
+   command_history_cursor=#command_history
    run_game(input)
    input=""
+   input_cursor=0
   else
-   input=input..c
+   input=sub(input,0,input_cursor)..c..sub(input,input_cursor+1,#input)
+   input_cursor+=1
   end
  end
 end
@@ -123,7 +146,8 @@ function _draw()
    print(history[#history-i][j][1],(j-1)*4,117-6*i,history[#history-i][j][2])
   end
  end
- print("> "..input,0,123,7)
+ print("> "..input,0,123,input_text_colour)
+ if (timer%16<8) rectfill(input_cursor*4+8,123,input_cursor*4+11,128,12)
 end
 -->8
 --text adventure engine
