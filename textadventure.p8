@@ -170,6 +170,9 @@ end
 function show_room_description()
  add_to_history("== "..current_room.." ==")
  add_to_history(descriptions[current_room])
+ for i in all(items_at_locations[current_room]) do
+  add_to_history("there is a "..i.." here.")
+ end
 end
 
 function menu(tokens)
@@ -236,8 +239,13 @@ function match_direction(t)
  return exits[current_room][t]~=nil
 end
 
+function match_local_item(t)
+ return item_locations[t]==current_room or item_locations[t]=="inventory"
+end
+
 token_matchers={
 	direction=match_direction,
+	local_item=match_local_item
 }
 
 --command functions
@@ -251,9 +259,14 @@ function look(tokens)
  show_room_description()
 end
 
+function examine(tokens)
+ add_to_history(descriptions[tokens[2]])
+end
+
 commands={
 	look={look},
 	go={"$direction",go},
+	examine={"$local_item",examine},
 }
 
 aliases={
@@ -273,9 +286,17 @@ descriptions={
 exits={
 }
 
+item_locations={
+}
+
+items_at_locations={
+ inventory={}
+}
+
 function room(t)
  descriptions[t.name]=t.description
  exits[t.name]=t.exits
+ items_at_locations[t.name]={}
 end
 
 room{
@@ -288,4 +309,16 @@ room{
  name="forest",
  description="shafts of light shine through the leaves.",
  exits={south="field"},
+}
+
+function item(t)
+ descriptions[t.name]=t.description
+ add(items_at_locations[t.start_location],t.name)
+ item_locations[t.name]=t.start_location
+end
+
+item{
+ name="stick",
+ start_location="field",
+ description="it's sticky."
 }
