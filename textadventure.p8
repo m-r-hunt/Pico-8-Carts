@@ -164,7 +164,7 @@ function _draw()
   end
  end
  print(">"..input,0,123,input_text_colour)
- if (timer%16<8) rectfill(input_cursor*4+8,123,input_cursor*4+11,128,12)
+ if (timer%16<8) rectfill(input_cursor*4+4,123,input_cursor*4+7,128,12)
 
  rectfill(80,0,128,6*#debugs,0)
  for i=1,#debugs do
@@ -244,12 +244,18 @@ function run_ta_command(tokens)
 
  local command_done=false
  if match_command(tokens) then
+  local c=commands[tokens[1]]
   c[#c](tokens)
   command_done=true
  end
 
- if not command_done then
-  add_to_history("sorry, i don't understand.")
+ if not command_done and #tokens>0 then
+  local errstr="sorry, i don't understand. i interpreted your input as '"..tokens[1]
+  for i=2,#tokens do
+   errstr=errstr.." "..tokens[i]
+  end
+  errstr=errstr.."'"
+  add_to_history(errstr)
  end
 end
 -->8
@@ -327,6 +333,10 @@ commands={
 }
 
 aliases={
+ the={},
+ a={},
+ an={},
+
 	l={"look"},
 	x={"examine"},
 	i={"inventory"},
