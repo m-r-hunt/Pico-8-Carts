@@ -198,6 +198,13 @@ function show_room_description()
  end
 end
 
+function move_item(item,place)
+ local old_loc=item_locations[item]
+ item_locations[item]=place
+ del(items_at_locations[old_loc],item)
+ add(items_at_locations[place],item)
+end
+
 function menu(tokens)
  extcmd("pause")
 end
@@ -244,8 +251,33 @@ function run_ta_command(tokens)
 
  local command_done=false
  if match_command(tokens) then
-  local c=commands[tokens[1]]
-  c[#c](tokens)
+  local s=scripts[current_room]
+  local scripted=false
+  for i=1,#tokens do
+   if (not s) break
+   s=s[tokens[i]]
+   if type(s)=="function" then
+    s(tokens)
+    scripted=true
+    break
+   end
+  end
+  if not scripted then
+   s=scripts["any"]
+   for i=1,#tokens do
+    if (not s) break
+    s=s[tokens[i]]
+    if type(s)=="function" then
+     s(tokens)
+     scripted=true
+     break
+    end
+   end
+  end
+  if not scripted then
+   local c=commands[tokens[1]]
+   c[#c](tokens)
+  end
   command_done=true
  end
 
@@ -361,16 +393,42 @@ items_at_locations={
  inventory={}
 }
 
+scripts={
+}
+-->8
+--data metaprogramming functions
+
 function room(t)
  descriptions[t.name]=t.description
  exits[t.name]=t.exits
  items_at_locations[t.name]={}
 end
 
+function item(t)
+ descriptions[t.name]=t.description
+ add(items_at_locations[t.start_location],t.name)
+ item_locations[t.name]=t.start_location
+end
+
+function script(t)
+ s=scripts
+ for i=1,#t-2 do
+  print(i)
+  print(t[i])
+  if not s[t[i]] then
+   s[t[i]]={}
+  end
+  s=s[t[i]]
+ end
+ s[t[#t-1]]=t[#t]
+end
+
+--room data
+
 room{
  name="field",
  description="you're standing in a field outside a white house.",
- exits={north="forest"},
+ exits={north="forest",west="house"},
 }
 
 room{
@@ -379,21 +437,35 @@ room{
  exits={south="field"},
 }
 
-function item(t)
- descriptions[t.name]=t.description
- add(items_at_locations[t.start_location],t.name)
- item_locations[t.name]=t.start_location
-end
+room{
+ name="house",
+ description="inside a house i guess",
+ exits={east="field"},
+}
+
+--item data
 
 item{
  name="stick",
  start_location="field",
  description="it's sticky."
 }
--->8
-function move_item(item,place)
- local old_loc=item_locations[item]
- item_locations[item]=place
- del(items_at_locations[old_loc],item)
- add(items_at_locations[place],item)
+
+item{
+ name="key",
+ start_location="forest",
+ description="a key, possibly for a door."
+}
+
+--script functions and data
+
+function locked_door(tokens)
+ if item_locations["key"]=="inventory" then
+  add_to_history("you unlock the door.")
+  go(tokens)
+ else
+  add_to_history("the door is locked.")
+ end
 end
+
+script{"field","go","west",locked_door}
