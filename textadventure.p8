@@ -15,6 +15,9 @@ pause_disable_addr=0x5f30
 input_text_colour=15
 input_text_colour_ctrl="f"
 
+max_history=128
+max_command_history=128
+
 --engine state
 timer=0
 
@@ -53,6 +56,10 @@ function add_to_history(s)
   end
  end
  add(history,colour_chars)
+
+ while #history>max_history do
+  del(history,history[1])
+ end
 end
 
 function _init()
@@ -128,6 +135,9 @@ function _update()
    add_to_history("$"..input_text_colour_ctrl.."> "..input)
    command_history[#command_history]=input
    add(command_history,"")
+   while #command_history>max_command_history do
+    del(command_history,command_history[1])
+   end
    command_history_cursor=#command_history
    run_game(input)
    input=""
@@ -139,6 +149,13 @@ function _update()
  end
 end
 
+debugs={
+ {"cpu",function() return stat(1) end},
+ {"mem",function() return stat(0) end},
+ --{"his",function() return #history end},
+ --{"chs",function() return #command_history end},
+}
+
 function _draw()
  cls()
  for i=0,#history-1 do
@@ -146,11 +163,14 @@ function _draw()
    print(history[#history-i][j][1],(j-1)*4,117-6*i,history[#history-i][j][2])
   end
  end
- print("> "..input,0,123,input_text_colour)
+ print(">"..input,0,123,input_text_colour)
  if (timer%16<8) rectfill(input_cursor*4+8,123,input_cursor*4+11,128,12)
- 
- print("cpu:"..stat(1),80,0,7)
- print("mem:"..stat(0),80,6,7)
+
+ rectfill(80,0,128,6*#debugs,0)
+ for i=1,#debugs do
+  local d=debugs[i]
+  print(d[1]..":"..d[2](),80,(i-1)*6,12)
+ end
 end
 -->8
 --text adventure engine
@@ -195,7 +215,7 @@ function match_token(t,expected)
 end
 
 function match_command(tokens)
- c=commands[tokens[1]]
+ local c=commands[tokens[1]]
  if (not c) return false
  for j=1,#c-1 do
   if not match_token(tokens[j+1],c[j]) then
@@ -206,7 +226,7 @@ function match_command(tokens)
 end
 
 function expand_aliases(tokens)
- expanded={}
+ local expanded={}
  for t in all(tokens) do
   if not aliases[t] then
    add(expanded,t)
@@ -220,9 +240,9 @@ function expand_aliases(tokens)
 end
 
 function run_ta_command(tokens)
- tokens=expand_aliases(tokens)
+ local tokens=expand_aliases(tokens)
 
- command_done=false
+ local command_done=false
  if match_command(tokens) then
   c[#c](tokens)
   command_done=true
