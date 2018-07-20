@@ -148,6 +148,9 @@ function _draw()
  end
  print("> "..input,0,123,input_text_colour)
  if (timer%16<8) rectfill(input_cursor*4+8,123,input_cursor*4+11,128,12)
+ 
+ print("cpu:"..stat(1),80,0,7)
+ print("mem:"..stat(0),80,6,7)
 end
 -->8
 --text adventure engine
@@ -235,17 +238,27 @@ end
 start_room="field"
 
 --token matching functions
-function match_direction(t)
+function direction(t)
  return exits[current_room][t]~=nil
 end
 
-function match_local_item(t)
- return item_locations[t]==current_room or item_locations[t]=="inventory"
+function local_item(t)
+ return room_item(t) or inventory_item(t)
+end
+
+function room_item(t)
+ return item_locations[t]==current_room
+end
+
+function inventory_item(t)
+ return item_locations[t]=="inventory"
 end
 
 token_matchers={
-	direction=match_direction,
-	local_item=match_local_item
+	direction=direction,
+	local_item=local_item,
+	room_item=room_item,
+	inventory_item=inventory_item,
 }
 
 --command functions
@@ -263,15 +276,40 @@ function examine(tokens)
  add_to_history(descriptions[tokens[2]])
 end
 
+function get(tokens)
+ move_item(tokens[2],"inventory")
+ add_to_history("you get the "..tokens[2])
+end
+
+function drop(tokens)
+ move_item(tokens[2],current_room)
+ add_to_history("you drop the "..tokens[2])
+end
+
+function inventory(tokens)
+ if #items_at_locations["inventory"]>0 then
+  add_to_history("you are holding:")
+  for i in all(items_at_locations["inventory"]) do
+   add_to_history("- "..i)
+  end
+ else
+  add_to_history("your pockets are empty.")
+ end
+end
+
 commands={
 	look={look},
 	go={"$direction",go},
 	examine={"$local_item",examine},
+	get={"$room_item",get},
+	drop={"$inventory_item",drop},
+	inventory={inventory},
 }
 
 aliases={
 	l={"look"},
 	x={"examine"},
+	i={"inventory"},
 
 	n={"go","north"},
 	s={"go","south"},
@@ -322,3 +360,10 @@ item{
  start_location="field",
  description="it's sticky."
 }
+-->8
+function move_item(item,place)
+ local old_loc=item_locations[item]
+ item_locations[item]=place
+ del(items_at_locations[old_loc],item)
+ add(items_at_locations[place],item)
+end
