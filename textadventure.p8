@@ -196,6 +196,9 @@ function show_room_description()
  for i in all(items_at_locations[current_room]) do
   add_to_history("there is a "..i.." here.")
  end
+ for e,_ in pairs(exits[current_room]) do
+  add_to_history("there is an exit to the "..e..".")
+ end
 end
 
 function move_item(item,place)
@@ -301,7 +304,7 @@ function direction(t)
 end
 
 function local_item(t)
- return room_item(t) or inventory_item(t)
+ return room_item(t) or inventory_item(t) or t=="self"
 end
 
 function room_item(t)
@@ -359,12 +362,17 @@ function inventory(tokens)
  end
 end
 
+function use(tokens)
+ add_to_history("nothing happens.")
+end
+
 commands={
 	look={look},
 	go={"$direction",go},
 	examine={"$local_item",examine},
 	get={"$room_item",get},
 	drop={"$inventory_item",drop},
+	use={"$inventory_item","on","$local_item",use},
 	inventory={inventory},
 }
 
@@ -372,6 +380,8 @@ aliases={
  the={},
  a={},
  an={},
+
+ with={"on"},
 
 	l={"look"},
 	x={"examine"},
@@ -435,10 +445,17 @@ end
 
 --room data
 
+basic_cell_desc="you stand stooped in a dungeon cell, which is low ceilinged and dank. a a rough straw $bbed$7 sits in one corner and a $bbucket$7 in another."
 room{
  name="cell",
- description="you stand stooped in a dungeon cell, which is low ceilinged and dank. a a rough straw $bbed$7 sits in one corner and a $bbucket$7 in another.",
+ description=basic_cell_desc.." the west $bwall$7 looks cracked.",
  exits={},
+}
+
+room{
+ name="tunnel",
+ description="a dark tunnel.",
+ exits={east="cell"},
 }
 
 --item data
@@ -465,7 +482,20 @@ item{
  description="a metal knitting needle. not so hard to spot in a haystack."
 }
 
+item{
+ name="wall",
+ start_location="cell",
+ hidden=true,
+ static=true,
+ description="the stone wall is cracked and crumbling. the mortar around one section looks loose."
+}
+
 --script functions and data
+
+function x_self(tokens)
+ add_to_history("lookin' good.")
+end
+script{"any","examine","self",x_self}
 
 function get_bucket(tokens)
  add_to_history("as you go to pick up the bucket, your eyes start to burn. you leave it alone.")
@@ -478,6 +508,16 @@ function get_needle(tokens)
  scripts.cell.get.needle=nil
 end
 script{"cell","get","needle",get_needle}
+
+function use_needle_on_wall(tokens)
+ add_to_history("you scrape away the loose mortar and manage to create a hole big enough to squeeze through.")
+ item_locations.wall=nil
+ exits.cell.west="tunnel"
+ item_locations.needle=nil
+ del(items_at_locations.inventory,"needle")
+ descriptions["cell"]=basic_cell_desc
+end
+script{"cell","use","needle","on","wall",use_needle_on_wall}
 __gfx__
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
