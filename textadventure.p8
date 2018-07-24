@@ -28,6 +28,14 @@ history={}
 command_history={""}
 command_history_cursor=1
 
+scroll_pos=0
+scroll_mode=false
+
+function scroll()
+ scroll_mode=true
+ scroll_pos=0
+end
+
 function add_to_history(s)
  local colour_chars={}
  local current_colour=7
@@ -106,6 +114,21 @@ function _update()
  --some way of pausing via extcmd("pause")
  poke(pause_disable_addr,1)
 
+ if scroll_mode then
+  if (btn(2)) scroll_pos+=1
+  if (btn(3)) scroll_pos-=1
+  scroll_pos=mid(0,scroll_pos,#history)
+
+  while stat(30) do
+   c=stat(31)
+   if c==" " or c=="\r" or c=="\n" then
+    scroll_mode=false
+    scroll_pos=0
+   end
+  end
+  return
+ end
+
  if btnp(2) then
   command_history_cursor=(command_history_cursor-1)
   command_history_cursor=mid(1,command_history_cursor,#command_history)
@@ -132,7 +155,7 @@ function _update()
   input_cursor=mid(0,input_cursor,#input)
    if (input_cursor<0) input_cursor=0
   elseif c=="\r" or c=="\n" then
-   add_to_history("$"..input_text_colour_ctrl.."> "..input)
+   add_to_history("$"..input_text_colour_ctrl..">"..input)
    command_history[#command_history]=input
    add(command_history,"")
    while #command_history>max_command_history do
@@ -158,13 +181,17 @@ debugs={
 
 function _draw()
  cls()
- for i=0,#history-1 do
-  for j=1,#history[#history-i] do
-   print(history[#history-i][j][1],(j-1)*4,117-6*i,history[#history-i][j][2])
+ for i=0,#history-1-scroll_pos do
+  for j=1,#history[#history-i-scroll_pos] do
+   print(history[#history-i-scroll_pos][j][1],(j-1)*4,117-6*i,history[#history-i-scroll_pos][j][2])
   end
  end
  print(">"..input,0,123,input_text_colour)
  if (timer%16<8) rectfill(input_cursor*4+4,123,input_cursor*4+7,128,12)
+ if scroll_mode then
+  rectfill(0,123,128,128,12)
+  print("scroll",0,123,7)
+ end
 
  rectfill(80,0,128,6*#debugs,0)
  for i=1,#debugs do
@@ -179,8 +206,10 @@ end
 current_room=""
 
 function initialise_ta_engine()
+ startup()
  current_room=start_room
  show_room_description()
+ add_to_history("$c[type $bhelp$c for help]")
 
  --hard code menu command/alias
  aliases.m={"menu"}
@@ -188,11 +217,22 @@ function initialise_ta_engine()
 
  aliases.q={"quit"}
  commands.quit={quit}
+
+ aliases.s={"scroll"}
+ commands.scroll={scroll}
+end
+
+function show_room_title()
+
 end
 
 function show_room_description()
  add_to_history("== "..current_room.." ==")
- add_to_history(descriptions[current_room])
+ local s=descriptions[current_room]
+ for _,d in pairs(hidden_descriptions[current_room]) do
+  s=s.." "..d
+ end
+ add_to_history(s)
  for i in all(items_at_locations[current_room]) do
   add_to_history("there is a "..i.." here.")
  end
@@ -298,6 +338,13 @@ end
 
 start_room="cell"
 
+function startup()
+ add_to_history("===== escape from darkness =====")
+ add_to_history("")
+ add_to_history("the guard shoves you roughly into a dank cell. you must escape to the surface with all haste.")
+ add_to_history("")
+end
+
 --token matching functions
 function direction(t)
  return exits[current_room][t]~=nil
@@ -341,6 +388,7 @@ function get(tokens)
  if static_items[tokens[2]] then
   add_to_history("you can't pick that up.")
  else
+  hidden_descriptions[current_room][tokens[2]]=nil
   move_item(tokens[2],"inventory")
   add_to_history("you get the "..tokens[2])
  end
@@ -366,6 +414,19 @@ function use(tokens)
  add_to_history("nothing happens.")
 end
 
+function ta_help(tokens)
+ add_to_history("this is a classic text adventure. your object is to escape the underground and return to the surface.")
+ add_to_history("type in commands to interact with the world. all commands are english sentences that start with a verb.")
+ add_to_history("examples: \"use sword on troll\" \"examine book\" etc")
+ add_to_history("important commands:")
+ add_to_history("- look")
+ add_to_history("- examine <thing>")
+ add_to_history("- go <direction>")
+ add_to_history("- use <item> on <thing>")
+ add_to_history("- scroll")
+ add_to_history("shorthands exist: n=go north, x=examine, etc")
+end
+
 commands={
 	look={look},
 	go={"$direction",go},
@@ -374,6 +435,7 @@ commands={
 	drop={"$inventory_item",drop},
 	use={"$inventory_item","on","$local_item",use},
 	inventory={inventory},
+	help={ta_help}
 }
 
 aliases={
@@ -386,6 +448,7 @@ aliases={
 	l={"look"},
 	x={"examine"},
 	i={"inventory"},
+	h={"help"},
 
 	n={"go","north"},
 	s={"go","south"},
@@ -407,6 +470,9 @@ items_at_locations={
  inventory={}
 }
 
+hidden_descriptions={
+}
+
 static_items={
 }
 
@@ -419,6 +485,7 @@ function room(t)
  descriptions[t.name]=t.description
  exits[t.name]=t.exits
  items_at_locations[t.name]={}
+ hidden_descriptions[t.name]={}
 end
 
 function item(t)
@@ -428,10 +495,11 @@ function item(t)
  end
  item_locations[t.name]=t.start_location
  static_items[t.name]=t.static
+ hidden_descriptions[t.start_location][t.name]=t.hidden_description
 end
 
 function script(t)
- s=scripts
+ local s=scripts
  for i=1,#t-2 do
   print(i)
   print(t[i])
@@ -445,10 +513,9 @@ end
 
 --room data
 
-basic_cell_desc="you stand stooped in a dungeon cell, which is low ceilinged and dank. a a rough straw $bbed$7 sits in one corner and a $bbucket$7 in another."
 room{
  name="cell",
- description=basic_cell_desc.." the west $bwall$7 looks cracked.",
+ description="you stand stooped in a dungeon cell, which is low ceilinged and dank. a a rough straw $bbed$7 sits in one corner and a $bbucket$7 in another.",
  exits={},
 }
 
@@ -487,6 +554,7 @@ item{
  start_location="cell",
  hidden=true,
  static=true,
+ hidden_description="the west $bwall$7 looks cracked.",
  description="the stone wall is cracked and crumbling. the mortar around one section looks loose."
 }
 
@@ -515,7 +583,7 @@ function use_needle_on_wall(tokens)
  exits.cell.west="tunnel"
  item_locations.needle=nil
  del(items_at_locations.inventory,"needle")
- descriptions["cell"]=basic_cell_desc
+ hidden_descriptions.cell.wall=nil
 end
 script{"cell","use","needle","on","wall",use_needle_on_wall}
 __gfx__
