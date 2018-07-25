@@ -71,6 +71,8 @@ function add_to_history(s)
 end
 
 function _init()
+ cartdata("mrh_escape_from_darkness_0_1")
+
  poke(devkit_addr,1)--enable keyboard
 
  initialise_ta_engine()
@@ -246,6 +248,8 @@ function move_item(item,place)
  item_locations[item]=place
  del(items_at_locations[old_loc],item)
  add(items_at_locations[place],item)
+ undisturbed[item]=false
+ hidden_descriptions[old_loc][item]=nil
 end
 
 function menu(tokens)
@@ -339,6 +343,8 @@ end
 start_room="cell"
 
 function startup()
+ init_tables()
+ load_data()
  add_to_history("===== escape from darkness =====")
  add_to_history("")
  add_to_history("the guard shoves you roughly into a dank cell. you must escape to the surface with all haste.")
@@ -427,16 +433,6 @@ function ta_help(tokens)
  add_to_history("shorthands exist: n=go north, x=examine, etc")
 end
 
-commands={
-	look={look},
-	go={"$direction",go},
-	examine={"$local_item",examine},
-	get={"$room_item",get},
-	drop={"$inventory_item",drop},
-	use={"$inventory_item","on","$local_item",use},
-	inventory={inventory},
-	help={ta_help}
-}
 
 aliases={
  the={},
@@ -456,7 +452,24 @@ aliases={
 	w={"go","west"},
 }
 
+function init_tables()
 --data tables for commands
+commands={
+	look={look},
+	go={"$direction",go},
+	examine={"$local_item",examine},
+	get={"$room_item",get},
+	drop={"$inventory_item",drop},
+	use={"$inventory_item","on","$local_item",use},
+	inventory={inventory},
+	help={ta_help},
+	save={game_save},
+	load={game_load},
+}
+
+rooms={"undisturbed","inventory"}
+items={}
+
 descriptions={
 }
 
@@ -471,6 +484,7 @@ items_at_locations={
 }
 
 hidden_descriptions={
+ inventory={}
 }
 
 static_items={
@@ -478,14 +492,22 @@ static_items={
 
 scripts={
 }
+
+undisturbed={}
+
+serializable_scripts={}
+serializable_scripts_triggered={}
+end
 -->8
 --data metaprogramming functions
 
+function load_data()
 function room(t)
  descriptions[t.name]=t.description
  exits[t.name]=t.exits
  items_at_locations[t.name]={}
  hidden_descriptions[t.name]={}
+ add(rooms,t.name)
 end
 
 function item(t)
@@ -496,6 +518,8 @@ function item(t)
  item_locations[t.name]=t.start_location
  static_items[t.name]=t.static
  hidden_descriptions[t.start_location][t.name]=t.hidden_description
+ add(items,t.name)
+ undisturbed[t.name]=true
 end
 
 function script(t)
@@ -511,6 +535,17 @@ function script(t)
  s[t[#t-1]]=t[#t]
 end
 
+function serializable_script(f)
+ local i=#serializable_scripts+1
+ local wrapped=function()
+  serializable_scripts_triggered[i]=true
+  f()
+ end
+ serializable_scripts[i]=wrapped
+ serializable_scripts_triggered[i]=false
+ return wrapped
+end
+
 --room data
 
 room{
@@ -522,7 +557,13 @@ room{
 room{
  name="tunnel",
  description="a dark tunnel.",
- exits={east="cell"},
+ exits={east="cell",west="atrium"},
+}
+
+room{
+	name="atrium",
+	description="a spacious chamber. a breeze can be felt from stairs leading upwards.",
+	exits={east="tunnel",up="door room"},
 }
 
 --item data
@@ -570,22 +611,87 @@ function get_bucket(tokens)
 end
 script{"any","get","bucket",get_bucket}
 
+remove_needle_desc=serializable_script(function()
+descriptions.bed="a rough straw bed sits on the stone floor."
+ scripts.cell.get.needle=nil
+end)
 function get_needle(tokens)
  get(tokens)
- descriptions.bed="a rough straw bed sits on the stone floor."
- scripts.cell.get.needle=nil
+ remove_needle_desc()
 end
 script{"cell","get","needle",get_needle}
 
+open_wall=serializable_script(function()
+ exits.cell.west="tunnel"
+end)
 function use_needle_on_wall(tokens)
  add_to_history("you scrape away the loose mortar and manage to create a hole big enough to squeeze through.")
- item_locations.wall=nil
- exits.cell.west="tunnel"
- item_locations.needle=nil
- del(items_at_locations.inventory,"needle")
- hidden_descriptions.cell.wall=nil
+ open_wall()
+ move_item("wall",nil)
+ move_item("needle",nil)
 end
 script{"cell","use","needle","on","wall",use_needle_on_wall}
+end
+-->8
+function find(t,i)
+ for j,r in pairs(t) do
+  if (r==i) return j
+ end
+ return 0
+end
+
+--save file format:
+--byte 0   :current room
+--byte 1+  :item locations
+--byte 255-:script flag bits
+save_base=0x5e00
+save_max =0x5eff
+
+function game_save()
+ for i=save_base,save_max do
+  poke(i,0)
+ end
+
+ poke(save_base,find(rooms,current_room))
+
+ for i=1,#items do
+  if (undisturbed[items[i]]) then
+   poke(save_base+i,find(rooms,"undisturbed"))
+  else
+   poke(save_base+i,find(rooms,item_locations[items[i]]))
+  end
+ end
+
+ for i=1,#serializable_scripts do
+  val=serializable_scripts_triggered[i] and 1 or 0
+  addr=save_max-flr((i-1)/8)
+  a=peek(addr)
+  poke(addr,bor(a,shl(val,(i-1)%8)))
+ end
+end
+
+function game_load()
+ init_tables()
+ load_data()
+
+ current_room=rooms[peek(save_base)]
+
+ for i=1,#items do
+  local item=items[i]
+  local room=rooms[peek(save_base+i)]
+  if room~="undisturbed" then
+   move_item(item,room)
+  end
+ end
+
+ for i=1,#serializable_scripts do
+  addr=save_max-flr((i-1)/8)
+  a=peek(addr)
+  if band(1,lshr(a,(i-1)%8))==1 then
+   serializable_scripts[i]()
+  end
+ end
+end
 __gfx__
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
