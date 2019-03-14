@@ -1,11 +1,34 @@
 pico-8 cartridge // http://www.pico-8.com
 version 16
 __lua__
+--todo
+-- * modify control scheme
+-- * strawberries
+-- * display cuts and slices
+-- * nice level intro
+-- * particle effects on cut
+-- * knife on cut
+-- * nicer bg
+
 function _init()
- cls()
- levels[leveln][1]()
- copy_to_memory()
  poke(0x5f34, 1)
+ next_level()
+end
+
+function next_level()
+ _update=update
+ _draw=draw
+ fail_reason=nil
+ cutn=0
+	leveln+=1
+	if not levels[leveln] then
+	 _update=final_update
+	 _draw=final_draw
+	else
+  cls()
+  levels[leveln][1]()
+  copy_to_memory()
+ end
 end
 
 pang=0
@@ -18,7 +41,7 @@ cakex=24
 cakey=24
 cakesize=80
 
-leveln=1
+leveln=0
 
 function copy_to_screen(y)
  if (not y) y=0
@@ -31,7 +54,14 @@ function copy_to_memory()
  end
 end
 
-function _update()
+function click_for_next()
+	if btnp(4) or btnp(5) then
+	 if (fail_reason) leveln-=1
+	 next_level()
+	end
+end
+
+function update()
  if (btn(0)) pang-=pspeed
  if (btn(1)) pang+=pspeed
  if (btn(2)) pang2-=pspeed
@@ -49,10 +79,16 @@ function _update()
   cutn+=1
   local level=levels[leveln]
   if cutn>=level[2] then
+   _update=click_for_next
    if #slices==level[3] and slices_equal() then
     _draw=victory
    else
     _draw=failure
+    if #slices==level[3] then
+     fail_reason="slices weren't even enough!"
+    else
+     fail_reason="wrong number of slices"
+    end
    end
   end
  end
@@ -69,8 +105,10 @@ function draw_cake()
 
 end
 
-function _draw()
- cls()
+function draw()
+ rectfill(0,0,128,128,0x10cd.cc3333)
+ fillp()
+ color(7)
  draw_cake()
  local level=levels[leveln]
  print("cut the cake into "..level[3].." slices ",0,0)
@@ -97,6 +135,14 @@ function failure()
  cls()
  draw_cake()
  print("oops. now ken will eat you.")
+ print(fail_reason)
+end
+
+function final_update()
+end
+
+function final_draw()
+ print("wew lad. you finished all the levels.")
 end
 
 -->8
@@ -164,12 +210,12 @@ levels={
   2,
   {5,15,15,15,15,15,8,15,15,15,15,15}
  },
- {
+--[[ {
   function() rectfill(0,0,128,128,7) end,
   4,
   5,
   {5,15,15,15,15,15,10,10,15,15,15,15,15,10}
- },
+ }, --]]
 }
 
 __gfx__
