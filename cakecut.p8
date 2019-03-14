@@ -11,7 +11,6 @@ end
 pang=0
 pang2=0
 pspeed=0.01
-slices={}
 rad=60
 cutn=0
 
@@ -80,9 +79,6 @@ function _draw()
  local level=levels[leveln]
  print("cut the cake into "..level[3].." slices ",0,0)
  print("using "..level[2].." cuts",0,8)
- for s=1,#slices do
-  print(slices[s],0,s*8)
- end	
  local x=64+rad*sin(pang)
  local y=64+rad*cos(pang)
  pset(x,y,8)
@@ -106,7 +102,9 @@ function failure()
  draw_cake()
  print("oops. now ken will eat you.")
 end
+
 -->8
+slices={}
 
 function calculate_slices()
  for x=0,127 do
