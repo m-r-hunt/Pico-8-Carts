@@ -31,9 +31,9 @@ function next_level()
  end
 end
 
-pang=0
-pang2=0
-pspeed=0.01
+ps={{32,32},{96,96}}
+pselected=1
+pspeed=1
 rad=60
 cutn=0
 
@@ -62,15 +62,19 @@ function click_for_next()
 end
 
 function update()
- if (btn(0)) pang-=pspeed
- if (btn(1)) pang+=pspeed
- if (btn(2)) pang2-=pspeed
- if (btn(3)) pang2+=pspeed
+ local p=ps[pselected]
+ if (btn(0)) p[1]-=pspeed
+ if (btn(1)) p[1]+=pspeed
+ if (btn(2)) p[2]-=pspeed
+ if (btn(3)) p[2]+=pspeed
+ if btnp(5) then
+  pselected=(pselected%#ps)+1
+ end
  if btnp(4) then
-  local x=64+rad*sin(pang)
-  local y=64+rad*cos(pang)
-  local x2=64+rad*sin(pang2)
-  local y2=64+rad*cos(pang2)
+  local x=ps[1][1]
+  local y=ps[1][2]
+  local x2=ps[2][1]
+  local y2=ps[2][2]
   cls()
   copy_to_screen()
   line(x,y,x2,y2,0)
@@ -113,11 +117,11 @@ function draw()
  local level=levels[leveln]
  print("cut the cake into "..level[3].." slices ",0,0)
  print("using "..level[2].." cuts",0,8)
- local x=64+rad*sin(pang)
- local y=64+rad*cos(pang)
+ local x=ps[1][1]
+ local y=ps[1][2]
  pset(x,y,8)
- local x2=64+rad*sin(pang2)
- local y2=64+rad*cos(pang2)
+ local x2=ps[2][1]
+ local y2=ps[2][2]
  pset(x2,y2,9)
  local col=8
  line(x,y,x2,y2,col)
@@ -146,6 +150,8 @@ function final_draw()
 end
 
 -->8
+--slice stuff
+
 slices={}
 
 function calculate_slices()
@@ -203,6 +209,8 @@ function slices_equal()
 end
 
 -->8
+--levels
+
 levels={
  {
   function() circfill(64,64,30,7) end,
@@ -210,12 +218,12 @@ levels={
   2,
   {5,15,15,15,15,15,8,15,15,15,15,15}
  },
---[[ {
+ {
   function() rectfill(0,0,128,128,7) end,
   4,
   5,
   {5,15,15,15,15,15,10,10,15,15,15,15,15,10}
- }, --]]
+ },
 }
 
 __gfx__
