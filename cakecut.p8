@@ -2,13 +2,11 @@ pico-8 cartridge // http://www.pico-8.com
 version 16
 __lua__
 --todo
--- * modify control scheme
 -- * strawberries
 -- * display cuts and slices
 -- * nice level intro
 -- * particle effects on cut
 -- * knife on cut
--- * nicer bg
 
 function _init()
  poke(0x5f34, 1)
