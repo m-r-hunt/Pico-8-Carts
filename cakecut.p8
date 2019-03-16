@@ -10,6 +10,7 @@ __lua__
 function _init()
  poke(0x5f34, 1)
  next_level()
+ menuitem(1,"toggle debug", function() debug=not debug end)
 end
 
 function next_level()
@@ -115,7 +116,11 @@ function draw_cake()
  copy_to_screen(0)
  local strawbs=levels[leveln][5]
  for s=1,#strawbs do
- 	spr(14,strawbs[s][1]-4,strawbs[s][2]-4)
+  if not debug then
+ 		spr(14,strawbs[s][1]-4,strawbs[s][2]-4)
+ 	else
+ 	 pset(strawbs[s][1],strawbs[s][2],8)
+ 	end
  end
 end
 
@@ -145,7 +150,7 @@ function draw()
  debug_print_slices()
 end
 
---debug=true
+debug=true
 
 function debug_print_slices()
  if (not debug) return
