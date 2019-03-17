@@ -5,7 +5,7 @@ __lua__
 -- * display cuts and slices
 -- * nice level intro
 -- * particle effects on cut
--- * knife on cut
+-- * knife on cuts
 
 function _init()
  poke(0x5f34, 1)
@@ -91,6 +91,7 @@ function update()
   cutn+=1
   local level=levels[leveln]
   if cutn>=level[2] then
+   copy_to_memory()
    _update=click_for_next
    if #slices==level[3] and slices_equal() then
     _draw=victory
@@ -150,7 +151,7 @@ function draw()
  debug_print_slices()
 end
 
-debug=true
+--debug=true
 
 function debug_print_slices()
  if (not debug) return
@@ -160,20 +161,40 @@ function debug_print_slices()
  end
 end
 
+function draw_result_table()
+ color(7)
+ col=7
+ for s=1,#slices do
+  local y=(s+2)*8
+  col+=1
+  if (col==7 or col==0) col+=1
+  pal(13,col)
+  spr(12,0,y)
+  local desc=slices[s][1]
+  local percent=flr((slices[s][3]/slice_total)*100)
+  if (slices[s][2]>0) desc=desc.."+"..slices[s][2]
+  print("slice "..s..".."..desc.."("..percent.."%)",8,y)
+ end
+ pal()
+end
+
 function victory()
  cls()
  draw_bg()
- draw_cake()
+ copy_to_screen(23)
+ cursor()
  print("you did it")
+ draw_result_table()
  debug_print_slices()
 end
 
 function failure()
  cls()
  draw_bg()
- draw_cake()
+ copy_to_screen(23)
  print("oops. now ken will eat you.")
  print(fail_reason)
+ draw_result_table()
  debug_print_slices()
 end
 
@@ -215,9 +236,10 @@ function calculate_slices()
   for y=0,127 do
    if pget(x,y)==7 then
     local area=1
+    local strawbs=0
    	local q={{x,y}}
    	pset(x,y,nextc)
-   	if (has_strawb(x,y)) area+=strawb_weight
+   	if (has_strawb(x,y)) strawbs+=1
    	while #q>0 do
    	 local c=q[1]
    	 del(q,c)
@@ -229,27 +251,27 @@ function calculate_slices()
    	   pset(cc[1],cc[2],nextc)
    	   add(q,cc)
    	   area+=1
-   				if (has_strawb(cc[1],cc[2])) area+=strawb_weight
+   				if (has_strawb(cc[1],cc[2])) strawbs+=1
    	  end
    	 end
    	end
    	nextc+=1
    	if (nextc==0 or next==7) nextc+=1
-   	add(slices,area)
+   	add(slices,{area,strawbs,area+strawbs*strawb_weight})
    end
   end
+ end
+ slice_total=0
+ for s=1,#slices do
+  slice_total+=slices[s][3]
  end
 end
 
 function slices_equal()
-	local total=0
-	for i=1,#slices do
-	 total+=slices[i]
-	end
-	local allowed_variance=total/10
+	local allowed_variance=slice_total/10
 	for i=1,#slices do
 	 for j=i+1,#slices do
-	  if abs(slices[i] - slices[j]) > allowed_variance then
+	  if abs(slices[i][3] - slices[j][3]) > allowed_variance then
 	   return false
 	  end
 	 end
