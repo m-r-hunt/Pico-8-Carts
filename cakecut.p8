@@ -93,11 +93,13 @@ function update()
   local level=levels[leveln]
   if cutn>=level[2] then
    copy_to_memory()
-   _update=click_for_next
+   _update=end_transition_update
+   _draw=end_transition_draw
+   end_trans_timer=0
    if #slices==level[3] and slices_equal() then
-    _draw=victory
+    end_trans_next=victory
    else
-    _draw=failure
+    end_trans_next=failure
     if #slices==level[3] then
      fail_reason="slices weren't even enough!"
     else
@@ -111,11 +113,16 @@ end
 function draw_cake()
  local cake=levels[leveln][4]
  for c=1,#cake do
-  pal(7,cake[c])
+  for col=1,15 do
+   pal(col,cake[c])
+  end
   copy_to_screen(#cake-c+1)
  end
- pal()
+ for col=1,15 do
+  pal(col,7)
+ end
  copy_to_screen(0)
+ pal()
  local strawbs=levels[leveln][5]
  for s=1,#strawbs do
   if not debug then
@@ -206,6 +213,33 @@ end
 
 function final_draw()
  print("wew lad. you finished all the levels.")
+end
+
+end_trans_timer=0
+end_trans_next=nil
+function end_transition_update()
+update_bg()
+ end_trans_timer+=1
+ if end_trans_timer>=60 or btnp(4) or btnp(5) then
+  _update=click_for_next
+  _draw=end_trans_next
+ end
+end
+
+function end_transition_draw()
+ cls()
+ fillp()
+ draw_bg()
+ color(7)
+ if end_trans_timer<=15 then
+  draw_cake()
+ elseif end_trans_timer<=30 then
+  copy_to_screen()
+ else
+  local prop=(end_trans_timer-30)/30
+  local y=23*prop
+  copy_to_screen(y)
+ end
 end
 
 -->8
