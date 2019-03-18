@@ -192,6 +192,11 @@ function victory()
  cls()
  draw_bg()
  copy_to_screen(23)
+ local strawbs=levels[leveln][5]
+ for s=1,#strawbs do
+  pset(strawbs[s][1],strawbs[s][2]+23,3)
+ end
+ color(7)
  cursor()
  print("you did it")
  draw_result_table()
@@ -202,6 +207,11 @@ function failure()
  cls()
  draw_bg()
  copy_to_screen(23)
+ local strawbs=levels[leveln][5]
+ for s=1,#strawbs do
+  pset(strawbs[s][1],strawbs[s][2]+23,3)
+ end
+ color(7)
  print("oops. now ken will eat you.")
  print(fail_reason)
  draw_result_table()
@@ -235,10 +245,18 @@ function end_transition_draw()
   draw_cake()
  elseif end_trans_timer<=30 then
   copy_to_screen()
+  local strawbs=levels[leveln][5]
+  for s=1,#strawbs do
+   pset(strawbs[s][1],strawbs[s][2],3)
+  end
  else
   local prop=(end_trans_timer-30)/30
   local y=23*prop
   copy_to_screen(y)
+  local strawbs=levels[leveln][5]
+  for s=1,#strawbs do
+   pset(strawbs[s][1],strawbs[s][2]+y,3)
+  end
  end
 end
 
