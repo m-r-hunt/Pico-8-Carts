@@ -1,7 +1,7 @@
 pico-8 cartridge // http://www.pico-8.com
 version 16
 __lua__
---todo
+-- todo
 -- * display cuts and slices
 -- * nice level intro
 -- * particle effects on cut
@@ -9,19 +9,28 @@ __lua__
 
 function _init()
  poke(0x5f34, 1)
- next_level()
  menuitem(1,"toggle debug", function() debug=not debug end)
+ change_mode("level")
+end
+
+-- change mode should be reentrant if called from init
+-- i may need to rethink this
+-- this works as long as init is called last
+function change_mode(m)
+ mode=m
+ _update=modes[mode].update
+ _draw=modes[mode].draw
+ if modes[mode].init then
+  modes[mode].init()
+ end
 end
 
 function next_level()
- _update=update
- _draw=draw
  fail_reason=nil
  cutn=0
 	leveln+=1
 	if not levels[leveln] then
-	 _update=final_update
-	 _draw=final_draw
+	 change_mode("final")
 	else
   cls()
   levels[leveln][1]()
@@ -58,7 +67,7 @@ function click_for_next()
  update_bg()
 	if btnp(4) or btnp(5) then
 	 if (fail_reason) leveln-=1
-	 next_level()
+	 change_mode("level")
 	end
 end
 
@@ -93,13 +102,11 @@ function update()
   if cutn>=level[2] then
    calculate_slices()
    copy_to_memory()
-   _update=end_transition_update
-   _draw=end_transition_draw
-   end_trans_timer=0
+   change_mode("end_transition")
    if #slices==level[3] and slices_equal() then
-    end_trans_next=victory
+    end_trans_next="victory"
    else
-    end_trans_next=failure
+    end_trans_next="failure"
     if #slices==level[3] then
      fail_reason="slices weren't even enough!"
     else
@@ -227,12 +234,16 @@ end
 
 end_trans_timer=0
 end_trans_next=nil
+
+function end_transition_init()
+ end_trans_timer=0
+end
+
 function end_transition_update()
 update_bg()
  end_trans_timer+=1
  if end_trans_timer>=60 or btnp(4) or btnp(5) then
-  _update=click_for_next
-  _draw=end_trans_next
+  change_mode(end_trans_next)
  end
 end
 
@@ -364,6 +375,34 @@ levels={
   3,
   {5,15,15,15,15,15,10,10,15,15,15,15,15,10},
   {{40,60}},
+ },
+}
+
+-->8
+-- mode definitions
+
+modes={
+ level={
+  init=next_level,
+  update=update,
+  draw=draw
+ },
+ victory={
+  update=click_for_next,
+  draw=victory
+ },
+ failure={
+  update=click_for_next,
+  draw=failure
+ },
+ end_transition={
+  init=end_transition_init,
+  update=end_transition_update,
+  draw=end_transition_draw
+ },
+ final={
+  update=final_update,
+  draw=final_draw
  },
 }
 
