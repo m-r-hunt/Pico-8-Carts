@@ -88,10 +88,10 @@ function update()
   copy_to_screen()
   line(x,y,x2,y2,0)
   copy_to_memory()
-  calculate_slices()
   cutn+=1
   local level=levels[leveln]
   if cutn>=level[2] then
+   calculate_slices()
    copy_to_memory()
    _update=end_transition_update
    _draw=end_transition_draw
@@ -345,6 +345,17 @@ levels={
   1,
   2,
   {5,15,15,15,15,15,8,15,15,15,15,15},
+  {},
+ },
+ {
+  function()
+   circfill(50,64,20,7)
+   circfill(78,64,20,7)
+   rectfill(50,44,78,84,7)
+  end,
+  2,
+  3,
+  {5,15,15,15,14,14,14,4,4,4},
   {},
  },
  {
