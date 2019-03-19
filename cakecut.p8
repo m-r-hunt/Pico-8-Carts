@@ -35,7 +35,6 @@ function next_level()
   cls()
   levels[leveln][1]()
   copy_to_memory()
-  calculate_slices()
  end
 end
 
@@ -180,11 +179,9 @@ end
 
 function draw_result_table()
  color(7)
- col=7
  for s=1,#slices do
   local y=(s+2)*8
-  col+=1
-  if (col==7 or col==0) col+=1
+  col=slices[s][4]
   pal(13,col)
   spr(12,0,y)
   local desc=slices[s][1]
@@ -274,32 +271,42 @@ end
 -->8
 -- slice stuff
 
+function next_colour(c)
+ c=(c+1)%16
+ if c==0 or c==7 or c==13 or c==14 then
+  c=(c+1)%16
+ end
+ return c
+end
+
 slices={}
 
 strawb_weight=150
 
 function has_strawb(x,y)
- local strawbs=levels[leveln][5]
-	for s=1,#strawbs do
-	 if strawbs[s][1]==x and strawbs[s][2]==y then
-	  return true
-	 end
-	end
-	return false
+ return rev_strawbs[x] and rev_strawbs[x][y]
 end
 
 function calculate_slices()
- for x=0,127 do
+ --[[for x=0,127 do
   for y=0,127 do
    if pget(x,y)~=0 then
     pset(x,y,7)
    end
   end
+ end--]]
+ rev_strawbs={}
+ local strawbs=levels[leveln][5]
+ for s=1,#strawbs do
+  if not rev_strawbs[strawbs[s][1]] then
+   rev_strawbs[strawbs[s][1]]={}
+  end
+  rev_strawbs[strawbs[s][1]][strawbs[s][2]]=true
  end
  local nextc=8
  slices={}
- for x=0,127 do
-  for y=0,127 do
+ for x=cakex,cakex+cakesize do
+  for y=cakey,cakey+cakesize do
    if pget(x,y)==7 then
     local area=1
     local strawbs=0
@@ -321,16 +328,26 @@ function calculate_slices()
    	  end
    	 end
    	end
-   	nextc+=1
-   	if (nextc==0 or next==7) nextc+=1
-   	add(slices,{area,strawbs,area+strawbs*strawb_weight})
+   	add(slices,{area,strawbs,area+strawbs*strawb_weight,nextc})
+   	nextc=next_colour(nextc)
    end
   end
  end
+ local to_rem={}
+ for s=1,#slices do
+  if slices[s][1]<=10 then
+   add(to_rem,slices[s])
+  end
+ end
+ for r=1,#to_rem do
+  del(slices,to_rem[r])
+ end
+ 
  slice_total=0
  for s=1,#slices do
   slice_total+=slices[s][3]
  end
+ 
 end
 
 function slices_equal()
