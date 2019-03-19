@@ -272,7 +272,7 @@ function end_transition_draw()
 end
 
 -->8
---slice stuff
+-- slice stuff
 
 slices={}
 
@@ -346,7 +346,7 @@ function slices_equal()
 end
 
 -->8
---levels
+-- levels
 
 leveln=0
 
