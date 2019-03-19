@@ -10,7 +10,10 @@ __lua__
 function _init()
  poke(0x5f34, 1)
  menuitem(1,"toggle debug", function() debug=not debug end)
- change_mode("level")
+ change_mode("title")
+ 
+ --temp level design mouse
+ poke(0x5f2d,1)
 end
 
 -- change mode should be reentrant if called from init
@@ -165,6 +168,9 @@ function draw()
  color(7)
  fillp(0)
  debug_print_slices()
+ -- temp level design mouse
+ print("\n"..stat(32)..","..stat(33))
+ spr(11,stat(32)-3,stat(33)-3)
 end
 
 --debug=true
@@ -268,6 +274,33 @@ function end_transition_draw()
  end
 end
 
+function title_init()
+ next_level()
+end
+
+function print_bolded(s,x,y)
+ print(s,x-1,y,0)
+ print(s,x+1,y,0)
+ print(s,x,y-1,0)
+ print(s,x,y+1,0)
+ print(s,x,y,7)
+end
+
+function title_draw()
+ cls()
+ draw_bg()
+ draw_cake()
+ print_bolded("super cake cutter",30,10)
+ print_bolded("press ❎ or 🅾️ to start",20,115)
+end
+
+function title_update()
+ update_bg()
+ if btnp(4) or btnp(5) then
+  change_mode("level")
+ end
+end
+
 -->8
 -- slice stuff
 
@@ -367,7 +400,36 @@ end
 
 leveln=0
 
+l1_strawbs={}
+for i=1,5 do
+ local ang=i*1/8-1/16
+ add(l1_strawbs,{54+23*cos(ang),54+23*sin(ang)})
+end
+for i=6,8 do
+ local ang=i*1/8-1/16
+ add(l1_strawbs,{64+23*cos(ang),64+23*sin(ang)})
+end
+
 levels={
+ {
+  function() 
+   for x=cakex,cakex+cakesize do
+    for y=cakey,cakey+cakesize do
+     if abs(x-54)^2+abs(y-54)^2<30^2 and atan2(x-54,y-54)<0.625 then
+      pset(x,y,7)
+     end
+     
+     if abs(x-64)^2+abs(y-64)^2<30^2 and atan2(x-65,y-64)>=0.625 then
+      pset(x,y,7)
+     end
+    end
+   end
+  end,
+  1,
+  2,
+  {5,8,8,9,9,10,10,3,3,12,12,1,1,2,2},
+  l1_strawbs,
+ },
  {
   function() circfill(64,64,30,7) end,
   1,
@@ -399,6 +461,11 @@ levels={
 -- mode definitions
 
 modes={
+ title={
+  init=title_init,
+  update=title_update,
+  draw=title_draw,
+ },
  level={
   init=next_level,
   update=update,
