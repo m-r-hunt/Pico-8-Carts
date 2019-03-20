@@ -318,10 +318,10 @@ function level_intro_draw()
  draw_bg()
  draw_cake()
  rectfill(0,50,level_intro_timer*3,78,12)
- local x=max(128-level_intro_timer*2,20)
- print_bolded("level "..leveln-1,x+30,55)
+ local x=max(128-level_intro_timer*2,15)
+ print_bolded("level "..leveln-1,x+35,55)
  local level=levels[leveln]
- print_bolded("cut into "..level[3].." with "..level[2].." cuts",x,70)
+ print_bolded("divide into "..level[3].." with "..level[2].." cuts",x,70)
 end
 
 -->8
