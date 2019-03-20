@@ -2,10 +2,7 @@ pico-8 cartridge // http://www.pico-8.com
 version 16
 __lua__
 -- todo
--- * display cuts and slices
--- * nice level intro
 -- * particle effects on cut
--- * knife on cuts
 
 function _init()
  poke(0x5f34, 1)
@@ -69,7 +66,7 @@ function click_for_next()
  update_bg()
 	if btnp(4) or btnp(5) then
 	 if (fail_reason) leveln-=1
-	 change_mode("level")
+	 change_mode("level_intro")
 	end
 end
 
@@ -297,8 +294,34 @@ end
 function title_update()
  update_bg()
  if btnp(4) or btnp(5) then
+  change_mode("level_intro")
+ end
+end
+
+level_intro_timer=0
+
+function level_intro_init()
+ next_level()
+ level_intro_timer=0
+end
+
+function level_intro_update()
+ update_bg()
+ level_intro_timer+=1
+ if level_intro_timer>=150 or btnp(4) or btnp(5) then
   change_mode("level")
  end
+end
+
+function level_intro_draw()
+ cls()
+ draw_bg()
+ draw_cake()
+ rectfill(0,50,level_intro_timer*3,78,12)
+ local x=max(128-level_intro_timer*2,20)
+ print_bolded("level "..leveln-1,x+30,55)
+ local level=levels[leveln]
+ print_bolded("cut into "..level[3].." with "..level[2].." cuts",x,70)
 end
 
 -->8
@@ -466,8 +489,12 @@ modes={
   update=title_update,
   draw=title_draw,
  },
+ level_intro={
+  init=level_intro_init,
+  update=level_intro_update,
+  draw=level_intro_draw,
+ },
  level={
-  init=next_level,
   update=update,
   draw=draw
  },
