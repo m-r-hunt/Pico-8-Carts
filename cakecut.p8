@@ -29,7 +29,7 @@ function next_level()
  fail_reason=nil
  cutn=0
 	leveln+=1
-	if not levels[leveln] then
+	if leveln>=#levels then
 	 change_mode("final")
 	else
   cls()
@@ -225,11 +225,27 @@ function failure()
  debug_print_slices()
 end
 
+function final_init()
+ leveln=#levels
+ cls()
+ levels[leveln][1]()
+ copy_to_memory()
+end
+
 function final_update()
+ update_bg()
+ if btnp(4) or btnp(5) then
+  change_mode("title")
+ end
 end
 
 function final_draw()
- print("wew lad. you finished all the levels.")
+ cls()
+ draw_bg()
+ draw_cake()
+ print_bolded("congratulations",35,10)
+ print_bolded("you cut all the cakes",25,20)
+ print_bolded("❎ or 🅾️ to return to title",10,120)
 end
 
 end_trans_timer=0
@@ -272,6 +288,7 @@ function end_transition_draw()
 end
 
 function title_init()
+ leveln=0
  next_level()
 end
 
@@ -478,6 +495,19 @@ levels={
   {5,15,15,15,15,15,10,10,15,15,15,15,15,10},
   {{40,60}},
  },
+ {
+  function()
+   circfill(64,74,30,7)
+   circfill(64,74,20,0)
+   rectfill(34,44,94,74,0)
+   circfill(47,50,10,7)
+   circfill(82,50,10,7)
+  end,
+  0,
+  0,
+  {1,1,1,1,3,3,3,3,11,11,11,11},
+  {{47,50},{82,50}},
+ },
 }
 
 -->8
@@ -512,6 +542,7 @@ modes={
   draw=end_transition_draw
  },
  final={
+  init=final_init,
   update=final_update,
   draw=final_draw
  },
