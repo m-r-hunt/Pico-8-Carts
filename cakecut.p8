@@ -13,13 +13,24 @@ function _init()
  poke(0x5f2d,1)
 end
 
+function _update()
+ update_bg()
+ update_particles()
+ modes[mode].update()
+end
+
+function _draw()
+ cls()
+ draw_bg()
+ modes[mode].draw()
+ draw_particles()
+end
+
 -- change mode should be reentrant if called from init
 -- i may need to rethink this
 -- this works as long as init is called last
 function change_mode(m)
  mode=m
- _update=modes[mode].update
- _draw=modes[mode].draw
  if modes[mode].init then
   modes[mode].init()
  end
@@ -63,7 +74,6 @@ function copy_to_memory()
 end
 
 function click_for_next()
- update_bg()
 	if btnp(4) or btnp(5) then
 	 if (fail_reason) leveln-=1
 	 change_mode("level_intro")
@@ -78,7 +88,6 @@ function update_bg()
 end
 
 function update()
- update_bg()
  local p=ps[pselected]
  if (btn(0)) p[1]-=pspeed
  if (btn(1)) p[1]+=pspeed
@@ -144,9 +153,6 @@ function draw_bg()
 end
 
 function draw()
- cls()
- fillp()
- draw_bg()
  color(7)
  draw_cake()
  local level=levels[leveln]
@@ -196,8 +202,6 @@ function draw_result_table()
 end
 
 function victory()
- cls()
- draw_bg()
  copy_to_screen(23)
  local strawbs=levels[leveln][5]
  for s=1,#strawbs do
@@ -211,8 +215,6 @@ function victory()
 end
 
 function failure()
- cls()
- draw_bg()
  copy_to_screen(23)
  local strawbs=levels[leveln][5]
  for s=1,#strawbs do
@@ -230,18 +232,22 @@ function final_init()
  cls()
  levels[leveln][1]()
  copy_to_memory()
+ final_timer=31
 end
 
 function final_update()
- update_bg()
+ final_timer+=1
+ if final_timer>30 then
+  particle_burst(30,10)
+  particle_burst(98,10)
+  final_timer=0
+ end
  if btnp(4) or btnp(5) then
   change_mode("title")
  end
 end
 
 function final_draw()
- cls()
- draw_bg()
  draw_cake()
  print_bolded("congratulations",35,10)
  print_bolded("you cut all the cakes",25,20)
@@ -256,7 +262,6 @@ function end_transition_init()
 end
 
 function end_transition_update()
-update_bg()
  end_trans_timer+=1
  if end_trans_timer>=60 or btnp(4) or btnp(5) then
   change_mode(end_trans_next)
@@ -264,9 +269,6 @@ update_bg()
 end
 
 function end_transition_draw()
- cls()
- fillp()
- draw_bg()
  color(7)
  if end_trans_timer<=15 then
   draw_cake()
@@ -301,15 +303,12 @@ function print_bolded(s,x,y)
 end
 
 function title_draw()
- cls()
- draw_bg()
  draw_cake()
  print_bolded("super cake cutter",30,10)
  print_bolded("press ❎ or 🅾️ to start",20,115)
 end
 
 function title_update()
- update_bg()
  if btnp(4) or btnp(5) then
   change_mode("level_intro")
  end
@@ -323,7 +322,6 @@ function level_intro_init()
 end
 
 function level_intro_update()
- update_bg()
  level_intro_timer+=1
  if level_intro_timer>=150 or btnp(4) or btnp(5) then
   change_mode("level")
@@ -331,8 +329,6 @@ function level_intro_update()
 end
 
 function level_intro_draw()
- cls()
- draw_bg()
  draw_cake()
  rectfill(0,50,level_intro_timer*3,78,12)
  local x=max(128-level_intro_timer*2,15)
@@ -547,6 +543,43 @@ modes={
   draw=final_draw
  },
 }
+
+-->8
+-- particles
+
+particles={}
+
+gravity=0.5
+
+function update_particles()
+ local rem={}
+ for p=1,#particles do
+  local p=particles[p]
+  p.dy+=gravity
+  p.x+=p.dx
+  p.y+=p.dy
+  if p.x<0 or p.x>128 or p.y>128 then
+   add(rem,p)
+  end
+ end
+ for r=1,#rem do
+  del(particles,rem[r])
+ end
+end
+
+function draw_particles()
+ for p=1,#particles do
+  local p=particles[p]
+  pset(p.x,p.y,p.c)
+ end
+end
+
+function particle_burst(x,y)
+ local num=10+rnd(40)
+ for n=1,num do
+  add(particles,{x=x,y=y,dx=rnd(2)-1,dy=rnd(6)-6,c=6+rnd(7)})
+ end
+end
 
 __gfx__
 888888888888888888888888888888888888888888888888888888888888888888888888888888880010000000080000ddddddddeeeeeeee0088880000000000
