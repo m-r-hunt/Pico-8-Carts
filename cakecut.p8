@@ -12,11 +12,11 @@ __lua__
 
 function _init()
  poke(0x5f34, 1)
- menuitem(1,"toggle debug", function() debug=not debug end)
+ menuitem(5,"toggle debug", function() 
+  debug=not debug
+  poke(0x5f2d,1-peek(0x5f2d))
+ end)
  change_mode("title")
- 
- --temp level design mouse
- poke(0x5f2d,1)
 end
 
 function _update()
@@ -195,9 +195,11 @@ function draw()
  color(7)
  fillp(0)
  debug_print_slices()
- -- temp level design mouse
- print("\n"..stat(32)..","..stat(33))
- spr(11,stat(32)-3,stat(33)-3)
+ if debug then
+  -- temp level design mouse
+  print("\n"..stat(32)..","..stat(33))
+  spr(11,stat(32)-3,stat(33)-3)
+ end
 end
 
 --debug=true
