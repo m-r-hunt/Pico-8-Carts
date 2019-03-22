@@ -3,6 +3,12 @@ version 16
 __lua__
 -- todo
 -- * particle effects on cut
+-- * add level select
+-- * save levels completed
+-- * candles for endscreen w/ smoke particle effect
+-- * proper menus with selection for title and post-level
+-- * quit to menu and restart in pause menu
+-- * title screen animation before menu
 
 function _init()
  poke(0x5f34, 1)
@@ -30,6 +36,9 @@ end
 -- i may need to rethink this
 -- this works as long as init is called last
 function change_mode(m)
+ if modes[mode] and modes[mode].leave then
+  modes[mode].leave()
+ end
  mode=m
  if modes[mode].init then
   modes[mode].init()
@@ -85,6 +94,21 @@ function update_bg()
  bg[2]+=bgdx[2]
  bg[1]=bg[1]%128
  bg[2]=bg[2]%128
+end
+
+function level_init()
+ menuitem(1,"quit to menu",function()
+  change_mode("title")
+ end)
+ menuitem(2,"restart",function()
+  leveln-=1
+  change_mode("level_intro")
+ end)
+end
+
+function level_leave()
+ menuitem(1)
+ menuitem(2)
 end
 
 function update()
@@ -353,7 +377,8 @@ slices={}
 strawb_weight=150
 
 function has_strawb(x,y)
- return rev_strawbs[x] and rev_strawbs[x][y]
+ local strawbs=levels[leveln][5]
+ return strawbs.rev[x] and strawbs.rev[x][y]
 end
 
 function calculate_slices()
@@ -364,14 +389,6 @@ function calculate_slices()
    end
   end
  end--]]
- rev_strawbs={}
- local strawbs=levels[leveln][5]
- for s=1,#strawbs do
-  if not rev_strawbs[strawbs[s][1]] then
-   rev_strawbs[strawbs[s][1]]={}
-  end
-  rev_strawbs[strawbs[s][1]][strawbs[s][2]]=true
- end
  local nextc=8
  slices={}
  for x=cakex,cakex+cakesize do
@@ -436,6 +453,18 @@ end
 
 leveln=0
 
+function strawbs(strawbs)
+ local rev_strawbs={}
+ for s=1,#strawbs do
+  if not rev_strawbs[strawbs[s][1]] then
+   rev_strawbs[strawbs[s][1]]={}
+  end
+  rev_strawbs[strawbs[s][1]][strawbs[s][2]]=true
+ end
+ strawbs.rev=rev_strawbs
+ return strawbs
+end
+
 l1_strawbs={}
 for i=1,5 do
  local ang=i*1/8-1/16
@@ -444,6 +473,7 @@ end
 for i=6,8 do
  local ang=i*1/8-1/16
  add(l1_strawbs,{64+23*cos(ang),64+23*sin(ang)})
+ l1_strawbs=strawbs(l1_strawbs)
 end
 
 levels={
@@ -471,7 +501,7 @@ levels={
   1,
   2,
   {5,15,15,15,15,15,8,15,15,15,15,15},
-  {},
+  strawbs{},
  },
  {
   function()
@@ -482,14 +512,14 @@ levels={
   2,
   3,
   {5,15,15,15,14,14,14,4,4,4},
-  {},
+  strawbs{},
  },
  {
   function() rectfill(32,50,96,70,7) end,
   2,
   3,
   {5,15,15,15,15,15,10,10,15,15,15,15,15,10},
-  {{40,60}},
+  strawbs{{40,60}},
  },
  {
   function()
@@ -502,7 +532,7 @@ levels={
   0,
   0,
   {1,1,1,1,3,3,3,3,11,11,11,11},
-  {{47,50},{82,50}},
+  strawbs{{47,50},{82,50}},
  },
 }
 
@@ -521,8 +551,10 @@ modes={
   draw=level_intro_draw,
  },
  level={
+  init=level_init,
   update=update,
-  draw=draw
+  draw=draw,
+  leave=level_leave,
  },
  victory={
   update=click_for_next,
