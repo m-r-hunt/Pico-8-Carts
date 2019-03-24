@@ -128,6 +128,7 @@ function update()
   cls()
   copy_to_screen()
   line(x,y,x2,y2,0)
+  particle_cut_line(x,y,x2,y2)
   copy_to_memory()
   cutn+=1
   local level=levels[leveln]
@@ -614,6 +615,17 @@ function particle_burst(x,y)
   add(particles,{x=x,y=y,dx=rnd(2)-1,dy=rnd(6)-6,c=6+rnd(7)})
  end
 end
+
+function particle_cut_line(x,y,x2,y2)
+ local num=10+rnd(10)
+ for n=1,num do
+  local t=rnd(1)
+  local x=x+(x2-x)*t
+  local y=y+(y2-y)*t
+  add(particles,{x=x,y=y,dx=0,dy=0,c=4})
+ end
+end
+
 
 __gfx__
 888888888888888888888888888888888888888888888888888888888888888888888888888888880010000000080000ddddddddeeeeeeee0088880000000000
