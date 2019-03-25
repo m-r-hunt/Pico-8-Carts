@@ -182,9 +182,9 @@ function draw()
  draw_cake()
  local level=levels[leveln]
  spr(26,2,2)
- print(#slices.."/"..level[3],11,4)
+ print_bolded(#slices.."/"..level[3],12,4)
  spr(27,2,11)
- print(cutn.."/"..level[2],11,13)
+ print_bolded(cutn.."/"..level[2],12,13)
  local x=ps[pselected][1]
  local y=ps[pselected][2]
  local x2=ps[pselected%#ps+1][1]
@@ -276,9 +276,9 @@ end
 
 function final_draw()
  draw_cake()
- print_bolded("congratulations",35,10)
- print_bolded("you cut all the cakes",25,20)
- print_bolded("❎ or 🅾️ to return to title",10,120)
+ print_bolded_centered("congratulations",10)
+ print_bolded_centered("you cut all the cakes",20)
+ print_bolded_centered("❎ or 🅾️ to return to title",120)
 end
 
 end_trans_timer=0
@@ -329,9 +329,17 @@ function print_bolded(s,x,y)
  print(s,x,y,7)
 end
 
+function text_centered_x(s)
+ return 128/2-#s*2
+end
+
+function print_bolded_centered(s,y)
+ print_bolded(s,text_centered_x(s),y)
+end
+
 function title_draw()
  draw_cake()
- print_bolded("super cake cutter",30,10)
+ print_bolded_centered("super cake cutter",10)
  print_bolded("press ❎ or 🅾️ to start",20,115)
 end
 
