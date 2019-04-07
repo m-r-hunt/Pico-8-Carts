@@ -1,13 +1,8 @@
 pico-8 cartridge // http://www.pico-8.com
 version 16
 __lua__
--- todo
--- * add level select
--- * save levels completed
--- * candles for endscreen w/ smoke particle effect
--- * proper menus with selection for title and post-level
--- * title screen animation before menu
--- * first help, control ref, strawb help
+-- super cake cutter v1.0
+--(c) 2019 max hunt (cc by-sa)
 
 function _init()
  poke(0x5f34, 1)
@@ -198,7 +193,7 @@ function draw()
  color(7)
  fillp(0)
  print_bolded("⬆️⬇️⬅️➡️:move cursor",25,110)
- print_bolded("❎:cut 🅾️:swap",37,120)
+ print_bolded("🅾️:cut ❎:swap",37,120)
  
  debug_print_slices()
  if debug then
