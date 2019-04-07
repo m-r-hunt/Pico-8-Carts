@@ -15,7 +15,10 @@ function _init()
   debug=not debug
   poke(0x5f2d,1-peek(0x5f2d))
  end)
- change_mode("title")
+ --change_mode("title")
+
+ leveln=4
+ change_mode("level_intro")
 end
 
 function _update()
@@ -194,6 +197,9 @@ function draw()
  local col=8
  color(7)
  fillp(0)
+ print_bolded("⬆️⬇️⬅️➡️:move cursor",25,110)
+ print_bolded("❎:cut 🅾️:swap",37,120)
+ 
  debug_print_slices()
  if debug then
   -- temp level design mouse
@@ -469,8 +475,6 @@ end
 -->8
 -- levels
 
-leveln=0
-
 function strawbs(strawbs)
  local rev_strawbs={}
  for s=1,#strawbs do
@@ -522,6 +526,13 @@ levels={
   strawbs{},
  },
  {
+  function() circfill(64,64,30,7) end,
+  5,
+  5,
+  {5,4,4,4,4,5,5,4,4,4,4,5,5,4,4,4,4},
+  strawbs{},
+ },
+ {
   function()
    circfill(50,64,20,7)
    circfill(78,64,20,7)
@@ -533,11 +544,46 @@ levels={
   strawbs{},
  },
  {
+  function()
+   rectfill(54,34,74,94,7)
+   rectfill(34,54,94,74,7)
+   pset(54,34,0)
+   pset(54,94,0)
+   pset(74,34,0)
+   pset(74,94,0)
+   pset(34,54,0)
+   pset(94,54,0)
+   pset(34,74,0)
+   pset(94,74,0)
+  end,
+  3,
+  6,
+  {5,8,8,8,8,6,6,6,8,8,8,8},
+  strawbs{},
+ },
+ 
+ --strawberry levels
+ {
   function() rectfill(32,50,96,70,7) end,
   2,
   3,
   {5,15,15,15,15,15,10,10,15,15,15,15,15,10},
   strawbs{{40,60}},
+ },
+ {
+  function() 
+   for y=1,40 do
+    local yy=40+y
+    for x=-y,y do
+     local xx=64+x
+     pset(xx,yy,7)
+    end
+   end
+  end,
+  3,
+  4,
+  {5,4,4,4,4,4,4,4,3,11,11},
+  strawbs{{64,45},{34,75},{94,75}},
  },
  {
   function()
