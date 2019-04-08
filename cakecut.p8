@@ -463,7 +463,7 @@ end
 
 function slices_equal()
  local target=slice_total/#slices
-	local allowed_variance=slice_total/10
+	local allowed_variance=slice_total/20
 	local all_ok=true
 	for i=1,#slices do
 	 if abs(slices[i][3]-target)>allowed_variance then
