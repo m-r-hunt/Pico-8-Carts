@@ -3,6 +3,7 @@ version 16
 __lua__
 -- super cake cutter v1.0
 --(c) 2019 max hunt (cc by-sa)
+--music credit: autumn wind by gruber (cc4-by-nc-sa)
 
 function _init()
  poke(0x5f34, 1)
