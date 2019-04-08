@@ -7,14 +7,11 @@ __lua__
 
 function _init()
  poke(0x5f34, 1)
- menuitem(5,"toggle debug", function() 
+ --[[menuitem(5,"toggle debug", function() 
   debug=not debug
   poke(0x5f2d,1-peek(0x5f2d))
- end)
- --change_mode("title")
-
- leveln=1
- change_mode("level_intro")
+ end)--]]
+ change_mode("title")
  
  music(10)
 end
@@ -503,6 +500,7 @@ for i=6,8 do
 end
 
 levels={
+ --title screen "level"
  {
   function() 
    for x=cakex,cakex+cakesize do
@@ -522,6 +520,8 @@ levels={
   {5,8,8,9,9,10,10,3,3,12,12,1,1,2,2},
   l1_strawbs,
  },
+ 
+ --basic levels
  {
   function() circfill(64,64,30,7) end,
   1,
@@ -533,7 +533,7 @@ levels={
   function() circfill(64,64,30,7) end,
   5,
   5,
-  {5,4,4,4,4,5,5,4,4,4,4,5,5,4,4,4,4},
+  {5,4,4,4,5,5,4,4,4,4},
   strawbs{},
  },
  {
@@ -605,6 +605,70 @@ levels={
   {5,4,4,4,4,4,4,4,3,11,11},
   strawbs{{64,45},{34,75},{94,75}},
  },
+ {
+  function() circfill(64,64,30,7) end,
+  5,
+  5,
+  {5,4,4,4,5,5,4,4,4,4},
+  strawbs{{64,40},{64,88},{40,64},{88,64}},
+ },
+ {
+  function()
+   rectfill(30,30,50,98,7)
+   rectfill(50,50,78,78,7)
+   rectfill(78,30,98,98,7)
+  end,
+  2,
+  3,
+  {5,4,4,4,5,5,4,4,4,4},
+  strawbs{{64,64},{40,64},{88,64}},
+ },
+ {
+  function()
+   camera(-24,-24)
+   line(40,1,51,30,7)
+   line(51,30,80,31,7)
+   line(79,31,56,50,7)
+   line(56,50,65,80,7)
+   line(65,79,40,64,7)
+   
+   line(40,1,29,30,7)
+   line(29,30,1,31,7)
+   line(1,31,24,50,7)
+   line(24,50,15,80,7)
+   line(15,79,40,64,7)
+   
+   camera()
+   local q={{64,64}}
+   pset(64,64,7)
+   while #q>0 do
+    local c=q[1]
+    del(q,c)
+    if pget(c[1]-1,c[2])~=7 then
+     pset(c[1]-1,c[2],7)
+     add(q,{c[1]-1,c[2]})
+    end
+    if pget(c[1]+1,c[2])~=7 then
+     pset(c[1]+1,c[2],7)
+     add(q,{c[1]+1,c[2]})
+    end
+    if pget(c[1],c[2]-1)~=7 then
+     pset(c[1],c[2]-1,7)
+     add(q,{c[1],c[2]-1})
+    end
+    if pget(c[1],c[2]+1)~=7 then
+     pset(c[1],c[2]+1,7)
+     add(q,{c[1],c[2]+1})
+    end
+   end
+  end,
+  1,
+  2,
+  {5,8,8,9,9,10,10,3,3,12,12,1,1,2,2},
+  strawbs{{64,64}}
+ },
+ 
+ --end screen "level"
  {
   function()
    circfill(64,74,30,7)
