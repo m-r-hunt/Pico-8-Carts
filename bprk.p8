@@ -10,7 +10,13 @@ piece_defs={
  {{0,0},{1,0},{1,1},spriten=3,previewc=3},
  {{0,0},{1,0},{1,1},{2,1},spriten=7,previewc=12},
  {{0,0},{1,0},{0,1},{1,1},spriten=7,previewc=12},
+ {{0,1},{1,1},{1,0},{2,0},spriten=7,previewc=12},
 }
+
+mountain={1}
+sand={2}
+forest={3,4}
+ocean={5,6}
 
 mode="piece select"
 selected_piece=1
@@ -24,13 +30,17 @@ grid={
  {0,0,0,0},
 }
 grid_powerups={
- {0,0,0,6},
- {0,1,0,0},
- {0,0,2,0},
- {0,3,0,0},
+ {0,0,0,ocean},
+ {0,mountain,0,0},
+ {0,0,sand,0},
+ {0,forest,0,0},
 }
 gridx=30
 gridy=20
+
+choices={}
+choicen=1
+choice_select=1
 
 function rotate(x,y,r)
  if r==0 then
@@ -55,6 +65,8 @@ function _update()
   update_piece_select()
  elseif mode=="piece place" then
   update_piece_place()
+ elseif mode=="make choices" then
+  update_make_choices()
  end
 end
 
@@ -97,8 +109,14 @@ function update_piece_place()
 	if btnp(4) then
 	 can_place=check_placement()
 	 if can_place then
-	 	stamp_piece(selected_piece,px,py)
-	 	mode="piece select"
+	 	choices=stamp_piece(selected_piece,px,py)
+	 	if #choices>0 then
+				choicen=1
+				choice_select=1
+	 		mode="make choices"
+	 	else
+	 		mode="piece select"
+	 	end
 	 	selected_piece=1
 	 	px=1
 	 	py=1
@@ -109,8 +127,22 @@ function update_piece_place()
 	end
 end
 
+function update_make_choices()
+ if (btnp(0)) choice_select-=1
+ if (btnp(1)) choice_select+=1
+ if (choicen<1) choice_select+=#choices[choicen]
+ if (choicen>#choices[choicen]) choice_select-=#choices[choicen]
+ if btnp(4) then
+  piece_pool[choices[choicen][choice_select]]+=1
+  choicen+=1
+  if choicen>#choices then
+   mode="piece select"
+  end
+ end
+end
+
 function check_placement()
- any_bad=false
+ local any_bad=false
  local i=selected_piece
  for sq=1,#piece_defs[i] do
   rx,ry=rotate(piece_defs[i][sq][1],piece_defs[i][sq][2],pr)
@@ -125,6 +157,7 @@ end
 
 function stamp_piece(i,x,y)
  piece_pool[i]-=1
+ local choices={}
 	for sq=1,#piece_defs[i] do
 	 rx,ry=rotate(piece_defs[i][sq][1],piece_defs[i][sq][2],pr)
  	local px=x+rx
@@ -132,10 +165,15 @@ function stamp_piece(i,x,y)
  	if px>=1 and px<=4 and py>=1 and py<=4 then
  		grid[py][px]=piece_defs[i].spriten
 	 	if grid_powerups[py][px]~=0 then
-	 		piece_pool[grid_powerups[py][px]]+=1
+	 	 if #grid_powerups[py][px]==1 then
+	 			piece_pool[grid_powerups[py][px][1]]+=1
+	 		else
+	 		 add(choices,grid_powerups[py][px])
+	 		end
 	 	end
  	end
  end
+ return choices
 end
 
 preview_size=4
@@ -199,7 +237,7 @@ function _draw()
  	 if (sn==0) sn=32
  		spr(sn,gridx+x*16,gridy+y*16,2,2)
  		if sn==32 and grid_powerups[y][x]~=0 then
- 		 draw_piece_preview(grid_powerups[y][x],gridx+x*16+6,gridy+y*16+6)
+ 		 draw_piece_preview(grid_powerups[y][x][1],gridx+x*16+6,gridy+y*16+6)
  		end
  	end
  end
@@ -207,6 +245,17 @@ function _draw()
  line(gridx+5*16,gridy+16,gridx+5*16,gridy+5*16,4)
  draw_piece(selected_piece,gridx+px*16-2,gridy+py*16-2)
  rect(gridx+px*16,gridy+py*16,gridx+px*16+2,gridy+py*16+2,4)
+ 
+ if mode=="make choices" then
+ 	rect(5,30,128-5,60,12)
+ 	rectfill(6,31,128-6,59,6)
+ 	for n=1,#choices[choicen] do
+ 	 draw_piece_preview(choices[choicen][n],n*32,45)
+ 	 if n==choice_select then
+ 	  spr(2,n*32+8,40)
+ 	 end
+ 	end
+ end
 end
 
 __gfx__
