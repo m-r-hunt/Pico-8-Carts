@@ -4,11 +4,12 @@ __lua__
 piece_pool={}
 
 piece_defs={
- {{0,0},spriten=1},
- {{0,0},{1,0},spriten=1},
- {{0,0},{1,0},{2,0},spriten=1},
- {{0,0},{1,0},{1,1},spriten=1},
- {{0,0},{1,0},{1,1},{2,1},spriten=1},
+ {{0,0},spriten=9,previewc=6},
+ {{0,0},{1,0},spriten=5,previewc=10},
+ {{0,0},{1,0},{2,0},spriten=3,previewc=3},
+ {{0,0},{1,0},{1,1},spriten=3,previewc=3},
+ {{0,0},{1,0},{1,1},{2,1},spriten=7,previewc=12},
+ {{0,0},{1,0},{0,1},{1,1},spriten=7,previewc=12},
 }
 
 mode="piece select"
@@ -22,8 +23,14 @@ grid={
  {0,0,0,0},
  {0,0,0,0},
 }
-gridx=40
-gridy=40
+grid_powerups={
+ {0,0,0,6},
+ {0,1,0,0},
+ {0,0,2,0},
+ {0,3,0,0},
+}
+gridx=30
+gridy=20
 
 function rotate(x,y,r)
  if r==0 then
@@ -64,7 +71,11 @@ function update_piece_select()
  end
  
  if btnp(4) then
-  mode="piece place"
+  if piece_pool[selected_piece]>=1 then
+  	mode="piece place"
+  else
+   --feedback?
+  end
  end
 end
 
@@ -84,34 +95,58 @@ function update_piece_place()
 	end
 	
 	if btnp(4) then
-	 stamp_piece(selected_piece,px,py)
-	 mode="piece select"
-	 selected_piece=1
-	 px=1
-	 py=1
+	 can_place=check_placement()
+	 if can_place then
+	 	stamp_piece(selected_piece,px,py)
+	 	mode="piece select"
+	 	selected_piece=1
+	 	px=1
+	 	py=1
+	 	pr=0
+	 else
+	 	--feedback?
+	 end
 	end
 end
 
+function check_placement()
+ any_bad=false
+ local i=selected_piece
+ for sq=1,#piece_defs[i] do
+  rx,ry=rotate(piece_defs[i][sq][1],piece_defs[i][sq][2],pr)
+  local x=px+rx
+  local y=py+ry
+  if x<1 or x>4 or y<1 or y>4 or grid[y][x]~=0 then
+   any_bad=true
+  end
+ end
+ return not any_bad
+end
+
 function stamp_piece(i,x,y)
+ piece_pool[i]-=1
 	for sq=1,#piece_defs[i] do
 	 rx,ry=rotate(piece_defs[i][sq][1],piece_defs[i][sq][2],pr)
  	local px=x+rx
  	local py=y+ry
  	if px>=1 and px<=4 and py>=1 and py<=4 then
  		grid[py][px]=piece_defs[i].spriten
+	 	if grid_powerups[py][px]~=0 then
+	 		piece_pool[grid_powerups[py][px]]+=1
+	 	end
  	end
  end
 end
 
 preview_size=4
 
-function draw_piece_preview(i,ybase)
+function draw_piece_preview(i,xbase,ybase)
  for sq=1,#piece_defs[i] do
 	 local px=piece_defs[i][sq][1]
  	local py=piece_defs[i][sq][2]
- 	local x=5+px*preview_size
+ 	local x=xbase+px*preview_size
  	local y=ybase+py*preview_size
- 	rectfill(x,y,x+preview_size,y+preview_size,3)
+ 	rectfill(x,y,x+preview_size,y+preview_size,piece_defs[i].previewc)
  	rect(x,y,x+preview_size,y+preview_size,1)
  end
 end
@@ -135,15 +170,15 @@ function draw_piece(i,bx,by)
 	for sq=1,#transformed do
 	 local rx=transformed[sq][1]
 	 local ry=transformed[sq][2]
-	 col=3
-	 if px+rx<1 or px+rx>4 or py+ry<1 or py+ry>4 then
+	 col=piece_defs[i].previewc
+	 if px+rx<1 or px+rx>4 or py+ry<1 or py+ry>4 or grid[py+ry][px+rx]~=0 then
 	  col=8
 	 end
- 	local x=bx+rx*8
- 	local y=by+ry*8
- 	rectfill(x+1,y+1,x+9,y+9,0)
- 	rectfill(x,y,x+8,y+8,col)
- 	rect(x,y,x+8,y+8,1)
+ 	local x=bx+rx*16
+ 	local y=by+ry*16
+ 	rectfill(x+1,y+1,x+17,y+17,0)
+ 	rectfill(x,y,x+16,y+16,col)
+ 	rect(x,y,x+16,y+16,1)
  end
 end
 
@@ -152,7 +187,7 @@ function _draw()
  print(mode,2,2,2)
  for i=1,#piece_pool do
   local ybase=10*(i)+4
- 	draw_piece_preview(i,ybase)
+ 	draw_piece_preview(i,5,ybase)
  	print(piece_pool[i],1,ybase)
  	if i==selected_piece then
  		spr(2,20,ybase)
@@ -160,11 +195,18 @@ function _draw()
  end
  for y=1,4 do
  	for x=1,4 do
- 		spr(grid[y][x],gridx+x*8,gridy+y*8)
+ 	 sn=grid[y][x]
+ 	 if (sn==0) sn=32
+ 		spr(sn,gridx+x*16,gridy+y*16,2,2)
+ 		if sn==32 and grid_powerups[y][x]~=0 then
+ 		 draw_piece_preview(grid_powerups[y][x],gridx+x*16+6,gridy+y*16+6)
+ 		end
  	end
  end
- draw_piece(selected_piece,gridx+px*8-3,gridy+py*8-3)
- rect(gridx+px*8,gridy+py*8,gridx+px*8+2,gridy+py*8+2,4)
+ line(gridx+16,gridy+5*16,gridx+5*16,gridy+5*16,4)
+ line(gridx+5*16,gridy+16,gridx+5*16,gridy+5*16,4)
+ draw_piece(selected_piece,gridx+px*16-2,gridy+py*16-2)
+ rect(gridx+px*16,gridy+py*16,gridx+px*16+2,gridy+py*16+2,4)
 end
 
 __gfx__
@@ -184,6 +226,22 @@ __gfx__
 4000000000000000000000004354453333333333499ffffffffff9994cccccdddddddccc46655555555555660000000000000000000000000000000000000000
 400000000000000000000000433333333333333349999999999999994c77cccccccccccc46555566666655560000000000000000000000000000000000000000
 400000000000000000000000433333333333333349999999999999994ccccccccccccccc46556666666666550000000000000000000000000000000000000000
+44444444444444440000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+42ddddddddddddd20000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+4ddddddddddddddd0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+4ddddddddddddddd0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+4ddddddddddddddd0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+4ddddddddddddddd0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+4ddddddddddddddd0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+4ddddddddddddddd0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+4ddddddddddddddd0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+4ddddddddddddddd0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+4ddddddddddddddd0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+4ddddddddddddddd0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+4ddddddddddddddd0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+4ddddddddddddddd0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+4ddddddddddddddd0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+42ddddddddddddd20000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 __map__
 03040304090a090a100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 13141314191a191a100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
