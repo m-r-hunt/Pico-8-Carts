@@ -6,21 +6,27 @@ piece_pool={}
 piece_defs={
  {{0,0},spriten=9,previewc=6},
  {{0,0},{1,0},spriten=5,previewc=10},
+
  {{0,0},{1,0},{2,0},spriten=3,previewc=3},
  {{0,0},{1,0},{1,1},spriten=3,previewc=3},
+
  {{0,0},{1,0},{1,1},{2,1},spriten=7,previewc=12},
  {{0,0},{1,0},{0,1},{1,1},spriten=7,previewc=12},
  {{0,1},{1,1},{1,0},{2,0},spriten=7,previewc=12},
  {{0,0},{1,0},{2,0},{2,-1},spriten=11,previewc=14},
  {{0,0},{1,0},{2,0},{2,1},spriten=11,previewc=14},
+ {{0,0},{1,0},{2,0},{3,0},spriten=11,previewc=14},
+ 
+ {{0,0},{0,1},{1,1},{1,2},{2,1},spriten=3,previewc=3},
+ {{0,0},{0,1},{0,2},{1,2},{1,3},spriten=3,previewc=3},
 }
 
 --powerup option defs
-mountain={1}
-sand={2}
-forest={3,4}
-ocean={5,6,7}
-city={8,9}
+shorts={1,2}
+mids={3,4}
+longs={5,6,7,8,9,10}
+vlongs={11,12}
+available_vlongs={11,12}
 
 mode="piece select"
 selected_piece=1
@@ -129,11 +135,10 @@ function new_board()
  xs={1,2,3,4}
  ys={1,2,3,4}
  powerups={
-  mountain,
-  sand,
-  forest,
-  ocean,
-  city,
+  shorts,
+  mids,
+  longs,
+  vlongs,
  }
  for shufs=1,20 do
   rand_swap(xs)
@@ -171,6 +176,7 @@ function update_piece_place()
 	if btnp(4) then
 	 can_place=check_placement()
 	 if can_place then
+	  choices={}
 	 	choices=stamp_piece(selected_piece,px,py)
 	 	if #choices>0 then
 				choicen=1
@@ -182,6 +188,10 @@ function update_piece_place()
 	 	selected_piece=1
 	 	if board_is_full() then
 	 	 new_board()
+	 	 add(choices,mids)
+	 	 mode="make choices"
+				choicen=1
+				choice_select=1
 	 	end
 	 else
 	 	--feedback?
@@ -200,8 +210,8 @@ end
 function update_make_choices()
  if (btnp(0)) choice_select-=1
  if (btnp(1)) choice_select+=1
- if (choicen<1) choice_select+=#choices[choicen]
- if (choicen>#choices[choicen]) choice_select-=#choices[choicen]
+ if (choice_select<1) choice_select+=#choices[choicen]
+ if (choice_select>#choices[choicen]) choice_select-=#choices[choicen]
  if btnp(4) then
   piece_pool[choices[choicen][choice_select]]+=1
   choicen+=1
