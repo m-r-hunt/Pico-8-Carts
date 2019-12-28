@@ -53,6 +53,12 @@ choices={}
 choicen=1
 choice_select=1
 
+function reset_vlongs()
+ for i=1,#vlongs do
+  available_vlongs[i]=vlongs[i]
+ end
+end
+
 function rotate(x,y,r)
 	if r==0 then
 		return x,y
@@ -138,7 +144,7 @@ function new_board()
   shorts,
   mids,
   longs,
-  vlongs,
+  available_vlongs,
  }
  for shufs=1,20 do
   rand_swap(xs)
@@ -214,6 +220,12 @@ function update_make_choices()
  if (choice_select>#choices[choicen]) choice_select-=#choices[choicen]
  if btnp(4) then
   piece_pool[choices[choicen][choice_select]]+=1
+  if choices[choicen]==available_vlongs then
+   del(available_vlongs,available_vlongs[choice_select])
+   if #available_vlongs==0 then
+    reset_vlongs()
+   end
+  end
   choicen+=1
   if choicen>#choices then
    mode="piece select"
@@ -245,7 +257,7 @@ function stamp_piece(i,x,y)
  	if px>=1 and px<=4 and py>=1 and py<=4 then
  		grid[py][px]=piece_defs[i].spriten
 	 	if grid_powerups[py][px]~=0 then
-	 	 if #grid_powerups[py][px]==1 then
+	 	 if #grid_powerups[py][px]==1 and grid_powerups[py][px]~=available_vlongs then
 	 			piece_pool[grid_powerups[py][px][1]]+=1
 	 		else
 	 		 add(choices,grid_powerups[py][px])
