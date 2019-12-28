@@ -25,7 +25,7 @@ piece_defs={
 shorts={1,2}
 mids={3,4}
 longs={5,6,7,8,9,10}
-regpend=10
+regpend=10 --regular piece end
 vlongs={11,12}
 available_vlongs={11,12}
 
