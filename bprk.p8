@@ -4,21 +4,21 @@ __lua__
 piece_pool={}
 
 piece_defs={
- {{0,0},spriten=9,previewc=6},
- {{0,0},{1,0},spriten=5,previewc=10},
+	{{0,0},spriten=9,previewc=6},
+	{{0,0},{1,0},spriten=5,previewc=10},
 
- {{0,0},{1,0},{2,0},spriten=3,previewc=3},
- {{0,0},{1,0},{1,1},spriten=3,previewc=3},
+	{{0,0},{1,0},{2,0},spriten=3,previewc=3},
+	{{0,0},{1,0},{1,1},spriten=3,previewc=3},
 
- {{0,0},{1,0},{1,1},{2,1},spriten=7,previewc=12},
- {{0,0},{1,0},{0,1},{1,1},spriten=7,previewc=12},
- {{0,1},{1,1},{1,0},{2,0},spriten=7,previewc=12},
- {{0,0},{1,0},{2,0},{2,-1},spriten=11,previewc=14},
- {{0,0},{1,0},{2,0},{2,1},spriten=11,previewc=14},
- {{0,0},{1,0},{2,0},{3,0},spriten=11,previewc=14},
- 
- {{0,0},{0,1},{1,1},{1,2},{2,1},spriten=3,previewc=3},
- {{0,0},{0,1},{0,2},{1,2},{1,3},spriten=3,previewc=3},
+	{{0,0},{1,0},{1,1},{2,1},spriten=7,previewc=12},
+	{{0,0},{1,0},{0,1},{1,1},spriten=7,previewc=12},
+	{{0,1},{1,1},{1,0},{2,0},spriten=7,previewc=12},
+	{{0,0},{1,0},{2,0},{2,-1},spriten=11,previewc=14},
+	{{0,0},{1,0},{2,0},{2,1},spriten=11,previewc=14},
+	{{0,0},{1,0},{2,0},{3,0},spriten=11,previewc=14},
+
+	{{0,0},{0,1},{1,1},{1,2},{2,1},spriten=3,previewc=3},
+	{{0,0},{0,1},{0,2},{1,2},{1,3},spriten=3,previewc=3},
 }
 
 --powerup option defs
@@ -35,16 +35,16 @@ py=1
 pr=0
 cancel_selected=false
 grid={
- {0,0,0,0},
- {0,0,0,0},
- {0,0,0,0},
- {0,0,0,0},
+	{0,0,0,0},
+	{0,0,0,0},
+	{0,0,0,0},
+	{0,0,0,0},
 }
 grid_powerups={
- {0,0,0,ocean},
- {0,mountain,0,0},
- {0,0,sand,0},
- {0,forest,0,0},
+	{0,0,0,ocean},
+	{0,mountain,0,0},
+	{0,0,sand,0},
+	{0,forest,0,0},
 }
 gridx=30
 gridy=20
@@ -54,37 +54,37 @@ choicen=1
 choice_select=1
 
 function rotate(x,y,r)
- if r==0 then
-  return x,y
- elseif r==1 then
-  return y,-x
- elseif r==2 then
-  return -x,-y
- elseif r==3 then
-  return -y,x
- end
+	if r==0 then
+		return x,y
+	elseif r==1 then
+		return y,-x
+	elseif r==2 then
+		return -x,-y
+	elseif r==3 then
+		return -y,x
+	end
 end
 
 function _init()
- for i=1,#piece_defs do
-  piece_pool[i]=1
- end
- new_board()
+	for i=1,#piece_defs do
+		piece_pool[i]=1
+	end
+	new_board()
 end
 
 function _update()
- if mode=="piece select" then
-  update_piece_select()
- elseif mode=="piece place" then
-  update_piece_place()
- elseif mode=="make choices" then
-  update_make_choices()
- end
+	if mode=="piece select" then
+		update_piece_select()
+	elseif mode=="piece place" then
+		update_piece_place()
+	elseif mode=="make choices" then
+		update_make_choices()
+	end
 end
 
 function update_piece_select()
- if btnp(2) then
-  selected_piece-=1
+	if btnp(2) then
+		selected_piece-=1
  elseif btnp(3) then
   selected_piece+=1
  end
