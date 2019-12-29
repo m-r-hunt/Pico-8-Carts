@@ -181,6 +181,32 @@ function new_board()
  end
 end
 
+function check_stuck()
+ for p=1,#piece_pool do
+  if piece_pool[p]~=0 then
+   local def=piece_defs[p]
+   for y=1,4 do
+    for x=1,4 do
+     for r=0,3 do
+      found_block=false
+      for loc=1,#def do
+       px,py=rotate(x+def[loc][1],y+def[loc][2],r)
+       if py<1 or py>4 or px<1 or px>4 or grid[py][px]~=0 then
+       	found_block=true
+        break
+       end
+      end
+      if not found_block then
+       return false
+      end
+     end
+    end
+   end
+  end
+ end
+ return true
+end
+
 function update_piece_place()
  if not cancel_selected then
 	if (btnp(0)) px-=1
@@ -220,6 +246,10 @@ function update_piece_place()
 	 	 mode="make choices"
 				choicen=1
 				choice_select=1
+	 	end
+	 	stuck=check_stuck()
+	 	if stuck then
+	 	 mode="game over"
 	 	end
 	 else
 	 	--feedback?
@@ -387,6 +417,10 @@ function _draw()
  	  spr(2,n*32+8,40)
  	 end
  	end
+ end
+ 
+ if mode=="game over" then
+  print("game over!")
  end
 end
 
