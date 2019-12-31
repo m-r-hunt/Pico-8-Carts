@@ -12,22 +12,20 @@ piece_defs={
 
 	{{0,0},{1,0},{1,1},{2,1},spriten=7,previewc=12},
 	{{0,0},{1,0},{0,1},{1,1},spriten=7,previewc=12},
-	{{0,1},{1,1},{1,0},{2,0},spriten=7,previewc=12},
-	{{0,0},{1,0},{2,0},{2,-1},spriten=11,previewc=14},
-	{{0,0},{1,0},{2,0},{2,1},spriten=11,previewc=14},
-	{{0,0},{1,0},{2,0},{3,0},spriten=11,previewc=14},
+	{{0,0},{1,0},{2,0},{2,1},spriten=7,previewc=12},
+	{{0,0},{1,0},{2,0},{3,0},spriten=7,previewc=12},
 
-	{{0,0},{0,1},{1,1},{1,2},{2,1},spriten=3,previewc=3},
-	{{0,0},{0,1},{0,2},{1,2},{1,3},spriten=3,previewc=3},
+	{{0,0},{0,1},{1,1},{1,2},{2,1},spriten=11,previewc=14},
+	{{0,0},{0,1},{0,2},{1,2},{1,3},spriten=11,previewc=14},
 }
 
 --powerup option defs
 shorts={1,2}
 mids={3,4}
-longs={5,6,7,8,9,10}
-regpend=10 --regular piece end
-vlongs={11,12}
-available_vlongs={11,12}
+longs={5,6,7,8}
+regpend=8 --regular piece end
+vlongs={9,10}
+available_vlongs={}
 
 mode="piece select"
 selected_piece=1
@@ -69,6 +67,14 @@ function rotate(x,y,r)
 		return -x,-y
 	elseif r==3 then
 		return -y,x
+	elseif r==4 then
+	 return x,-y
+	elseif r==5 then
+	 return y,x
+	elseif r==6 then
+	 return -x,y
+	elseif r==7 then
+	 return -y,-x
 	end
 end
 
@@ -79,6 +85,7 @@ function _init()
 	for i=regpend+1,#piece_defs do
 	 piece_pool[i]=0
 	end
+	reset_vlongs()
 	new_board()
 end
 
@@ -272,9 +279,9 @@ function update_piece_place()
 	py=mid(1,py,4)
 	
 	if btnp(5) then
-	 pr-=1
-	 if pr<0 then
-	  pr+=4
+	 pr+=1
+	 if pr>=8 then
+	  pr-=8
 	 end
 	end
 	
@@ -445,7 +452,7 @@ end
 
 function _draw()
  cls(15)
- print(mode..selected_piece,2,2,2)
+ print(mode..pr,2,2,2)
  for i=1,regpend do
   local ybase=10*(i)+4
  	draw_piece_preview(i,5,ybase)
