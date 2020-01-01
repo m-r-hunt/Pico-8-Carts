@@ -10,13 +10,16 @@ piece_defs={
 	{{0,0},{1,0},{2,0},spriten=3,previewc=3},
 	{{0,0},{1,0},{1,1},spriten=3,previewc=3},
 
-	{{0,0},{1,0},{1,1},{2,1},spriten=7,previewc=12},
 	{{0,0},{1,0},{0,1},{1,1},spriten=7,previewc=12},
+	{{0,0},{1,0},{1,1},{2,1},spriten=7,previewc=12},
 	{{0,0},{1,0},{2,0},{2,1},spriten=7,previewc=12},
 	{{0,0},{1,0},{2,0},{3,0},spriten=7,previewc=12},
 
+ {{0,0},{1,0},{0,1},{1,1},{2,0},spriten=11,previewc=14},
 	{{0,0},{0,1},{1,1},{1,2},{2,1},spriten=11,previewc=14},
-	{{0,0},{0,1},{0,2},{1,2},{1,3},spriten=11,previewc=14},
+	{{0,0},{1,0},{2,0},{2,1},{3,1},spriten=11,previewc=14},
+	{{0,0},{1,0},{2,0},{3,0},{3,1},spriten=11,previewc=14},
+	{{0,0},{0,1},{0,2},{1,1},{2,1},spriten=11,previewc=14},
 }
 
 --powerup option defs
@@ -24,7 +27,7 @@ shorts={1,2}
 mids={3,4}
 longs={5,6,7,8}
 regpend=8 --regular piece end
-vlongs={9,10}
+vlongs={9,10,11,12,13}
 available_vlongs={}
 
 mode="piece select"
@@ -80,11 +83,15 @@ end
 
 function _init()
 	for i=1,regpend do
-		piece_pool[i]=1
+		piece_pool[i]=0
 	end
 	for i=regpend+1,#piece_defs do
 	 piece_pool[i]=0
 	end
+	piece_pool[1]=1
+	piece_pool[2]=1
+	piece_pool[3]=1
+	piece_pool[4]=1
 	reset_vlongs()
 	new_board()
 end
@@ -118,12 +125,12 @@ function update_piece_select()
  	if selected_piece<0 then
   	selected_piece+=#piece_pool+1
   end
-	 while selected_piece>9 and piece_pool[selected_piece]==0 do
+	 while selected_piece>regpend and piece_pool[selected_piece]==0 do
 	  selected_piece-=1
 	 end
  elseif btnp(3) then
   selected_piece+=1
-  while selected_piece<=#piece_pool and piece_pool[selected_piece]==0 do
+  while selected_piece<=#piece_pool and selected_piece>regpend and piece_pool[selected_piece]==0 do
    selected_piece+=1
   end
  end
@@ -300,10 +307,7 @@ function update_piece_place()
 	 	selected_piece=1
 	 	if board_is_full() then
 	 	 new_board()
-	 	 add(choices,mids)
-	 	 mode="make choices"
-				choicen=1
-				choice_select=1
+	 	 piece_pool[1]+=1
 	 	end
 	 	stuck=check_stuck()
 	 	if stuck then
@@ -450,6 +454,24 @@ function draw_piece(i,bx,by)
  end
 end
 
+function draw_choice_box()
+ rect(5,30,128-5,60,12)
+ rectfill(6,31,128-6,59,6)
+ increment=(128-12)/#choices[choicen]
+ for n=1,#choices[choicen] do
+ 	local x=increment/2+(n-1)*increment
+ 	draw_piece_preview(choices[choicen][n],x,45)
+ 	if n==choice_select then
+ 	 spr(2,x+8,40)
+ 	end
+ end
+ local str="choose a piece"
+ if #choices>1 then
+ 	str=str.."("..choicen.."/"..#choices..")"
+ end
+ print(str,50,32)
+end
+
 function _draw()
  cls(15)
  print(mode..pr,2,2,2)
@@ -510,14 +532,7 @@ function _draw()
  end
  
  if mode=="make choices" then
- 	rect(5,30,128-5,60,12)
- 	rectfill(6,31,128-6,59,6)
- 	for n=1,#choices[choicen] do
- 	 draw_piece_preview(choices[choicen][n],n*32,45)
- 	 if n==choice_select then
- 	  spr(2,n*32+8,40)
- 	 end
- 	end
+  draw_choice_box()
  end
  
  if mode=="game over" then
@@ -527,9 +542,6 @@ end
 
 -->8
 --notes
-
---allow reflections
---allow removing one tile at cost of a piece
 
 --compute score, larger pieces=more pts
 
