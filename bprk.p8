@@ -15,7 +15,7 @@ piece_defs={
 	{{0,0},{1,0},{2,0},{2,1},spriten=7,previewc=12},
 	{{0,0},{1,0},{2,0},{3,0},spriten=7,previewc=12},
 
- {{0,0},{1,0},{0,1},{1,1},{2,0},spriten=11,previewc=14},
+	{{0,0},{1,0},{0,1},{1,1},{2,0},spriten=11,previewc=14},
 	{{0,0},{0,1},{1,1},{1,2},{2,1},spriten=11,previewc=14},
 	{{0,0},{1,0},{2,0},{2,1},{3,1},spriten=11,previewc=14},
 	{{0,0},{1,0},{2,0},{3,0},{3,1},spriten=11,previewc=14},
@@ -56,9 +56,9 @@ choicen=1
 choice_select=1
 
 function reset_vlongs()
- for i=1,#vlongs do
-  available_vlongs[i]=vlongs[i]
- end
+	for i=1,#vlongs do
+		available_vlongs[i]=vlongs[i]
+	end
 end
 
 function rotate(x,y,r)
@@ -71,13 +71,13 @@ function rotate(x,y,r)
 	elseif r==3 then
 		return -y,x
 	elseif r==4 then
-	 return x,-y
+		return x,-y
 	elseif r==5 then
-	 return y,x
+		return y,x
 	elseif r==6 then
-	 return -x,y
+		return -x,y
 	elseif r==7 then
-	 return -y,-x
+		return -y,-x
 	end
 end
 
@@ -86,7 +86,7 @@ function _init()
 		piece_pool[i]=0
 	end
 	for i=regpend+1,#piece_defs do
-	 piece_pool[i]=0
+		piece_pool[i]=0
 	end
 	piece_pool[1]=1
 	piece_pool[2]=1
@@ -97,15 +97,15 @@ function _init()
 end
 
 function _update()
- if mode~="make choices" then
- 	for y=1,4 do
-  	for x=1,4 do
-   	if grid[y][x]~=0 and grid[y][x]<67 then
-    	grid[y][x]+=32
-   	end
-  	end
- 	end
- end
+	if mode~="make choices" then
+		for y=1,4 do
+			for x=1,4 do
+				if grid[y][x]~=0 and grid[y][x]<67 then
+					grid[y][x]+=32
+				end
+				end
+		end
+	end
 	if mode=="piece select" then
 		update_piece_select()
 	elseif mode=="piece place" then
@@ -113,139 +113,426 @@ function _update()
 	elseif mode=="make choices" then
 		update_make_choices()
 	elseif mode=="select piece to burn" then
-	 update_select_burn()
+		update_select_burn()
 	elseif mode=="delete square" then
-	 update_delete_square()
+		update_delete_square()
 	end
 end
 
 function update_piece_select()
 	if btnp(2) then
 		selected_piece-=1
- 	if selected_piece<0 then
-  	selected_piece+=#piece_pool+1
-  end
-	 while selected_piece>regpend and piece_pool[selected_piece]==0 do
-	  selected_piece-=1
-	 end
- elseif btnp(3) then
-  selected_piece+=1
-  while selected_piece<=#piece_pool and selected_piece>regpend and piece_pool[selected_piece]==0 do
-   selected_piece+=1
-  end
- end
- if selected_piece<0 then
-  selected_piece+=#piece_pool+1
- elseif selected_piece>#piece_pool then
-  selected_piece-=#piece_pool+1
- end
- 
- if btnp(4) then
-  if selected_piece==0 then
-   mode="select piece to burn"
-  elseif piece_pool[selected_piece]>=1 then
-  	mode="piece place"
-	 	px=1
-	 	py=1
-	 	pr=0
-	 	cancel_selected=false
-  else
-   --feedback?
-  end
- end
+		if selected_piece<0 then
+			selected_piece+=#piece_pool+1
+		end
+		while selected_piece>regpend and piece_pool[selected_piece]==0 do
+			selected_piece-=1
+		end
+	elseif btnp(3) then
+		selected_piece+=1
+		while selected_piece<=#piece_pool and selected_piece>regpend and piece_pool[selected_piece]==0 do
+			selected_piece+=1
+		end
+	end
+	if selected_piece<0 then
+		selected_piece+=#piece_pool+1
+	elseif selected_piece>#piece_pool then
+		selected_piece-=#piece_pool+1
+	end
+
+	if btnp(4) then
+		if selected_piece==0 then
+			mode="select piece to burn"
+		elseif piece_pool[selected_piece]>=1 then
+			mode="piece place"
+			px=1
+			py=1
+			pr=0
+			cancel_selected=false
+		else
+			--feedback?
+		end
+	end
 end
 
 function update_select_burn()
 	if btnp(2) then
 		selected_piece-=1
- 	if selected_piece<0 then
-  	selected_piece+=#piece_pool+1
-  end
-	 while selected_piece>9 and piece_pool[selected_piece]==0 do
-	  selected_piece-=1
-	 end
- elseif btnp(3) then
-  selected_piece+=1
-  while selected_piece<=#piece_pool and piece_pool[selected_piece]==0 do
-   selected_piece+=1
-  end
- end
- if selected_piece<0 then
-  selected_piece+=#piece_pool+1
- elseif selected_piece>#piece_pool then
-  selected_piece-=#piece_pool+1
- end
- 
- if btnp(4) then
-  if selected_piece==0 then
-   mode="piece select"
-  elseif piece_pool[selected_piece]>=1 then
-  	mode="delete square"
-	 	px=1
-	 	py=1
-	 	pr=0
-	 	cancel_selected=false
-  else
-   --feedback?
-  end
- end
+		if selected_piece<0 then
+			selected_piece+=#piece_pool+1
+		end
+		while selected_piece>regpend and piece_pool[selected_piece]==0 do
+			selected_piece-=1
+		end
+	elseif btnp(3) then
+		selected_piece+=1
+		while selected_piece<=#piece_pool and selected_piece>regpend and piece_pool[selected_piece]==0 do
+			selected_piece+=1
+		end
+	end
+	if selected_piece<0 then
+		selected_piece+=#piece_pool+1
+	elseif selected_piece>#piece_pool then
+		selected_piece-=#piece_pool+1
+	end
+
+	if btnp(4) then
+		if selected_piece==0 then
+			mode="piece select"
+		elseif piece_pool[selected_piece]>=1 then
+			mode="delete square"
+			px=1
+			py=1
+			pr=0
+			cancel_selected=false
+		else
+			--feedback?
+		end
+	end
 end
 
 function board_is_full()
- local any_empty=false
- for y=1,4 do
-  for x=1,4 do
-   any_empty=any_empty or (grid[y][x]==0)
-  end
- end
- return not any_empty
+	local any_empty=false
+	for y=1,4 do
+		for x=1,4 do
+			any_empty=any_empty or (grid[y][x]==0)
+		end
+	end
+	return not any_empty
 end
 
 function rand_swap(t)
- local t1=flr(rnd(#t))+1
- local t2=flr(rnd(#t))+1
- local tmp=t[t1]
- t[t1]=t[t2]
- t[t2]=tmp
+	local t1=flr(rnd(#t))+1
+	local t2=flr(rnd(#t))+1
+	local tmp=t[t1]
+	t[t1]=t[t2]
+	t[t2]=tmp
 end
 
 function new_board()
- for y=1,4 do
-  for x=1,4 do
-   grid[y][x]=0
-   grid_powerups[y][x]=0
-  end
- end
- xs={1,2,3,4}
- ys={1,2,3,4}
- powerups={
-  shorts,
-  mids,
-  longs,
-  available_vlongs,
- }
- for shufs=1,20 do
-  rand_swap(xs)
-  rand_swap(ys)
-  rand_swap(powerups)
- end
- 
- for i=1,4 do
-  x=xs[i]
-  y=ys[i]
-  grid_powerups[y][x]=powerups[i]
- end
- 
- x=flr(rnd(4))+1
- y=flr(rnd(4))+1
- while grid_powerups[y][x]~=0 do
- 	x=flr(rnd(4))+1
-	 y=flr(rnd(4))+1
- end
- grid[y][x]=13
+	for y=1,4 do
+		for x=1,4 do
+			grid[y][x]=0
+			grid_powerups[y][x]=0
+		end
+	end
+	xs={1,2,3,4}
+	ys={1,2,3,4}
+	powerups={
+		shorts,
+		mids,
+		longs,
+		available_vlongs,
+	}
+	for shufs=1,20 do
+		rand_swap(xs)
+		rand_swap(ys)
+		rand_swap(powerups)
+	end
+
+	for i=1,4 do
+		x=xs[i]
+		y=ys[i]
+		grid_powerups[y][x]=powerups[i]
+	end
+
+	x=flr(rnd(4))+1
+	y=flr(rnd(4))+1
+	while grid_powerups[y][x]~=0 do
+		x=flr(rnd(4))+1
+		y=flr(rnd(4))+1
+	end
+	grid[y][x]=13
 end
 
 function check_stuck()
+	for i=1,#piece_pool do
+		if piece_pool[i]>0 then
+			return false
+		end
+	end
+	return true
+end
+
+function update_piece_place()
+	if not cancel_selected then
+		if (btnp(0)) px-=1
+		if (btnp(1)) px+=1
+		if (btnp(2)) py-=1
+		if py==4 and btnp(3) then
+			cancel_selected=true
+		elseif btnp(3) then
+			py+=1
+		end
+		px=mid(1,px,4)
+		py=mid(1,py,4)
+		
+		if btnp(5) then
+			pr+=1
+			if pr>=8 then
+				pr-=8
+			end
+		end
+		
+		if btnp(4) then
+			can_place=check_placement()
+			if can_place then
+				choices={}
+				choices=stamp_piece(selected_piece,px,py)
+				if #choices>0 then
+					choicen=1
+					choice_select=1
+					mode="make choices"
+				else
+					mode="piece select"
+				end
+				selected_piece=1
+				if board_is_full() then
+					new_board()
+					piece_pool[1]+=1
+				end
+				stuck=check_stuck()
+				if stuck then
+					mode="game over"
+				end
+			else
+				--feedback?
+			end
+		end
+	else
+		if btnp(2) then
+			cancel_selected=false
+		end
+		if btnp(4) then
+			mode="piece select"
+		end
+	end
+end
+
+function update_delete_square()
+	if not cancel_selected then
+		if (btnp(0)) px-=1
+		if (btnp(1)) px+=1
+		if (btnp(2)) py-=1
+		if py==4 and btnp(3) then
+			cancel_selected=true
+		elseif btnp(3) then
+			py+=1
+		end
+		px=mid(1,px,4)
+		py=mid(1,py,4)
+		
+		if btnp(4) and grid[py][px]~=0 then
+			grid[py][px]=0
+			piece_pool[selected_piece]-=1
+			mode="piece select"
+			stuck=check_stuck()
+			if stuck then
+				mode="game over"
+			end
+		end
+	else
+		if btnp(2) then
+			cancel_selected=false
+		end
+		if btnp(4) then
+			mode="select piece to burn"
+		end
+	end
+end
+
+function update_make_choices()
+	if (btnp(0)) choice_select-=1
+	if (btnp(1)) choice_select+=1
+	if (choice_select<1) choice_select+=#choices[choicen]
+	if (choice_select>#choices[choicen]) choice_select-=#choices[choicen]
+	if btnp(4) then
+		piece_pool[choices[choicen][choice_select]]+=1
+		if choices[choicen]==available_vlongs then
+			del(available_vlongs,available_vlongs[choice_select])
+			if #available_vlongs==0 then
+				reset_vlongs()
+			end
+		end
+		choicen+=1
+		if choicen>#choices then
+			mode="piece select"
+		end
+	end
+end
+
+function check_placement()
+	local any_bad=false
+	local i=selected_piece
+	for sq=1,#piece_defs[i] do
+		rx,ry=rotate(piece_defs[i][sq][1],piece_defs[i][sq][2],pr)
+		local x=px+rx
+		local y=py+ry
+		if x<1 or x>4 or y<1 or y>4 or grid[y][x]~=0 then
+			any_bad=true
+		end
+	end
+	return not any_bad
+end
+
+function stamp_piece(i,x,y)
+	piece_pool[i]-=1
+	local choices={}
+	for sq=1,#piece_defs[i] do
+		rx,ry=rotate(piece_defs[i][sq][1],piece_defs[i][sq][2],pr)
+		local px=x+rx
+		local py=y+ry
+		if px>=1 and px<=4 and py>=1 and py<=4 then
+			grid[py][px]=piece_defs[i].spriten
+			if grid_powerups[py][px]~=0 then
+				if #grid_powerups[py][px]==1 and grid_powerups[py][px]~=available_vlongs then
+					piece_pool[grid_powerups[py][px][1]]+=1
+				else
+					add(choices,grid_powerups[py][px])
+				end
+			end
+		end
+	end
+	return choices
+end
+
+preview_size=4
+
+function draw_piece_preview(i,xbase,ybase)
+	for sq=1,#piece_defs[i] do
+		local px=piece_defs[i][sq][1]
+		local py=piece_defs[i][sq][2]
+		local x=xbase+px*preview_size
+		local y=ybase+py*preview_size
+		rectfill(x,y,x+preview_size,y+preview_size,piece_defs[i].previewc)
+		rect(x,y,x+preview_size,y+preview_size,1)
+	end
+end
+
+function draw_piece(i,bx,by)
+	local transformed={}
+	for sq=1,#piece_defs[i] do
+		local rx,ry=rotate(piece_defs[i][sq][1],piece_defs[i][sq][2],pr)
+		add(transformed, {rx,ry})
+	end
+	--crappy n^2 sort but it's at most like 6 things
+	for i=1,#transformed do
+		for j=i,#transformed do
+			if transformed[i][2]>transformed[j][2] or (transformed[i][2]==transformed[j][2] and transformed[i][1]>transformed[j][1]) then
+				local tmp=transformed[i]
+				transformed[i]=transformed[j]
+				transformed[j]=tmp
+			end
+		end
+	end
+	for sq=1,#transformed do
+		local rx=transformed[sq][1]
+		local ry=transformed[sq][2]
+		col=piece_defs[i].previewc
+		if px+rx<1 or px+rx>4 or py+ry<1 or py+ry>4 or grid[py+ry][px+rx]~=0 then
+			col=8
+		end
+		local x=bx+rx*16
+		local y=by+ry*16
+		rectfill(x+1,y+1,x+17,y+17,0)
+		rectfill(x,y,x+16,y+16,col)
+		rect(x,y,x+16,y+16,1)
+	end
+end
+
+function draw_choice_box()
+	rect(5,30,128-5,60,12)
+	rectfill(6,31,128-6,59,6)
+	increment=(128-12)/#choices[choicen]
+	for n=1,#choices[choicen] do
+		local x=increment/2+(n-1)*increment
+		draw_piece_preview(choices[choicen][n],x,45)
+		if n==choice_select then
+		 spr(2,x+8,40)
+		end
+	end
+	local str="choose a piece"
+	if #choices>1 then
+		str=str.."("..choicen.."/"..#choices..")"
+	end
+	print(str,50,32)
+end
+
+function _draw()
+	cls(15)
+	print(mode..pr,2,2,2)
+	for i=1,regpend do
+		local ybase=10*(i)+4
+		draw_piece_preview(i,5,ybase)
+		print(piece_pool[i],1,ybase)
+		if i==selected_piece and (mode=="piece select" or mode=="select piece to burn") then
+			spr(2,20,ybase)
+		end
+	end
+	if mode~="select piece to burn" then
+		spr(18,4,4)
+	else
+		print("cancel",4,4)
+	end
+	if selected_piece==0 then
+		spr(2,12,4)
+	end
+	local ybase=10*(regpend+1)+4
+	for i=regpend+1,#piece_pool do
+		if piece_pool[i]>0 then
+			draw_piece_preview(i,5,ybase)
+			print(piece_pool[i],1,ybase)
+			if i==selected_piece and (mode=="piece select" or mode=="select piece to burn") then
+				spr(2,20,ybase)
+			end
+			ybase+=10
+		end
+	end
+	for y=1,4 do
+		for x=1,4 do
+			sn=grid[y][x]
+			if (sn==0) sn=32
+			spr(sn,gridx+x*16,gridy+y*16,2,2)
+			if sn==32 and grid_powerups[y][x]~=0 then
+				draw_piece_preview(grid_powerups[y][x][1],gridx+x*16+6,gridy+y*16+6)
+			end
+		end
+	end
+	line(gridx+16,gridy+5*16,gridx+5*16,gridy+5*16,4)
+	line(gridx+5*16,gridy+16,gridx+5*16,gridy+5*16,4)
+	if mode=="piece place" then
+		draw_piece(selected_piece,gridx+px*16-2,gridy+py*16-2)
+		rect(gridx+px*16,gridy+py*16,gridx+px*16+2,gridy+py*16+2,4)
+		rectfill(48,108,74,115,7)
+		print("cancel",50,110,5)
+		if cancel_selected then
+			spr(2,74,108)
+		end
+	elseif mode=="delete square" then
+		spr(18,gridx+px*16,gridy+py*16)
+		rectfill(48,108,74,115,7)
+		print("cancel",50,110,5)
+		if cancel_selected then
+			spr(2,74,108)
+		end
+	end
+
+	if mode=="make choices" then
+		draw_choice_box()
+	end
+
+	if mode=="game over" then
+		print("game over!")
+	end
+end
+
+-->8
+--notes
+
+--compute score, larger pieces=more pts
+
+--slow down growth anims
+
 -- for p=1,#piece_pool do
 --  if piece_pool[p]~=0 then
 --   local def=piece_defs[p]
@@ -269,283 +556,6 @@ function check_stuck()
 --  end
 -- end
 -- return true
- return false
-end
-
-function update_piece_place()
- if not cancel_selected then
-	if (btnp(0)) px-=1
-	if (btnp(1)) px+=1
-	if (btnp(2)) py-=1
-	if py==4 and btnp(3) then
-	 cancel_selected=true
-	elseif btnp(3) then
-  py+=1
- end
-	px=mid(1,px,4)
-	py=mid(1,py,4)
-	
-	if btnp(5) then
-	 pr+=1
-	 if pr>=8 then
-	  pr-=8
-	 end
-	end
-	
-	if btnp(4) then
-	 can_place=check_placement()
-	 if can_place then
-	  choices={}
-	 	choices=stamp_piece(selected_piece,px,py)
-	 	if #choices>0 then
-				choicen=1
-				choice_select=1
-	 		mode="make choices"
-	 	else
-	 		mode="piece select"
-	 	end
-	 	selected_piece=1
-	 	if board_is_full() then
-	 	 new_board()
-	 	 piece_pool[1]+=1
-	 	end
-	 	stuck=check_stuck()
-	 	if stuck then
-	 	 mode="game over"
-	 	end
-	 else
-	 	--feedback?
-	 end
-	end
-	else
-	 if btnp(2) then
-	  cancel_selected=false
-	 end
-	 if btnp(4) then
-	  mode="piece select"
-	 end
-	end
-end
-
-function update_delete_square()
-	if not cancel_selected then
-		if (btnp(0)) px-=1
-		if (btnp(1)) px+=1
-		if (btnp(2)) py-=1
-		if py==4 and btnp(3) then
-	 	cancel_selected=true
-		elseif btnp(3) then
-  	py+=1
- 	end
-		px=mid(1,px,4)
-		py=mid(1,py,4)
-		
-		if btnp(4) and grid[py][px]~=0 then
-		 grid[py][px]=0
-		 piece_pool[selected_piece]-=1
-		 mode="piece select"
-		end
-	else
-	 if btnp(2) then
-	  cancel_selected=false
-	 end
-	 if btnp(4) then
-	  mode="piece select"
-	 end
-	end
-end
-
-function update_make_choices()
- if (btnp(0)) choice_select-=1
- if (btnp(1)) choice_select+=1
- if (choice_select<1) choice_select+=#choices[choicen]
- if (choice_select>#choices[choicen]) choice_select-=#choices[choicen]
- if btnp(4) then
-  piece_pool[choices[choicen][choice_select]]+=1
-  if choices[choicen]==available_vlongs then
-   del(available_vlongs,available_vlongs[choice_select])
-   if #available_vlongs==0 then
-    reset_vlongs()
-   end
-  end
-  choicen+=1
-  if choicen>#choices then
-   mode="piece select"
-  end
- end
-end
-
-function check_placement()
- local any_bad=false
- local i=selected_piece
- for sq=1,#piece_defs[i] do
-  rx,ry=rotate(piece_defs[i][sq][1],piece_defs[i][sq][2],pr)
-  local x=px+rx
-  local y=py+ry
-  if x<1 or x>4 or y<1 or y>4 or grid[y][x]~=0 then
-   any_bad=true
-  end
- end
- return not any_bad
-end
-
-function stamp_piece(i,x,y)
- piece_pool[i]-=1
- local choices={}
-	for sq=1,#piece_defs[i] do
-	 rx,ry=rotate(piece_defs[i][sq][1],piece_defs[i][sq][2],pr)
- 	local px=x+rx
- 	local py=y+ry
- 	if px>=1 and px<=4 and py>=1 and py<=4 then
- 		grid[py][px]=piece_defs[i].spriten
-	 	if grid_powerups[py][px]~=0 then
-	 	 if #grid_powerups[py][px]==1 and grid_powerups[py][px]~=available_vlongs then
-	 			piece_pool[grid_powerups[py][px][1]]+=1
-	 		else
-	 		 add(choices,grid_powerups[py][px])
-	 		end
-	 	end
- 	end
- end
- return choices
-end
-
-preview_size=4
-
-function draw_piece_preview(i,xbase,ybase)
- for sq=1,#piece_defs[i] do
-	 local px=piece_defs[i][sq][1]
- 	local py=piece_defs[i][sq][2]
- 	local x=xbase+px*preview_size
- 	local y=ybase+py*preview_size
- 	rectfill(x,y,x+preview_size,y+preview_size,piece_defs[i].previewc)
- 	rect(x,y,x+preview_size,y+preview_size,1)
- end
-end
-
-function draw_piece(i,bx,by)
- local transformed={}
- for sq=1,#piece_defs[i] do
-  local rx,ry=rotate(piece_defs[i][sq][1],piece_defs[i][sq][2],pr)
-  add(transformed, {rx,ry})
- end
- --crappy n^2 sort but it's at most like 6 things
- for i=1,#transformed do
-  for j=i,#transformed do
-   if transformed[i][2]>transformed[j][2] or (transformed[i][2]==transformed[j][2] and transformed[i][1]>transformed[j][1]) then
-   	local tmp=transformed[i]
-   	transformed[i]=transformed[j]
-   	transformed[j]=tmp
-   end
-  end
- end
-	for sq=1,#transformed do
-	 local rx=transformed[sq][1]
-	 local ry=transformed[sq][2]
-	 col=piece_defs[i].previewc
-	 if px+rx<1 or px+rx>4 or py+ry<1 or py+ry>4 or grid[py+ry][px+rx]~=0 then
-	  col=8
-	 end
- 	local x=bx+rx*16
- 	local y=by+ry*16
- 	rectfill(x+1,y+1,x+17,y+17,0)
- 	rectfill(x,y,x+16,y+16,col)
- 	rect(x,y,x+16,y+16,1)
- end
-end
-
-function draw_choice_box()
- rect(5,30,128-5,60,12)
- rectfill(6,31,128-6,59,6)
- increment=(128-12)/#choices[choicen]
- for n=1,#choices[choicen] do
- 	local x=increment/2+(n-1)*increment
- 	draw_piece_preview(choices[choicen][n],x,45)
- 	if n==choice_select then
- 	 spr(2,x+8,40)
- 	end
- end
- local str="choose a piece"
- if #choices>1 then
- 	str=str.."("..choicen.."/"..#choices..")"
- end
- print(str,50,32)
-end
-
-function _draw()
- cls(15)
- print(mode..pr,2,2,2)
- for i=1,regpend do
-  local ybase=10*(i)+4
- 	draw_piece_preview(i,5,ybase)
- 	print(piece_pool[i],1,ybase)
- 	if i==selected_piece and (mode=="piece select" or mode=="select piece to burn") then
- 		spr(2,20,ybase)
- 	end
- end
- if mode~="select piece to burn" then
-  spr(18,4,4)
- else
-  print("cancel",4,4)
- end
- if selected_piece==0 then
-  spr(2,12,4)
- end
- local ybase=10*(regpend+1)+4
- for i=regpend+1,#piece_pool do
-  if piece_pool[i]>0 then
- 		draw_piece_preview(i,5,ybase)
- 		print(piece_pool[i],1,ybase)
- 		if i==selected_piece and mode=="piece select" then
- 			spr(2,20,ybase)
- 		end
- 		ybase+=10
-  end
- end
- for y=1,4 do
- 	for x=1,4 do
- 	 sn=grid[y][x]
- 	 if (sn==0) sn=32
- 		spr(sn,gridx+x*16,gridy+y*16,2,2)
- 		if sn==32 and grid_powerups[y][x]~=0 then
- 		 draw_piece_preview(grid_powerups[y][x][1],gridx+x*16+6,gridy+y*16+6)
- 		end
- 	end
- end
- line(gridx+16,gridy+5*16,gridx+5*16,gridy+5*16,4)
- line(gridx+5*16,gridy+16,gridx+5*16,gridy+5*16,4)
- if mode=="piece place" then
- 	draw_piece(selected_piece,gridx+px*16-2,gridy+py*16-2)
- 	rect(gridx+px*16,gridy+py*16,gridx+px*16+2,gridy+py*16+2,4)
- 	rectfill(48,108,74,115,7)
- 	print("cancel",50,110,5)
- 	if cancel_selected then
- 	 spr(2,74,108)
- 	end
- elseif mode=="delete square" then
-  spr(18,gridx+px*16,gridy+py*16)
-  rectfill(48,108,74,115,7)
- 	print("cancel",50,110,5)
- 	if cancel_selected then
- 	 spr(2,74,108)
- 	end
- end
- 
- if mode=="make choices" then
-  draw_choice_box()
- end
- 
- if mode=="game over" then
-  print("game over!")
- end
-end
-
--->8
---notes
-
---compute score, larger pieces=more pts
-
---slow down growth anims
 
 __gfx__
 00000000333bb3330002000044444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444400000000
