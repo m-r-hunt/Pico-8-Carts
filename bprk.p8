@@ -20,7 +20,7 @@ function intro()
 	flip()
 	pal()
 end
-intro()
+--intro()
 
 piece_pool={}
 
@@ -41,6 +41,11 @@ piece_defs={
 	{{0,0},{1,0},{2,0},{2,1},{3,1},spriten=11,previewc=14},
 	{{0,0},{1,0},{2,0},{3,0},{3,1},spriten=11,previewc=14},
 	{{0,0},{0,1},{0,2},{1,1},{2,1},spriten=11,previewc=14},
+	{{0,0},{0,1},{1,1},{2,1},{2,0},spriten=11,previewc=14},
+	{{0,0},{1,0},{2,0},{2,1},{2,2},spriten=11,previewc=14},
+	{{0,0},{1,0},{1,1},{2,1},{2,2},spriten=11,previewc=14},
+	{{0,0},{1,0},{1,1},{2,0},{3,0},spriten=11,previewc=14},
+	{{0,0},{0,1},{1,1},{2,1},{2,2},spriten=11,previewc=14},
 }
 
 --powerup option defs
@@ -48,7 +53,7 @@ shorts={1,2}
 mids={3,4}
 longs={5,6,7,8}
 regpend=8 --regular piece end
-vlongs={9,10,11,12,13}
+vlongs={9,10,11,12,13,14,15,16,17,18}
 available_vlongs={}
 
 mode="piece select"
@@ -462,14 +467,28 @@ function draw_piece(i,bx,by)
 end
 
 function draw_choice_box()
-	rect(5,30,128-5,60,12)
-	rectfill(6,31,128-6,59,6)
-	increment=(128-12)/#choices[choicen]
-	for n=1,#choices[choicen] do
+	rect(5,30,128-5,90,12)
+	rectfill(6,31,128-6,89,6)
+	maxi=#choices[choicen]
+	if maxi>5 then
+		maxi=5
+	end
+	increment=(128-12)/maxi
+	for n=1,maxi do
 		local x=increment/2+(n-1)*increment
 		draw_piece_preview(choices[choicen][n],x,45)
 		if n==choice_select then
-		 spr(2,x+8,40)
+			spr(2,x+8,40)
+		end
+	end
+	if maxi<#choices[choicen] then
+		increment=(128-12)/(#choices[choicen]-maxi)
+		for n=1,#choices[choicen]-maxi do
+			local x=increment/2+(n-1)*increment
+			draw_piece_preview(choices[choicen][maxi+n],x,60)
+			if n+maxi==choice_select then
+				spr(2,x+8,55)
+			end
 		end
 	end
 	local str="choose a piece"
