@@ -22,6 +22,12 @@ function intro()
 end
 --intro()
 
+menu_options={
+	{display="start",mode="piece select"},
+	{display="instructions",mode="instructions"},
+}
+menu_select=1
+
 piece_pool={}
 
 piece_defs={
@@ -56,7 +62,7 @@ regpend=8 --regular piece end
 vlongs={9,10,11,12,13,14,15,16,17,18}
 available_vlongs={}
 
-mode="piece select"
+mode="main menu"
 selected_piece=1
 px=1
 py=1
@@ -80,6 +86,15 @@ gridy=-10
 choices={}
 choicen=1
 choice_select=1
+
+play_modes={
+	"piece select",
+	"piece place",
+	"make choices",
+	"select piece to burn",
+	"delete square",
+	"game over",
+}
 
 function reset_vlongs()
 	for i=1,#vlongs do
@@ -132,7 +147,11 @@ function _update()
 				end
 		end
 	end
-	if mode=="piece select" then
+	if mode=="main menu" then
+		update_main_menu()
+	elseif mode=="instructions" then
+		update_instructions()
+	elseif mode=="piece select" then
 		update_piece_select()
 	elseif mode=="piece place" then
 		update_piece_place()
@@ -142,6 +161,23 @@ function _update()
 		update_select_burn()
 	elseif mode=="delete square" then
 		update_delete_square()
+	end
+end
+
+function update_main_menu()
+	if (btnp(2)) menu_select-=1
+	if (btnp(3)) menu_select+=1
+	if (menu_select<1) menu_select+=#menu_options
+	if (menu_select>#menu_options) menu_select-=#menu_options
+
+	if btnp(4) then
+		mode=menu_options[menu_select].mode
+	end
+end
+
+function update_instructions()
+	if btnp(4) or btnp(5) then
+		mode="main menu"
 	end
 end
 
@@ -511,10 +547,39 @@ function draw_choice_box()
 end
 
 function _draw()
+	for m=1,#play_modes do
+		if play_modes[m]==mode then
+			draw_play_mode()
+			return
+		end
+	end
+	if mode=="main menu" then
+		draw_main_menu()
+	elseif mode=="instructions" then
+		draw_instructions()
+	end
+end
+
+function draw_main_menu()
+	cls(15)
+	for m=1,#menu_options do
+		print(menu_options[m].display,60,50+m*10,12)
+		if m==menu_select then
+			spr(2,68,50+m*10)
+		end
+	end
+end
+
+function draw_instructions()
+	cls(15)
+	print("🅾️ or ❎ to return to menu",2,120,12)
+end
+
+function draw_play_mode()
 	cls(15)
 
 	--debug
-	print(mode..pr,2,2,2)
+	--print(mode..pr,2,2,2)
 
 	--draw piece pool
 	for i=1,regpend do
