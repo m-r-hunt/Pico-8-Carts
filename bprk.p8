@@ -476,7 +476,7 @@ function draw_choice_box()
 	if #choices>1 then
 		str=str.."("..choicen.."/"..#choices..")"
 	end
-	print(str,50,32)
+	print(str,30,32)
 end
 
 function _draw()
