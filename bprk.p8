@@ -69,13 +69,13 @@ grid={
 	{0,0,0,0},
 }
 grid_powerups={
-	{0,0,0,ocean},
-	{0,mountain,0,0},
-	{0,0,sand,0},
-	{0,forest,0,0},
+	{0,0,0,0},
+	{0,0,0,0},
+	{0,0,0,0},
+	{0,0,0,0},
 }
 gridx=30
-gridy=20
+gridy=-10
 
 choices={}
 choicen=1
@@ -370,6 +370,8 @@ end
 function update_make_choices()
 	if (btnp(0)) choice_select-=1
 	if (btnp(1)) choice_select+=1
+	if (btnp(2)) choice_select-=5
+	if (btnp(3)) choice_select+=5
 	if (choice_select<1) choice_select+=#choices[choicen]
 	if (choice_select>#choices[choicen]) choice_select-=#choices[choicen]
 	if btnp(4) then
@@ -466,36 +468,46 @@ function draw_piece(i,bx,by)
 	end
 end
 
+choicebox={x=25,y=75,maxx=128-5,maxy=126}
+
 function draw_choice_box()
-	rect(5,30,128-5,90,12)
-	rectfill(6,31,128-6,89,6)
-	maxi=#choices[choicen]
+	rect(choicebox.x,choicebox.y,choicebox.maxx,choicebox.maxy,12)
+	rectfill(choicebox.x+1,choicebox.y+1,choicebox.maxx-1,choicebox.maxy-1,6)
+	--have at most 5 in a row, then break to a second line.
+	--only needed for the vlongs
+	local maxi=#choices[choicen]
+	local div=2
 	if maxi>5 then
 		maxi=5
+		div=3
 	end
-	increment=(128-12)/maxi
+	increment=(choicebox.maxx-choicebox.x)/maxi
 	for n=1,maxi do
-		local x=increment/2+(n-1)*increment
-		draw_piece_preview(choices[choicen][n],x,45)
+		local x=choicebox.x+increment/2+(n-1)*increment-5
+		local y=choicebox.y+(choicebox.maxy-choicebox.y)/div
+		draw_piece_preview(choices[choicen][n],x,y)
 		if n==choice_select then
-			spr(2,x+8,40)
+			spr(2,x+8,y-5)
 		end
 	end
 	if maxi<#choices[choicen] then
-		increment=(128-12)/(#choices[choicen]-maxi)
+		increment=(choicebox.maxx-choicebox.x)/(#choices[choicen]-maxi)
 		for n=1,#choices[choicen]-maxi do
-			local x=increment/2+(n-1)*increment
-			draw_piece_preview(choices[choicen][maxi+n],x,60)
+			local x=choicebox.x+increment/2+(n-1)*increment-5
+			local y=choicebox.y+2*(choicebox.maxy-choicebox.y)/3
+			draw_piece_preview(choices[choicen][maxi+n],x,y)
 			if n+maxi==choice_select then
-				spr(2,x+8,55)
+				spr(2,x+8,y-5)
 			end
 		end
 	end
 	local str="choose a piece"
+	local sx=21
 	if #choices>1 then
 		str=str.."("..choicen.."/"..#choices..")"
+		sx=12
 	end
-	print(str,30,32)
+	print(str,choicebox.x+sx,choicebox.y+4)
 end
 
 function _draw()
