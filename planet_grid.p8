@@ -718,7 +718,7 @@ function draw_help_text()
 	if mode=="piece select" then
 		str="choose a piece or delete"
 	elseif mode=="piece place" then
-		str="place piece or cancel"
+		str="place piece or cancel\n🅾️:place/cancel ❎:rotate"
 	elseif mode=="select piece to burn" then
 		str="select piece to sacrifice\nor cancel"
 	elseif mode=="delete square" then
@@ -870,6 +870,7 @@ instrs={
 	"filling up their grids.",
 	"each turn, select a piece and",
 	"then place it on the grid.",
+	"press ❎ to rotate a piece.",
 	"any extra piece icons you",
 	"cover will give you more",
 	"pieces to use in subsequent",
