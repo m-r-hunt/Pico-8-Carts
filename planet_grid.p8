@@ -544,11 +544,11 @@ function draw_choice_box()
 			end
 		end
 	end
-	local str="choose a piece"
-	local sx=21
+	local str="choose a new piece"
+	local sx=12
 	if #choices>1 then
 		str=str.."("..choicen.."/"..#choices..")"
-		sx=12
+		sx=4
 	end
 	print(str,choicebox.x+sx,choicebox.y+4)
 end
