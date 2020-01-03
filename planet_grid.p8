@@ -59,7 +59,7 @@ piece_defs={
 
 --powerup option defs
 shorts={1,2}
-mids={3,4}
+mids={4,3}
 longs={5,6,7,8}
 regpend=8 --regular piece end
 vlongs={9,10,11,12,13,14,15,16,17,18}
@@ -164,6 +164,7 @@ function _update()
 	 if wait_time>45 then
 			new_board()
 			need_new_board=false
+			sfx(6)
 		else
 		 return
 		end
@@ -199,7 +200,7 @@ function update_main_menu()
 
 	if btnp(4) then
 		sfx(4)
-	 new_game()
+		new_game()
 		mode=menu_options[menu_select].mode
 	end
 end
@@ -220,11 +221,13 @@ function update_piece_select()
 		while selected_piece>regpend and piece_pool[selected_piece]==0 do
 			selected_piece-=1
 		end
+		sfx(3)
 	elseif btnp(3) then
 		selected_piece+=1
 		while selected_piece<=#piece_pool and selected_piece>regpend and piece_pool[selected_piece]==0 do
 			selected_piece+=1
 		end
+		sfx(2)
 	end
 	if selected_piece<0 then
 		selected_piece+=#piece_pool+1
@@ -234,15 +237,17 @@ function update_piece_select()
 
 	if btnp(4) then
 		if selected_piece==0 then
+			sfx(4)
 			mode="select piece to burn"
 		elseif piece_pool[selected_piece]>=1 then
+			sfx(4)
 			mode="piece place"
 			px=1
 			py=1
 			pr=0
 			cancel_selected=false
 		else
-			--feedback?
+			sfx(8)
 		end
 	end
 end
@@ -256,11 +261,13 @@ function update_select_burn()
 		while selected_piece>regpend and piece_pool[selected_piece]==0 do
 			selected_piece-=1
 		end
+		sfx(3)
 	elseif btnp(3) then
 		selected_piece+=1
 		while selected_piece<=#piece_pool and selected_piece>regpend and piece_pool[selected_piece]==0 do
 			selected_piece+=1
 		end
+		sfx(2)
 	end
 	if selected_piece<0 then
 		selected_piece+=#piece_pool+1
@@ -270,15 +277,17 @@ function update_select_burn()
 
 	if btnp(4) then
 		if selected_piece==0 then
+			sfx(5)
 			mode="piece select"
 		elseif piece_pool[selected_piece]>=1 then
+			sfx(4)
 			mode="delete square"
 			px=1
 			py=1
 			pr=0
 			cancel_selected=false
 		else
-			--feedback?
+			sfx(8)
 		end
 	end
 end
@@ -348,13 +357,24 @@ end
 
 function update_piece_place()
 	if not cancel_selected then
-		if (btnp(0)) px-=1
-		if (btnp(1)) px+=1
-		if (btnp(2)) py-=1
+		if (btnp(0)) then
+			sfx(9)
+			px-=1
+		end
+		if (btnp(1)) then
+			sfx(10)
+			px+=1
+		end
+		if (btnp(2)) then
+			py-=1
+			sfx(3)
+		end
 		if py==4 and btnp(3) then
 			cancel_selected=true
+			sfx(2)
 		elseif btnp(3) then
 			py+=1
+			sfx(2)
 		end
 		px=mid(1,px,4)
 		py=mid(1,py,4)
@@ -369,6 +389,7 @@ function update_piece_place()
 		if btnp(4) then
 			can_place=check_placement()
 			if can_place then
+				sfx(7)
 				choices={}
 				choices=stamp_piece(selected_piece,px,py)
 				if #choices>0 then
@@ -389,14 +410,16 @@ function update_piece_place()
 					mode="game over"
 				end
 			else
-				--feedback?
+				sfx(8)
 			end
 		end
 	else
 		if btnp(2) then
+			sfx(3)
 			cancel_selected=false
 		end
 		if btnp(4) then
+			sfx(5)
 			mode="piece select"
 		end
 	end
@@ -404,44 +427,75 @@ end
 
 function update_delete_square()
 	if not cancel_selected then
-		if (btnp(0)) px-=1
-		if (btnp(1)) px+=1
-		if (btnp(2)) py-=1
+		if (btnp(0)) then
+			sfx(9)
+			px-=1
+		end
+		if (btnp(1)) then
+			sfx(10)
+			px+=1
+		end
+		if (btnp(2)) then
+			py-=1
+			sfx(3)
+		end
 		if py==4 and btnp(3) then
 			cancel_selected=true
+			sfx(2)
 		elseif btnp(3) then
 			py+=1
+			sfx(2)
 		end
 		px=mid(1,px,4)
 		py=mid(1,py,4)
 		
-		if btnp(4) and grid[py][px]~=0 and grid[py][px]~=77 then
-			grid[py][px]=0
-			piece_pool[selected_piece]-=1
-			mode="piece select"
-			stuck=check_stuck()
-			if stuck then
-				mode="game over"
+		if btnp(4) then
+			if grid[py][px]~=0 and grid[py][px]~=77 then
+				sfx(7)
+				grid[py][px]=0
+				piece_pool[selected_piece]-=1
+				mode="piece select"
+				stuck=check_stuck()
+				if stuck then
+					mode="game over"
+				end
+			else
+				sfx(8)
 			end
 		end
 	else
 		if btnp(2) then
+			sfx(3)
 			cancel_selected=false
 		end
 		if btnp(4) then
+			sfx(5)
 			mode="select piece to burn"
 		end
 	end
 end
 
 function update_make_choices()
-	if (btnp(0)) choice_select-=1
-	if (btnp(1)) choice_select+=1
-	if (btnp(2)) choice_select-=5
-	if (btnp(3)) choice_select+=5
+	if (btnp(0)) then
+		sfx(9)
+		choice_select-=1
+	end
+	if (btnp(1)) then
+		sfx(10)
+		choice_select+=1
+	end
+	if (btnp(2)) then
+		sfx(3)
+		choice_select-=5
+	end
+	if (btnp(3)) then
+		sfx(2)
+		choice_select+=5
+	end
 	if (choice_select<1) choice_select+=#choices[choicen]
 	if (choice_select>#choices[choicen]) choice_select-=#choices[choicen]
 	if btnp(4) then
+		sfx(4)
 		piece_pool[choices[choicen][choice_select]]+=1
 		if choices[choicen]==available_vlongs then
 			del(available_vlongs,available_vlongs[choice_select])
@@ -493,13 +547,19 @@ end
 
 preview_size=4
 
-function draw_piece_preview(i,xbase,ybase)
+function draw_piece_preview(i,xbase,ybase,dither)
 	for sq=1,#piece_defs[i] do
 		local px=piece_defs[i][sq][1]
 		local py=piece_defs[i][sq][2]
 		local x=xbase+px*preview_size
 		local y=ybase+py*preview_size
-		rectfill(x,y,x+preview_size,y+preview_size,piece_defs[i].previewc)
+		local c=piece_defs[i].previewc
+		if dither then
+			c=0x6a
+			fillp(0b1010010110100101)
+		end
+		rectfill(x,y,x+preview_size,y+preview_size,c)
+		fillp()
 		rect(x,y,x+preview_size,y+preview_size,1)
 	end
 end
@@ -673,7 +733,21 @@ function draw_play_mode()
 			if (sn==0) sn=32
 			spr(sn,gridx+x*16,gridy+y*16,2,2)
 			if sn==32 and grid_powerups[y][x]~=0 then
-				draw_piece_preview(grid_powerups[y][x][1],gridx+x*16+6,gridy+y*16+6)
+				local p=grid_powerups[y][x][1]
+				local xx=gridx+x*16+6
+				local yy=gridy+y*16+6
+				local dither=false
+				if p>regpend then
+					p=regpend+1
+					xx-=4
+					yy-=2
+				elseif p~=1 then
+					xx-=2
+					yy-=2
+				else
+					dither=true
+				end
+				draw_piece_preview(p,xx,yy,dither)
 			end
 		end
 	end
@@ -1031,10 +1105,15 @@ __map__
 __sfx__
 0001000006770057700577008700097001b1001c1001d1001e10020100211000b7000b7000b7000b7000b7000b700097000b7000b7000b7000c7000c7000e170131701517017170191701a1701c1700a7000a700
 0019000e00000000001f05023050250502605028050280502805027050250502405023050210501f0501d0501b0501b0501a0501a0501a0501b0501e050210502305025050260502405022050200501c0501b050
-00060000167501e70016800148001f800218001f8001f800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-000600001a75000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+01060000167501e70016800148001f800218001f8001f800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+010600001a75000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 010600001a05000000250002305000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 010600002305000000000001a05000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+010600001a05000000250002305000000000002805000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+011600000265400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000b32000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+010600001475000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+010600001875000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 __music__
 00 41404344
 
