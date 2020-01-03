@@ -34,27 +34,27 @@ menu_select=1
 piece_pool={}
 
 piece_defs={
-	{{0,0},spriten=9,previewc=6},
-	{{0,0},{1,0},spriten=5,previewc=10},
+	{{0,0},spriten=9,previewc=6,score=1},
+	{{0,0},{1,0},spriten=5,previewc=10,score=2},
 
-	{{0,0},{1,0},{2,0},spriten=3,previewc=3},
-	{{0,0},{1,0},{1,1},spriten=3,previewc=3},
+	{{0,0},{1,0},{2,0},spriten=3,previewc=3,score=3},
+	{{0,0},{1,0},{1,1},spriten=3,previewc=3,score=3},
 
-	{{0,0},{1,0},{0,1},{1,1},spriten=7,previewc=12},
-	{{0,0},{1,0},{1,1},{2,1},spriten=7,previewc=12},
-	{{0,0},{1,0},{2,0},{2,1},spriten=7,previewc=12},
-	{{0,0},{1,0},{2,0},{3,0},spriten=7,previewc=12},
+	{{0,0},{1,0},{0,1},{1,1},spriten=7,previewc=12,score=4},
+	{{0,0},{1,0},{1,1},{2,1},spriten=7,previewc=12,score=5},
+	{{0,0},{1,0},{2,0},{2,1},spriten=7,previewc=12,score=5},
+	{{0,0},{1,0},{2,0},{3,0},spriten=7,previewc=12,score=5},
 
-	{{0,0},{1,0},{0,1},{1,1},{2,0},spriten=11,previewc=14},
-	{{0,0},{0,1},{1,1},{1,2},{2,1},spriten=11,previewc=14},
-	{{0,0},{1,0},{2,0},{2,1},{3,1},spriten=11,previewc=14},
-	{{0,0},{1,0},{2,0},{3,0},{3,1},spriten=11,previewc=14},
-	{{0,0},{0,1},{0,2},{1,1},{2,1},spriten=11,previewc=14},
-	{{0,0},{0,1},{1,1},{2,1},{2,0},spriten=11,previewc=14},
-	{{0,0},{1,0},{2,0},{2,1},{2,2},spriten=11,previewc=14},
-	{{0,0},{1,0},{1,1},{2,1},{2,2},spriten=11,previewc=14},
-	{{0,0},{1,0},{1,1},{2,0},{3,0},spriten=11,previewc=14},
-	{{0,0},{0,1},{1,1},{2,1},{2,2},spriten=11,previewc=14},
+	{{0,0},{1,0},{0,1},{1,1},{2,0},spriten=11,previewc=14,score=6},
+	{{0,0},{0,1},{1,1},{1,2},{2,1},spriten=11,previewc=14,score=6},
+	{{0,0},{1,0},{2,0},{2,1},{3,1},spriten=11,previewc=14,score=6},
+	{{0,0},{1,0},{2,0},{3,0},{3,1},spriten=11,previewc=14,score=6},
+	{{0,0},{0,1},{0,2},{1,1},{2,1},spriten=11,previewc=14,score=6},
+	{{0,0},{0,1},{1,1},{2,1},{2,0},spriten=11,previewc=14,score=6},
+	{{0,0},{1,0},{2,0},{2,1},{2,2},spriten=11,previewc=14,score=6},
+	{{0,0},{1,0},{1,1},{2,1},{2,2},spriten=11,previewc=14,score=6},
+	{{0,0},{1,0},{1,1},{2,0},{3,0},spriten=11,previewc=14,score=6},
+	{{0,0},{0,1},{1,1},{2,1},{2,2},spriten=11,previewc=14,score=6},
 }
 
 --powerup option defs
@@ -84,7 +84,7 @@ grid_powerups={
 	{0,0,0,0},
 }
 gridx=30
-gridy=-10
+gridy=-9
 
 choices={}
 choicen=1
@@ -129,6 +129,13 @@ function rotate(x,y,r)
 end
 
 function _init()
+	local have_data=cartdata("planet_grid_mrh_v1")
+	if not have_data then
+		for idx=0,63 do
+			dset(idx,0)
+		end
+	end
+	highscore=dget(1)
 end
 
 function new_game()
@@ -144,6 +151,7 @@ function new_game()
 	piece_pool[4]=1
 	reset_vlongs()
 	new_board()
+	score=0
 end
 
 function _update()
@@ -183,6 +191,8 @@ function _update()
 		update_select_burn()
 	elseif mode=="delete square" then
 		update_delete_square()
+	elseif mode=="game over" then
+		update_game_over()
 	end
 end
 
@@ -399,15 +409,17 @@ function update_piece_place()
 				else
 					mode="piece select"
 				end
+				score+=piece_defs[selected_piece].score
 				selected_piece=1
 				if board_is_full() then
+					score+=10
 					need_new_board=true
 					wait_time=0
 					piece_pool[1]+=1
 				end
 				stuck=check_stuck()
 				if stuck then
-					mode="game over"
+					game_over()
 				end
 			else
 				sfx(8)
@@ -454,10 +466,12 @@ function update_delete_square()
 				sfx(7)
 				grid[py][px]=0
 				piece_pool[selected_piece]-=1
+				selected_piece=1
 				mode="piece select"
+				score-=1
 				stuck=check_stuck()
 				if stuck then
-					mode="game over"
+					game_over()
 				end
 			else
 				sfx(8)
@@ -472,6 +486,27 @@ function update_delete_square()
 			sfx(5)
 			mode="select piece to burn"
 		end
+	end
+end
+
+function update_game_over()
+	if btnp(4) then
+		sfx(4)
+		new_game()
+		mode="piece select"
+	elseif btnp(5) then
+		sfx(5)
+		mode="main menu"
+	end
+end
+
+function game_over()
+	mode="game over"
+	sfx(11)
+	if score>highscore then
+		highscore=score
+		dset(1,highscore)
+		new_high_score=true
 	end
 end
 
@@ -667,6 +702,7 @@ function draw_main_menu()
 			spr(34,textxbase-10,textybase-1+m*10)
 		end
 	end
+	print("high score:"..highscore,2,120,8)
 end
 
 function draw_instructions()
@@ -779,10 +815,19 @@ function draw_play_mode()
 	end
 
 	if mode=="game over" then
-		print("game over!")
+		rect(choicebox.x,choicebox.y,choicebox.maxx,choicebox.maxy,2)
+		rectfill(choicebox.x+1,choicebox.y+1,choicebox.maxx-1,choicebox.maxy-1,14)
+		print("game over!",choicebox.x+30,choicebox.y+10,8)
+		print("score:"..score,choicebox.x+30,choicebox.y+16,8)
+		if new_high_score then
+			print("new high score!",choicebox.x+20,choicebox.y+22,7)
+		end
+		print("🅾️:restart",choicebox.x+15,choicebox.y+32,8)
+		print("❎:return to menu",choicebox.x+15,choicebox.y+38,8)
 	end
 
 	draw_help_text()
+	print("score:"..score.." high score:"..highscore,40,1,1)
 end
 
 -->8
@@ -1114,6 +1159,7 @@ __sfx__
 001000000b32000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 010600001475000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 010600001875000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+01100000230500000018050000000d040090300000008055080550805508055000000505000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 __music__
 00 41404344
 
