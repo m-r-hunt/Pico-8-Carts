@@ -99,6 +99,9 @@ play_modes={
 	"game over",
 }
 
+ticks=0
+wait_time=0
+
 function reset_vlongs()
 	for i=1,#vlongs do
 		available_vlongs[i]=vlongs[i]
@@ -144,13 +147,25 @@ function new_game()
 end
 
 function _update()
-	if mode~="make choices" then
+ ticks+=1
+ if ticks%3==0 then
 		for y=1,4 do
 			for x=1,4 do
 				if grid[y][x]~=0 and grid[y][x]<67 then
 					grid[y][x]+=32
 				end
-				end
+			end
+		end
+	end
+	if need_new_board then
+	 wait_time+=1
+	end
+	if need_new_board and mode=="piece select" then
+	 if wait_time>45 then
+			new_board()
+			need_new_board=false
+		else
+		 return
 		end
 	end
 	if mode=="main menu" then
@@ -171,12 +186,19 @@ function _update()
 end
 
 function update_main_menu()
-	if (btnp(2)) menu_select-=1
-	if (btnp(3)) menu_select+=1
+	if (btnp(2)) then
+		menu_select-=1
+		sfx(3)
+	end
+	if (btnp(3)) then
+		menu_select+=1
+		sfx(2)
+	end
 	if (menu_select<1) menu_select+=#menu_options
 	if (menu_select>#menu_options) menu_select-=#menu_options
 
 	if btnp(4) then
+		sfx(4)
 	 new_game()
 		mode=menu_options[menu_select].mode
 	end
@@ -184,6 +206,7 @@ end
 
 function update_instructions()
 	if btnp(4) or btnp(5) then
+		sfx(5)
 		mode="main menu"
 	end
 end
@@ -357,7 +380,8 @@ function update_piece_place()
 				end
 				selected_piece=1
 				if board_is_full() then
-					new_board()
+					need_new_board=true
+					wait_time=0
 					piece_pool[1]+=1
 				end
 				stuck=check_stuck()
@@ -658,7 +682,9 @@ function draw_play_mode()
 
 	--draw cursors for placing piece/deleting square
 	if mode=="piece place" then
-		draw_piece(selected_piece,gridx+px*16-2,gridy+py*16-2)
+	 if not cancel_selected then
+			draw_piece(selected_piece,gridx+px*16-2,gridy+py*16-2)
+		end
 		rect(gridx+px*16,gridy+py*16,gridx+px*16+2,gridy+py*16+2,4)
 		rectfill(48,108,74,115,7)
 		print("cancel",50,110,5)
@@ -691,6 +717,8 @@ end
 --compute score, larger pieces=more pts
 
 --slow down growth anims
+
+--do choice before new level
 
 -- for p=1,#piece_pool do
 --  if piece_pool[p]~=0 then
@@ -1002,3 +1030,11 @@ __map__
 1111111111111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 __sfx__
 0001000006770057700577008700097001b1001c1001d1001e10020100211000b7000b7000b7000b7000b7000b700097000b7000b7000b7000c7000c7000e170131701517017170191701a1701c1700a7000a700
+0019000e00000000001f05023050250502605028050280502805027050250502405023050210501f0501d0501b0501b0501a0501a0501a0501b0501e050210502305025050260502405022050200501c0501b050
+00060000167501e70016800148001f800218001f8001f800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+000600001a75000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+010600001a05000000250002305000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+010600002305000000000001a05000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+__music__
+00 41404344
+
