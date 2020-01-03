@@ -23,7 +23,7 @@ function intro()
 	flip()
 	pal()
 end
---intro()
+intro()
 
 menu_options={
 	{display="start",mode="piece select"},
