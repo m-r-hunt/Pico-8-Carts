@@ -136,6 +136,12 @@ function _init()
 		end
 	end
 	highscore=dget(1)
+	menuitem(2,"main menu",main_menu_callback)
+end
+
+function main_menu_callback()
+	mode="main menu"
+	menuitem(1)
 end
 
 function new_game()
@@ -152,6 +158,12 @@ function new_game()
 	reset_vlongs()
 	new_board()
 	score=0
+	menuitem(1,"restart game",restart_callback)
+end
+
+function restart_callback()
+	new_game()
+	mode="piece select"
 end
 
 function _update()
@@ -210,8 +222,10 @@ function update_main_menu()
 
 	if btnp(4) then
 		sfx(4)
-		new_game()
 		mode=menu_options[menu_select].mode
+		if mode~="instructions" then
+			new_game()
+		end
 	end
 end
 
@@ -508,6 +522,7 @@ function game_over()
 		dset(1,highscore)
 		new_high_score=true
 	end
+	menuitem(1)
 end
 
 function update_make_choices()
