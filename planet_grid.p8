@@ -589,6 +589,7 @@ function stamp_piece(i,x,y)
 				else
 					add(choices,grid_powerups[py][px])
 				end
+				grid_powerups[py][px]=0
 			end
 		end
 	end
@@ -848,7 +849,6 @@ end
 -->8
 --notes
 
---no repeat powerups
 --fix gameover when you have choices
 --control notes on ❎ and 🅾️
 
