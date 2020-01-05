@@ -1,7 +1,7 @@
 pico-8 cartridge // http://www.pico-8.com
 version 18
 __lua__
---planet grid v1.0
+--planet grid v1.1
 --(c) 2020 max hunt (cc by-sa)
 
 ibase=192
