@@ -26,7 +26,8 @@ end
 intro()
 
 menu_options={
-	{display="start",mode="piece select"},
+	{display="start",mode="piece select",hard=false},
+	{display="start (hard mode)",mode="piece select",hard=true},
 	{display="instructions",mode="instructions"},
 }
 menu_select=1
@@ -101,6 +102,7 @@ play_modes={
 
 ticks=0
 wait_time=0
+hard=false
 
 function reset_vlongs()
 	for i=1,#vlongs do
@@ -144,16 +146,18 @@ function main_menu_callback()
 	menuitem(1)
 end
 
-function new_game()
+function new_game(hard)
 	for i=1,regpend do
 		piece_pool[i]=0
 	end
 	for i=regpend+1,#piece_defs do
 		piece_pool[i]=0
 	end
-	piece_pool[1]=1
-	piece_pool[2]=1
-	piece_pool[3]=1
+	if not hard then
+		piece_pool[1]=1
+		piece_pool[2]=1
+		piece_pool[3]=1
+	end
 	piece_pool[4]=1
 	reset_vlongs()
 	new_board()
@@ -162,7 +166,7 @@ function new_game()
 end
 
 function restart_callback()
-	new_game()
+	new_game(hard)
 	mode="piece select"
 end
 
@@ -223,8 +227,9 @@ function update_main_menu()
 	if btnp(4) then
 		sfx(4)
 		mode=menu_options[menu_select].mode
+		hard=menu_options[menu_select].hard
 		if mode~="instructions" then
-			new_game()
+			new_game(hard)
 		end
 	end
 end
@@ -432,7 +437,7 @@ function update_piece_place()
 					piece_pool[1]+=1
 				end
 				stuck=check_stuck()
-				if stuck then
+				if stuck and #choices==0 then
 					game_over()
 				end
 			else
@@ -506,7 +511,7 @@ end
 function update_game_over()
 	if btnp(4) then
 		sfx(4)
-		new_game()
+		new_game(hard)
 		mode="piece select"
 	elseif btnp(5) then
 		sfx(5)
