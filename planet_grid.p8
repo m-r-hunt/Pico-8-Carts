@@ -848,11 +848,9 @@ end
 -->8
 --notes
 
---compute score, larger pieces=more pts
-
---slow down growth anims
-
---do choice before new level
+--no repeat powerups
+--fix gameover when you have choices
+--control notes on ❎ and 🅾️
 
 -- for p=1,#piece_pool do
 --  if piece_pool[p]~=0 then
