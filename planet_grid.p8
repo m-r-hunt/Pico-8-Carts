@@ -854,9 +854,6 @@ end
 -->8
 --notes
 
---fix gameover when you have choices
---control notes on ❎ and 🅾️
-
 -- for p=1,#piece_pool do
 --  if piece_pool[p]~=0 then
 --   local def=piece_defs[p]
@@ -900,6 +897,8 @@ instrs={
 	"filling up a grid awards you",
 	"a bonus piece and a new grid.",
 	"go for a high score!",
+	"note on pc/web keyboard",
+	"🅾️=z and ❎=x.",
 }
 __gfx__
 00000000333bb3330002000044444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444400000000
