@@ -745,8 +745,11 @@ function draw_help_text()
 	elseif mode=="delete square" then
 		str="select square to delete\nor cancel"
 	end
-	print(str,choicebox.x,choicebox.y+4,1)
+	print(str,choicebox.x,choicebox.y+16,1)
 end
+
+cancelx=64
+cancely=74
 
 function draw_play_mode()
 	cls(15)
@@ -817,10 +820,10 @@ function draw_play_mode()
 			draw_piece(selected_piece,gridx+px*16-2,gridy+py*16-2)
 		end
 		rect(gridx+px*16,gridy+py*16,gridx+px*16+2,gridy+py*16+2,4)
-		rectfill(48,108,74,115,7)
-		print("cancel",50,110,5)
+		rectfill(cancelx,cancely,cancelx+24,cancely+6,7)
+		print("cancel",cancelx+1,cancely+1,5)
 		if cancel_selected then
-			spr(2,74,108)
+			spr(2,74,cancely)
 		end
 	elseif mode=="delete square" then
 		spr(18,gridx+px*16,gridy+py*16)
@@ -831,6 +834,7 @@ function draw_play_mode()
 		end
 	end
 
+	print("score:"..score.."\nhigh score:"..highscore,choicebox.x+15,116,12)
 	if mode=="make choices" then
 		draw_choice_box()
 	end
@@ -848,7 +852,6 @@ function draw_play_mode()
 	end
 
 	draw_help_text()
-	print("score:"..score.." high score:"..highscore,40,1,1)
 end
 
 -->8
