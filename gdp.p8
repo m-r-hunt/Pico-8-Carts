@@ -17,6 +17,9 @@ vec2mt={
 	__eq=function(v1,v2)
 		return v1[1]==v2[1] and v1[2]==v2[2]
 	end,
+	floored = function(self)
+		return vec2{flr(self[1]),flr(self[2])}
+	end
 	tostring=function(v)
 		return "vec2{"..v[1]..","..v[2].."}"
 	end,
@@ -82,7 +85,6 @@ function faller:updatecb()
 	end
 	if (btn(0)) self.direction[1]=-1
 	if (btn(1)) self.direction[1]=1
-	local new_position=self.position+self.direction
 	local pos,hit,hit_normal=move_collider(self,self.direction)
 	if hit then
 		self.direction=vec2{0,0}
