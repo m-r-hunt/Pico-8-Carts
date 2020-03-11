@@ -42,20 +42,21 @@ function node:new(t)
 	return t
 end
 
-function node:addchild(n)
+function node:add_child(n)
 	add(self.children,n)
 	n.parent=self
-	if not n.readied then
+	if readied then
 		n:ready()
 	end
+	n:set_position()
 end
 
-function node:setposition(p)
+function node:set_position(p)
 	p=p or self.position
 	self.position=p
 	self.global_position=self.parent and (self.parent.global_position+self.position) or self.position
 	for i=1,#self.children do
-		self.children[i]:setposition()
+		self.children[i]:set_position()
 	end
 end
 
@@ -86,7 +87,8 @@ end
 function node:drawcb() end
 
 function _init()
-	root:setposition()
+	root:set_position()
+	root:ready()
 end
 
 function _update()
@@ -187,7 +189,7 @@ end
 
 sprite=node:new()
 function sprite:drawcb()
-	local pos=self.global_position:floored()-vec2(4,4)-camerafollow.global_position:floored()+vec2(64,64)
+	local pos=self.global_position:floored()-vec2(4,4)-camera_pos
 	spr(self.s,pos.x,pos.y)
 end
 
@@ -211,7 +213,7 @@ function faller:updatecb()
 	if hit and hit_normal.y!=0 then
 		self.direction=vec2(0,0)
 	end
-	self:setposition(pos)
+	self:set_position(pos)
 	for c=1,#contacts do
 		if band(fget(mget(contacts[c].x,contacts[c].y)),2)!=0 then
 			mset(contacts[c].x,contacts[c].y,0)
@@ -222,21 +224,25 @@ end
 
 maprender=node:new{}
 function maprender:drawcb()
-	local pos=self.global_position:floored()-camerafollow.global_position:floored()+vec2(64,64)
+	local pos=self.global_position:floored()-camera_pos
 	map(0,0,pos.x,pos.y,128,32)
 end
 
+camera_pos=vec2(0,0)
 camerafollow=node:new{}
+function camerafollow:updatecb()
+	camera_pos=self.global_position:floored()-vec2(64,64)
+end
 
 block=kinematicbody:new{position=vec2(100,30)}
-block:addchild(sprite:new{s=17})
+block:add_child(sprite:new{s=17})
 
 root=node:new()
-root:addchild(maprender)
-root:addchild(faller)
-root:addchild(block)
-faller:addchild(sprite:new{s=1})
-faller:addchild(camerafollow)
+root:add_child(maprender)
+root:add_child(faller)
+root:add_child(block)
+faller:add_child(sprite:new{s=1})
+faller:add_child(camerafollow)
 __gfx__
 00000000ffffffff3333333333333333000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000fbbbbbbf444444444444444400aaaa000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
