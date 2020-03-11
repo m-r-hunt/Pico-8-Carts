@@ -1,6 +1,8 @@
 pico-8 cartridge // http://www.pico-8.com
 version 18
 __lua__
+--core
+
 vec2mt={
 	__add=function(v1,v2)
 		return vec2{v1[1]+v2[1],v1[2]+v2[2]}
@@ -43,6 +45,9 @@ end
 function node:addchild(n)
 	add(self.children,n)
 	n.parent=self
+	if not n.readied then
+		n:ready()
+	end
 end
 
 function node:setposition(p)
@@ -52,6 +57,16 @@ function node:setposition(p)
 	for i=1,#self.children do
 		self.children[i]:setposition()
 	end
+end
+
+function node:ready()
+	self:readycb()
+	readied=true
+	for i=1,#self.children do
+		self.children[i]:ready()
+	end
+end
+function node:readycb()
 end
 
 function node:update()
@@ -70,53 +85,6 @@ function node:draw()
 end
 function node:drawcb() end
 
-sprite=node:new()
-function sprite:drawcb()
-	local pos=self.global_position:floored()-vec2{4,4}-camerafollow.global_position:floored()+vec2{64,64}
-	spr(self.s,pos[1],pos[2])
-end
-
-faller=node:new{position=vec2{100,5},direction=vec2{0,1}}
-
-function faller:updatecb()
-	if btn(4) then
-		self.direction=vec2{0,-1}
-	else
-		self.direction+=vec2{0,0.5}
-	end
-	if (btn(0)) self.direction[1]=-1
-	if (btn(1)) self.direction[1]=1
-	local new_pos=self.position+self.direction
-	local pos,hit,hit_normal,contacts=move_collider(self,new_pos:floored())
-	if (not hit) pos=new_pos
-	if hit and hit_normal[2]!=0 then
-		self.direction=vec2{0,0}
-	end
-	self:setposition(pos)
-	for c=1,#contacts do
-		if band(fget(mget(contacts[c][1],contacts[c][2])),2)!=0 then
-			mset(contacts[c][1],contacts[c][2],0)
-		end
-	end
-end
-
-maprender=node:new{}
-function maprender:drawcb()
-	local pos=self.global_position:floored()-camerafollow.global_position:floored()+vec2{64,64}
-	map(0,0,pos[1],pos[2],128,32)
-end
-
-camerafollow=node:new{}
-
-block=sprite:new{position=vec2{100,30},s=17}
-
-root=node:new()
-root:addchild(maprender)
-root:addchild(faller)
-root:addchild(block)
-faller:addchild(sprite:new{s=1})
-faller:addchild(camerafollow)
-
 function _init()
 	root:setposition()
 end
@@ -132,13 +100,13 @@ function _draw()
 end
 
 -->8
+--physics
+
 colliders={}
 
 function add_collider(t,pos,size)
 	colliders[t]={pos=pos,size=size}
 end
-add_collider(faller,faller.position,vec2{4,4})
-add_collider(block,block.position,vec2{4,4})
 
 function check_against_colliders(exc,x,y,w,h)
 	local x1=x-w
@@ -214,6 +182,61 @@ function move_collider(t,new_pos)
 	return col.pos,hit,hit_normal,contacts
 end
 
+-->8
+--nodes
+
+sprite=node:new()
+function sprite:drawcb()
+	local pos=self.global_position:floored()-vec2{4,4}-camerafollow.global_position:floored()+vec2{64,64}
+	spr(self.s,pos[1],pos[2])
+end
+
+kinematicbody=node:new{size=vec2{4,4}}
+function kinematicbody:readycb()
+	add_collider(self,self.position,self.size)
+end
+
+faller=kinematicbody:new{position=vec2{100,5},direction=vec2{0,1}}
+function faller:updatecb()
+	if btn(4) then
+		self.direction=vec2{0,-1}
+	else
+		self.direction+=vec2{0,0.5}
+	end
+	if (btn(0)) self.direction[1]=-1
+	if (btn(1)) self.direction[1]=1
+	local new_pos=self.position+self.direction
+	local pos,hit,hit_normal,contacts=move_collider(self,new_pos:floored())
+	if (not hit) pos=new_pos
+	if hit and hit_normal[2]!=0 then
+		self.direction=vec2{0,0}
+	end
+	self:setposition(pos)
+	for c=1,#contacts do
+		if band(fget(mget(contacts[c][1],contacts[c][2])),2)!=0 then
+			mset(contacts[c][1],contacts[c][2],0)
+		end
+	end
+end
+
+
+maprender=node:new{}
+function maprender:drawcb()
+	local pos=self.global_position:floored()-camerafollow.global_position:floored()+vec2{64,64}
+	map(0,0,pos[1],pos[2],128,32)
+end
+
+camerafollow=node:new{}
+
+block=kinematicbody:new{position=vec2{100,30}}
+block:addchild(sprite:new{s=17})
+
+root=node:new()
+root:addchild(maprender)
+root:addchild(faller)
+root:addchild(block)
+faller:addchild(sprite:new{s=1})
+faller:addchild(camerafollow)
 __gfx__
 00000000ffffffff3333333333333333000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000fbbbbbbf444444444444444400aaaa000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
