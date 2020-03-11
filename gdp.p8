@@ -45,10 +45,18 @@ end
 function node:add_child(n)
 	add(self.children,n)
 	n.parent=self
-	if readied then
+	if self.readied then
 		n:ready()
 	end
 	n:set_position()
+end
+
+function node:remove_child(n)
+	del(self.children,n)
+	n.parent=nil
+	if self.readied then
+		n:unready()
+	end
 end
 
 function node:set_position(p)
@@ -62,12 +70,22 @@ end
 
 function node:ready()
 	self:readycb()
-	readied=true
-	for i=1,#self.children do
-		self.children[i]:ready()
+	self.readied=true
+	for child in all(self.children) do
+		child:ready()
 	end
 end
 function node:readycb()
+end
+
+function node:unready()
+	self:unreadycb()
+	self.readied=false
+	for child in all(self.children) do
+		child:unready()
+	end
+end
+function node:unreadycb()
 end
 
 function node:update()
@@ -108,6 +126,10 @@ colliders={}
 
 function add_collider(t,pos,size)
 	colliders[t]={pos=pos,size=size}
+end
+
+function remove_collider(t)
+	colliders[t]=nil
 end
 
 function check_against_colliders(exc,x,y,w,h)
@@ -196,6 +218,9 @@ end
 kinematicbody=node:new{size=vec2(4,4)}
 function kinematicbody:readycb()
 	add_collider(self,self.position,self.size)
+end
+function kinematicbody:unreadycb()
+	remove_collider(self)
 end
 
 faller=kinematicbody:new{position=vec2(100,5),direction=vec2(0,1)}
