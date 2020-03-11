@@ -239,10 +239,36 @@ block:add_child(sprite:new{s=17})
 
 root=node:new()
 root:add_child(maprender)
-root:add_child(faller)
 root:add_child(block)
-faller:add_child(sprite:new{s=1})
-faller:add_child(camerafollow)
+-->8
+--scenes
+
+function instance(scene)
+	local newn = scene[1]:new()
+	for name,value in pairs(scene) do
+		if type(name)!="number" then
+			newn[name]=value
+		end
+	end
+	for i=2,#scene do
+		newn:add_child(instance(scene[i]))
+	end
+	return newn
+end
+
+function scene(t)
+	t.instance=instance
+	return t
+end
+
+player_scene=scene{
+	faller,
+	{sprite,s=1},
+	{camerafollow},
+}
+
+root:add_child(player_scene:instance())
+
 __gfx__
 00000000ffffffff3333333333333333000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000fbbbbbbf444444444444444400aaaa000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
