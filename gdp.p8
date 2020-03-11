@@ -5,34 +5,34 @@ __lua__
 
 vec2mt={
 	__add=function(v1,v2)
-		return vec2{v1[1]+v2[1],v1[2]+v2[2]}
+		return vec2(v1.x+v2.x,v1.y+v2.y)
 	end,
 	__sub=function(v1,v2)
-		return vec2{v1[1]-v2[1],v1[2]-v2[2]}
+		return vec2(v1.x-v2.x,v1.y-v2.y)
 	end,
 	__mul=function(s,v)
-		return vec2{s*v[1],s*v[2]}
+		return vec2(s*v.x,s*v.y)
 	end,
 	__len=function(self)
-		return sqrt(self[1]*self[1]+self[2]*self[2])
+		return sqrt(self.x*self.x+self.y*self.y)
 	end,
 	__eq=function(v1,v2)
-		return v1[1]==v2[1] and v1[2]==v2[2]
+		return v1.x==v2.x and v1.y==v2.y
 	end,
 	floored = function(self)
-		return vec2{flr(self[1]),flr(self[2])}
+		return vec2(flr(self.x),flr(self.y))
 	end,
 	tostring=function(v)
-		return "vec2{"..v[1]..","..v[2].."}"
+		return "vec2("..v.x..","..v.y..")"
 	end,
 }
 vec2mt.__index=vec2mt
 
-function vec2(t)
-	return setmetatable(t,vec2mt)
+function vec2(x,y)
+	return setmetatable({x=x,y=y},vec2mt)
 end
 
-node={position=vec2{0,0},global_position=vec2{0,0}}
+node={position=vec2(0,0),global_position=vec2(0,0)}
 node.__index=node
 function node:new(t)
 	t=t or {}
@@ -114,10 +114,10 @@ function check_against_colliders(exc,x,y,w,h)
 	local y1=y-h
 	local y2=y+h-1
 	for t,c in pairs(colliders) do
-		local xx1=c.pos[1]-c.size[1]
-		local xx2=c.pos[1]+c.size[1]-1
-		local yy1=c.pos[2]-c.size[2]
-		local yy2=c.pos[2]+c.size[2]-1
+		local xx1=c.pos.x-c.size.x
+		local xx2=c.pos.x+c.size.x-1
+		local yy1=c.pos.y-c.size.y
+		local yy2=c.pos.y+c.size.y-1
 		if t!=exc then
 			if ((x1>=xx1 and x1<=xx2) or (x2>=xx1 and x2<=xx2) or (x1<=xx1 and x2>=xx2)) and
 			   ((y1>=yy1 and y1<=yy2) or (y2>=yy1 and y2<=yy2) or (y1<=yy1 and y2>=yy2)) then
@@ -144,7 +144,7 @@ function check_against_map(contacts,x,y,w,h)
 		for ty=tile_y1,tile_y2 do
 			local flags=fget(mget(tx,ty))
 			if flags!=0 then
-				addc(contacts,vec2{tx,ty})
+				addc(contacts,vec2(tx,ty))
 			end
 			if (band(flags,1)!=0) return true
 		end
@@ -153,31 +153,31 @@ end
 
 function move_collider(t,new_pos)
 	local hit=false
-	local hit_normal=vec2{0,0}
+	local hit_normal=vec2(0,0)
 	local col=colliders[t]
-	local tile_x=flr(col.pos[1]/8)
+	local tile_x=flr(col.pos.x/8)
 	local vec=new_pos-col.pos
 	local contacts={}
-	for y=col.pos[2],new_pos[2],sgn(vec[2]) do
-		local tile_y=flr((y-col.size[2])/8)
-		local tile_y2=flr((y+col.size[2]-1)/8)
-		if check_against_map(contacts,col.pos[1],y,col.size[1],col.size[2]) or check_against_colliders(t,col.pos[1],y,col.size[1],col.size[2]) then
+	for y=col.pos.y,new_pos.y,sgn(vec.y) do
+		local tile_y=flr((y-col.size.y)/8)
+		local tile_y2=flr((y+col.size.y-1)/8)
+		if check_against_map(contacts,col.pos.x,y,col.size.x,col.size.y) or check_against_colliders(t,col.pos.x,y,col.size.x,col.size.y) then
 			hit=true
-			hit_normal[2]=-sgn(vec[2])
+			hit_normal.y=-sgn(vec.y)
 			break
 		end
-		col.pos[2]=y
+		col.pos.y=y
 	end
-	local tile_y=flr(col.pos[2]/8)
-	for x=col.pos[1],new_pos[1],sgn(vec[1]) do
-		local tile_x=flr((x-col.size[2])/8)
-		local tile_x2=flr((x+col.size[1]-1)/8)
-		if check_against_map(contacts,x,col.pos[2],col.size[1],col.size[2]) or check_against_colliders(t,x,col.pos[2],col.size[1],col.size[2]) then
+	local tile_y=flr(col.pos.y/8)
+	for x=col.pos.x,new_pos.x,sgn(vec.x) do
+		local tile_x=flr((x-col.size.y)/8)
+		local tile_x2=flr((x+col.size.x-1)/8)
+		if check_against_map(contacts,x,col.pos.y,col.size.x,col.size.y) or check_against_colliders(t,x,col.pos.y,col.size.x,col.size.y) then
 			hit=true
-			hit_normal[1]=-sgn(vec[1])
+			hit_normal.x=-sgn(vec.x)
 			break
 		end
-		col.pos[1]=x
+		col.pos.x=x
 	end
 	return col.pos,hit,hit_normal,contacts
 end
@@ -187,34 +187,34 @@ end
 
 sprite=node:new()
 function sprite:drawcb()
-	local pos=self.global_position:floored()-vec2{4,4}-camerafollow.global_position:floored()+vec2{64,64}
-	spr(self.s,pos[1],pos[2])
+	local pos=self.global_position:floored()-vec2(4,4)-camerafollow.global_position:floored()+vec2(64,64)
+	spr(self.s,pos.x,pos.y)
 end
 
-kinematicbody=node:new{size=vec2{4,4}}
+kinematicbody=node:new{size=vec2(4,4)}
 function kinematicbody:readycb()
 	add_collider(self,self.position,self.size)
 end
 
-faller=kinematicbody:new{position=vec2{100,5},direction=vec2{0,1}}
+faller=kinematicbody:new{position=vec2(100,5),direction=vec2(0,1)}
 function faller:updatecb()
 	if btn(4) then
-		self.direction=vec2{0,-1}
+		self.direction=vec2(0,-1)
 	else
-		self.direction+=vec2{0,0.5}
+		self.direction+=vec2(0,0.5)
 	end
-	if (btn(0)) self.direction[1]=-1
-	if (btn(1)) self.direction[1]=1
+	if (btn(0)) self.direction.x=-1
+	if (btn(1)) self.direction.x=1
 	local new_pos=self.position+self.direction
 	local pos,hit,hit_normal,contacts=move_collider(self,new_pos:floored())
 	if (not hit) pos=new_pos
-	if hit and hit_normal[2]!=0 then
-		self.direction=vec2{0,0}
+	if hit and hit_normal.y!=0 then
+		self.direction=vec2(0,0)
 	end
 	self:setposition(pos)
 	for c=1,#contacts do
-		if band(fget(mget(contacts[c][1],contacts[c][2])),2)!=0 then
-			mset(contacts[c][1],contacts[c][2],0)
+		if band(fget(mget(contacts[c].x,contacts[c].y)),2)!=0 then
+			mset(contacts[c].x,contacts[c].y,0)
 		end
 	end
 end
@@ -222,13 +222,13 @@ end
 
 maprender=node:new{}
 function maprender:drawcb()
-	local pos=self.global_position:floored()-camerafollow.global_position:floored()+vec2{64,64}
-	map(0,0,pos[1],pos[2],128,32)
+	local pos=self.global_position:floored()-camerafollow.global_position:floored()+vec2(64,64)
+	map(0,0,pos.x,pos.y,128,32)
 end
 
 camerafollow=node:new{}
 
-block=kinematicbody:new{position=vec2{100,30}}
+block=kinematicbody:new{position=vec2(100,30)}
 block:addchild(sprite:new{s=17})
 
 root=node:new()
