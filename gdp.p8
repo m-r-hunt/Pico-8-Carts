@@ -130,7 +130,7 @@ function check_against_colliders(exc,x,y,w,h)
 	return false
 end
 
-function addc(contacts,c)
+function add_contact(contacts,c)
 	for cc=1,#contacts do
 		if (contacts[cc]==c) return
 	end
@@ -146,7 +146,7 @@ function check_against_map(contacts,x,y,w,h)
 		for ty=tile_y1,tile_y2 do
 			local flags=fget(mget(tx,ty))
 			if flags!=0 then
-				addc(contacts,vec2(tx,ty))
+				add_contact(contacts,vec2(tx,ty))
 			end
 			if (band(flags,1)!=0) return true
 		end
