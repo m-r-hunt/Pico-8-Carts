@@ -63,8 +63,8 @@ function node:set_position(p)
 	p=p or self.position
 	self.position=p
 	self.global_position=self.parent and (self.parent.global_position+self.position) or self.position
-	for i=1,#self.children do
-		self.children[i]:set_position()
+	for child in all(self.children) do
+		child:set_position()
 	end
 end
 
@@ -90,16 +90,16 @@ end
 
 function node:update()
 	self:updatecb()
-	for i=1,#self.children do
-		self.children[i]:update()
+	for child in all(self.children) do
+		child:update()
 	end
 end
 function node:updatecb() end
 
 function node:draw()
 	self:drawcb()
-	for i=1,#self.children do
-		self.children[i]:draw()
+	for child in all(self.children) do
+		child:draw()
 	end
 end
 function node:drawcb() end
@@ -239,9 +239,9 @@ function faller:updatecb()
 		self.direction=vec2(0,0)
 	end
 	self:set_position(pos)
-	for c=1,#contacts do
-		if band(fget(mget(contacts[c].x,contacts[c].y)),2)!=0 then
-			mset(contacts[c].x,contacts[c].y,0)
+	for c in all(contacts) do
+		if band(fget(mget(c.x,c.y)),2)!=0 then
+			mset(c.x,c.y,0)
 		end
 	end
 end
