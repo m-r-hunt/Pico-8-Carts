@@ -102,6 +102,8 @@ end
 function node:drawcb() end
 
 function _init()
+    palt(0,false)
+    palt(14,true)
     root:set_position()
     root:ready()
 end
@@ -231,7 +233,7 @@ end
 function kinematicbody:contactcb(c)
 end
 
-faller=kinematicbody:new{position=vec2(100,50),direction=vec2(0,1),state="walking"}
+faller=kinematicbody:new{position=vec2(100,50),direction=vec2(0,1),state="walking",can_grapple=true}
 function faller:updatecb()
     self[self.state](self)
 end
@@ -247,9 +249,11 @@ end
 
 function faller:walking()
     self.direction.x=0
-    if btn(4) then
+    if btn(4) and self.can_grapple then
         self.state="grappling"
         self.grapple_target=find_target(self.global_position)
+        self.children[1].s=34
+        self.can_grapple=false
     else
         self.direction+=vec2(0,0.5)
         if (btn(0)) self.direction.x=-1
@@ -258,6 +262,9 @@ function faller:walking()
         local hit,hit_normal=self:move(new_pos)
         if hit and hit_normal.y!=0 then
             self.direction=vec2(0,0)
+        end
+        if hit and hit_normal.y<0 then
+            self.can_grapple=true
         end
     end
 end
@@ -273,8 +280,12 @@ function faller:grappling()
     self.direction.y=max(self.direction.y,-5)
     local new_pos=self.position+self.direction
     local hit,hit_normal=self:move(new_pos)
-    if hit and hit_normal.y!=0 then
+    if hit and hit_normal.y>0 then
         self.state="walking"
+        self.children[1].s=33
+    end
+    if hit and hit_normal.y<0 then
+        self.direction.y=0
     end
 end
 
@@ -386,7 +397,7 @@ end
 
 player_scene=scene{
     faller,
-    {sprite,s=1},
+    {sprite,s=33},
     {camerafollow},
 }
 
