@@ -111,9 +111,9 @@ function _update()
 end
 
 function _draw()
-    cls(12)
+    cls(1)
     root:draw()
-    print(stat(1),0,0,1)
+    print(stat(1),0,0,7)
 end
 
 --physics
@@ -347,6 +347,8 @@ function maprender:updatecb()
 end
 function maprender:drawcb()
     local pos=self.global_position:floored()-camera_pos
+    if (pos.y>0) rectfill(0,0,128,pos.y,5)
+    if (pos.x>0) rectfill(0,0,pos.x,128,5)
     map(0,0,pos.x,pos.y,128,32,0x80)
 end
 
