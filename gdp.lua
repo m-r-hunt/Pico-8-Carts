@@ -130,7 +130,7 @@ function remove_collider(t)
 	colliders[t]=nil
 end
 
-function check_against_colliders(exc,x,y,w,h)
+function check_against_colliders(contacts,exc,x,y,w,h)
 	local x1=x-w
 	local x2=x+w-1
 	local y1=y-h
@@ -143,6 +143,7 @@ function check_against_colliders(exc,x,y,w,h)
 		if t!=exc then
 			if ((x1>=xx1 and x1<=xx2) or (x2>=xx1 and x2<=xx2) or (x1<=xx1 and x2>=xx2)) and
 			   ((y1>=yy1 and y1<=yy2) or (y2>=yy1 and y2<=yy2) or (y1<=yy1 and y2>=yy2)) then
+				add_contact(contacts,t)
 				return true
 			end
 		end
@@ -183,7 +184,7 @@ function move_collider(t,new_pos)
 	for y=col.pos.y,new_pos.y,sgn(vec.y) do
 		local tile_y=flr((y-col.size.y)/8)
 		local tile_y2=flr((y+col.size.y-1)/8)
-		if check_against_map(contacts,col.pos.x,y,col.size.x,col.size.y) or check_against_colliders(t,col.pos.x,y,col.size.x,col.size.y) then
+		if check_against_map(contacts,col.pos.x,y,col.size.x,col.size.y) or check_against_colliders(contacts,t,col.pos.x,y,col.size.x,col.size.y) then
 			hit=true
 			hit_normal.y=-sgn(vec.y)
 			break
@@ -194,7 +195,7 @@ function move_collider(t,new_pos)
 	for x=col.pos.x,new_pos.x,sgn(vec.x) do
 		local tile_x=flr((x-col.size.y)/8)
 		local tile_x2=flr((x+col.size.x-1)/8)
-		if check_against_map(contacts,x,col.pos.y,col.size.x,col.size.y) or check_against_colliders(t,x,col.pos.y,col.size.x,col.size.y) then
+		if check_against_map(contacts,x,col.pos.y,col.size.x,col.size.y) or check_against_colliders(contacts,t,x,col.pos.y,col.size.x,col.size.y) then
 			hit=true
 			hit_normal.x=-sgn(vec.x)
 			break
@@ -231,6 +232,8 @@ function kinematicbody:move(new_pos)
 	return hit,hit_normal
 end
 function kinematicbody:contactcb(c)
+end
+function kinematicbody:collide(c)
 end
 
 faller=kinematicbody:new{position=vec2(100,50),direction=vec2(0,1),state="walking",can_grapple=true}
@@ -276,8 +279,13 @@ function faller:walking()
 end
 
 function faller:contactcb(c)
-	if band(fget(mget(c.x,c.y)),2)!=0 then
-		mset(c.x,c.y,0)
+	if getmetatable(c)==vec2mt then
+		if band(fget(mget(c.x,c.y)),2)!=0 then
+			mset(c.x,c.y,0)
+		end
+	else
+		self:collide(c)
+		c:collide(self)
 	end
 end
 
@@ -375,6 +383,11 @@ function camerafollow:updatecb()
 	camera_pos=self.global_position:floored()-vec2(64,64)
 end
 
+powerup=kinematicbody:new()
+function powerup:collide()
+	self.parent:remove_child(self)
+end
+
 block=kinematicbody:new{position=vec2(100,30)}
 block:add_child(sprite:new{s=17})
 
@@ -414,7 +427,7 @@ enemy_scene=scene{
 }
 
 hook_powerup_scene=scene{
-	kinematicbody,
+	powerup,
 	{sprite,s=20},
 }
 
