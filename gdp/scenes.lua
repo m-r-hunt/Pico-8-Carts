@@ -1,4 +1,3 @@
-
 function instance(scene)
     local newn = scene[1]:new()
     for name,value in pairs(scene) do

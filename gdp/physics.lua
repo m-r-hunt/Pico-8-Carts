@@ -1,4 +1,3 @@
-
 colliders={}
 
 function add_collider(t,pos,size)
@@ -82,4 +81,27 @@ function move_collider(t,new_pos)
         col.pos.x=x
     end
     return col.pos,hit,hit_normal,contacts
+end
+
+kinematicbody=node:new{size=vec2(4,4)}
+function kinematicbody:readycb()
+    add_collider(self,self.global_position,self.size)
+end
+function kinematicbody:unreadycb()
+    remove_collider(self)
+end
+function kinematicbody:move(new_pos)
+    local pos,hit,hit_normal,contacts=move_collider(self,new_pos:floored())
+    for c in all(contacts) do
+        self:contactcb(c)
+    end
+    if not hit then
+        pos=new_pos
+    end
+    self:set_position(pos)
+    return hit,hit_normal
+end
+function kinematicbody:contactcb(c)
+end
+function kinematicbody:collide(c)
 end

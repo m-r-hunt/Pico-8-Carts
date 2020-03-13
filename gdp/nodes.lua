@@ -1,34 +1,15 @@
-
 sprite=node:new()
 function sprite:drawcb()
     local pos=self.global_position:floored()-vec2(4,4)-camera_pos
     spr(self.s,pos.x,pos.y,1,1,self.hflip)
 end
 
-kinematicbody=node:new{size=vec2(4,4)}
-function kinematicbody:readycb()
-    add_collider(self,self.global_position,self.size)
-end
-function kinematicbody:unreadycb()
-    remove_collider(self)
-end
-function kinematicbody:move(new_pos)
-    local pos,hit,hit_normal,contacts=move_collider(self,new_pos:floored())
-    for c in all(contacts) do
-        self:contactcb(c)
-    end
-    if not hit then
-        pos=new_pos
-    end
-    self:set_position(pos)
-    return hit,hit_normal
-end
-function kinematicbody:contactcb(c)
-end
-function kinematicbody:collide(c)
-end
-
-faller=kinematicbody:new{position=vec2(100,50),direction=vec2(0,1),state="walking",can_grapple=false}
+faller=kinematicbody:new{
+    position=vec2(100,50),
+    direction=vec2(0,1),
+    state="walking",
+    can_grapple=false
+}
 function faller:updatecb()
     self[self.state](self)
 end
