@@ -315,7 +315,7 @@ function maprender:updatecb()
 			for y=last_t.y,last_t.y+16 do
 				local m=mget(x,y)
 				if fget(m,2) then
-					local e=enemy_scene:instance()
+					local e=tile_spawn_scenes[m]:instance()
 					e:set_position(vec2(x*8+4,y*8+4))
 					root:add_child(e)
 				end
@@ -366,7 +366,7 @@ function maprender:drawcb()
 	local pos=self.global_position:floored()-camera_pos
 	if (pos.y>0) rectfill(0,0,128,pos.y,5)
 	if (pos.x>0) rectfill(0,0,pos.x,128,5)
-	map(0,0,pos.x,pos.y,128,32,0x80)
+	map(0,0,pos.x,pos.y,128,64,0x80)
 end
 
 camera_pos=vec2(0,0)
@@ -405,6 +405,7 @@ player_scene=scene{
 	faller,
 	{sprite,s=33},
 	{camerafollow},
+	position=vec2(72*8,60*8),
 }
 
 enemy_scene=scene{
@@ -412,8 +413,14 @@ enemy_scene=scene{
 	{sprite,s=6}
 }
 
+hook_powerup_scene=scene{
+	kinematicbody,
+	{sprite,s=20},
+}
+
 tile_spawn_scenes={
-	[5]=enemy_scene
+	[5]=enemy_scene,
+	[20]=hook_powerup_scene,
 }
 
 root:add_child(player_scene:instance())
