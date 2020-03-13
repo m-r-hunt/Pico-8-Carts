@@ -115,7 +115,7 @@ end
 function _draw()
 	cls(1)
 	root:draw()
-	print(stat(1),0,0,7)
+	print(stat(0),0,0,7)
 end
 
 --physics
@@ -236,7 +236,7 @@ end
 function kinematicbody:collide(c)
 end
 
-faller=kinematicbody:new{position=vec2(100,50),direction=vec2(0,1),state="walking",can_grapple=true}
+faller=kinematicbody:new{position=vec2(100,50),direction=vec2(0,1),state="walking",can_grapple=false}
 function faller:updatecb()
 	self[self.state](self)
 end
@@ -250,12 +250,14 @@ function find_target(pos)
 	return vec2(pos.x,ty*8+7)
 end
 
+grapple_acquired=false
+
 function faller:walking()
 	self.direction.x=0
 	if btn(4) and self.can_grapple then
 		self.state="grappling"
 		self.grapple_target=find_target(self.global_position)
-		self.children[1].s=34
+		self.children[1].s=50
 		self.can_grapple=false
 	else
 		self.direction+=vec2(0,0.5)
@@ -273,7 +275,7 @@ function faller:walking()
 			self.direction=vec2(0,0)
 		end
 		if hit and hit_normal.y<0 then
-			self.can_grapple=true
+			self.can_grapple=grapple_acquired
 		end
 	end
 end
@@ -296,7 +298,7 @@ function faller:grappling()
 	local hit,hit_normal=self:move(new_pos)
 	if hit and hit_normal.y>0 then
 		self.state="walking"
-		self.children[1].s=33
+		self.children[1].s=49
 	end
 	if hit and hit_normal.y<0 then
 		self.direction.y=0
@@ -384,8 +386,21 @@ function camerafollow:updatecb()
 end
 
 powerup=kinematicbody:new()
+function powerup:updatecb()
+	if grapple_acquired then
+		self.parent:remove_child(self)
+	end
+end
 function powerup:collide()
-	self.parent:remove_child(self)
+	grapple_acquired=true
+end
+
+remove_if_offscreen=node:new()
+function remove_if_offscreen:updatecb()
+	if self.global_position.x<camera_pos.x-8 or self.global_position.x>camera_pos.x+136 or
+	   self.global_position.y<camera_pos.y-8 or self.global_position.y>camera_pos.y+136 then
+		self.parent.parent:remove_child(self.parent)
+	end
 end
 
 block=kinematicbody:new{position=vec2(100,30)}
@@ -429,6 +444,7 @@ enemy_scene=scene{
 hook_powerup_scene=scene{
 	powerup,
 	{sprite,s=20},
+	{remove_if_offscreen},
 }
 
 tile_spawn_scenes={
