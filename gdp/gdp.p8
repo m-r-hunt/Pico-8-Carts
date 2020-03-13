@@ -1,7 +1,16 @@
 pico-8 cartridge // http://www.pico-8.com
 version 18
 __lua__
-#include gdp.lua
+#include core.lua
+
+-->8
+#include physics.lua
+
+-->8
+#include nodes.lua
+
+-->8
+#include scenes.lua
 
 __gfx__
 00000000ffffffff3333333333333333ee0000eee000000ee000000e000000000000000000000000000000000000000000000000000000000000000000000000
