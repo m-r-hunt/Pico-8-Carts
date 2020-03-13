@@ -35,7 +35,8 @@ initial_scene=scene{
 enemy_scene=scene{
 	kinematicbody,
 
-	{sprite,s=6}
+	{sprite,s=6},
+	{remove_if_offscreen},
 }
 
 hook_powerup_scene=scene{

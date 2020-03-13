@@ -84,6 +84,42 @@ function faller:drawcb()
 	end
 end
 
+function lt(a,b)
+	return a<b
+end
+function gt(a,b)
+	return a>b
+end
+hacky_table={
+	{
+		"x",
+		lt,
+		"y",
+		-1,
+		0,
+	},
+	{
+		"x",
+		gt,
+		"y",
+		1,
+		16,
+	},
+	{
+		"y",
+		lt,
+		"x",
+		-1,
+		0,
+	},
+	{
+		"y",
+		gt,
+		"x",
+		1,
+		16,
+	},
+}
 maprender=node:new{last_camera=vec2(-64,-64)}
 function maprender:updatecb()
 --maybe a little smelly
@@ -91,52 +127,23 @@ function maprender:updatecb()
 --and spawns entites from tiles when they appear
 	local last_t=vec2(self.last_camera.x/8,self.last_camera.y/8):floored()
 	local now_t=vec2(camera_pos.x/8,camera_pos.y/8):floored()
-	if now_t.x<last_t.x then
-		for x=last_t.x-1,now_t.x,-1 do
-			for y=last_t.y,last_t.y+16 do
-				local m=mget(x,y)
-				if fget(m,2) then
-					local e=tile_spawn_scenes[m]:instance()
-					e:set_position(vec2(x*8+4,y*8+4))
-					root:add_child(e)
-				end
-			end
-		end
-	end
-	if now_t.x>last_t.x then
-		for x=last_t.x+1,now_t.x do
-			for y=last_t.y,last_t.y+16 do
-				local xx=x+16
-				local m=mget(xx,y)
-				if fget(m,2) then
-					local e=tile_spawn_scenes[m]:instance()
-					e:set_position(vec2(xx*8+4,y*8+4))
-					root:add_child(e)
-				end
-			end
-		end
-	end
-	if now_t.y<last_t.y then
-		for y=last_t.y-1,now_t.y,-1 do
-			for x=last_t.x,last_t.x+16 do
-				local m=mget(x,y)
-				if fget(m,2) then
-					local e=enemy_scene:instance()
-					e:set_position(vec2(x*8+4,y*8+4))
-					root:add_child(e)
-				end
-			end
-		end
-	end
-	if now_t.y>last_t.y then
-		for y=last_t.y+1,now_t.y do
-			for x=last_t.x,last_t.x+16 do
-				local yy=y+16
-				local m=mget(x,yy)
-				if fget(m,2) then
-					local e=tile_spawn_scenes[m]:instance()
-					e:set_position(vec2(x*8+4,yy*8+4))
-					root:add_child(e)
+	for t in all(hacky_table) do
+		c1=t[1]
+		fn=t[2]
+		c2=t[3]
+		step=t[4]
+		offset=t[5]
+		if fn(now_t[c1],last_t[c1]) then
+			for x=last_t[c1]+step,now_t[c1],step do
+				for y=last_t[c2],last_t[c2]+16 do
+					local cc=x+offset
+					local tt={[c1]=cc,[c2]=y}
+					local m=mget(tt.x,tt.y)
+					if fget(m,2) then
+						local e=tile_spawn_scenes[m]:instance()
+						e:set_position(vec2(tt.x*8+4,tt.y*8+4))
+						root:add_child(e)
+					end
 				end
 			end
 		end
