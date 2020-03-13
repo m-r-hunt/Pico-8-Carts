@@ -18,18 +18,29 @@ end
 
 player_scene=scene{
     faller,
+
     {sprite,s=33},
     {camerafollow},
+
     position=vec2(72*8,60*8),
+}
+
+initial_scene=scene{
+    node,
+
+    {maprender},
+    player_scene,
 }
 
 enemy_scene=scene{
     kinematicbody,
+
     {sprite,s=6}
 }
 
 hook_powerup_scene=scene{
     powerup,
+
     {sprite,s=20},
     {remove_if_offscreen},
 }
@@ -38,5 +49,3 @@ tile_spawn_scenes={
     [5]=enemy_scene,
     [20]=hook_powerup_scene,
 }
-
-root:add_child(player_scene:instance())

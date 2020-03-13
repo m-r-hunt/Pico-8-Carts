@@ -1,6 +1,6 @@
 sprite=node:new()
 function sprite:drawcb()
-    local pos=self.global_position:floored()-vec2(4,4)-camera_pos
+    local pos=self.global_position:floored()-vec2(4,4)
     spr(self.s,pos.x,pos.y,1,1,self.hflip)
 end
 
@@ -22,8 +22,6 @@ function find_target(pos)
     end
     return vec2(pos.x,ty*8+7)
 end
-
-grapple_acquired=false
 
 function faller:walking()
     self.direction.x=0
@@ -80,8 +78,8 @@ end
 
 function faller:drawcb()
     if self.state=="grappling" then
-        local p=self.global_position-camera_pos
-        local t=self.grapple_target-camera_pos
+        local p=self.global_position
+        local t=self.grapple_target
         line(p.x,p.y,t.x,t.y,4)
     end
 end
@@ -146,7 +144,7 @@ function maprender:updatecb()
     self.last_camera=camera_pos
 end
 function maprender:drawcb()
-    local pos=self.global_position:floored()-camera_pos
+    local pos=self.global_position:floored()
     if (pos.y>0) rectfill(0,0,128,pos.y,5)
     if (pos.x>0) rectfill(0,0,pos.x,128,5)
     map(0,0,pos.x,pos.y,128,64,0x80)
@@ -175,10 +173,3 @@ function remove_if_offscreen:updatecb()
         self.parent.parent:remove_child(self.parent)
     end
 end
-
-block=kinematicbody:new{position=vec2(100,30)}
-block:add_child(sprite:new{s=17})
-
-root=node:new()
-root:add_child(maprender)
-root:add_child(block)

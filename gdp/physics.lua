@@ -1,5 +1,3 @@
-colliders={}
-
 function add_collider(t,pos,size)
     colliders[t]={pos=pos,size=size}
 end

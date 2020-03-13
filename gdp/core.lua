@@ -102,6 +102,20 @@ function node:drawcb() end
 function _init()
     palt(0,false)
     palt(14,true)
+
+    --globals
+
+    --core
+    camera_pos=vec2(0,0)
+
+    --physics
+    colliders={}
+
+    --nodes/gameplay
+    grapple_acquired=false
+
+    --initialise node tree/root
+    root=initial_scene:instance()
     root:set_position()
     root:ready()
 end
@@ -112,6 +126,8 @@ end
 
 function _draw()
     cls(1)
+    camera(camera_pos.x,camera_pos.y)
     root:draw()
+    camera()
     print(stat(0),0,0,7)
 end
