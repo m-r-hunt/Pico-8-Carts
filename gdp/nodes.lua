@@ -152,12 +152,13 @@ function maprender:updatecb()
 end
 function maprender:drawcb()
 	local pos=self.global_position:floored()
-	if (pos.y>0) rectfill(0,0,128,pos.y,5)
-	if (pos.x>0) rectfill(0,0,pos.x,128,5)
+	rectfill(-128,-128,128*8,0,5)
+	rectfill(-128,0,0,128*8,5)
 	map(0,0,pos.x,pos.y,128,64,0x80)
+	rectfill(0,64*8,128*8+128,64*8+128,5)
+	rectfill(128*8,0,128*8+128,64*8,5)
 end
 
-camera_pos=vec2(0,0)
 camerafollow=node:new{}
 function camerafollow:updatecb()
 	camera_pos=self.global_position:floored()-vec2(64,64)
