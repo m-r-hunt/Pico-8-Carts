@@ -1,3 +1,12 @@
+--flags meanings
+--0 - colliding tile
+--1 - pickup tile(unused?)
+--2 - object spawner tile
+--3 - damage tile
+--.
+--.
+--7 - visible
+
 sprite=node:new()
 function sprite:drawcb()
 	local pos=self.global_position:floored()-vec2(4,4)
@@ -23,6 +32,15 @@ function find_target(pos)
 	return vec2(pos.x,ty*8+7)
 end
 
+function find_target_side(pos,dir)
+	local tx=flr(pos.x/8)
+	local ty=flr(pos.y/8)
+	while not fget(mget(tx,ty),0) do
+		tx+=dir
+	end
+	return vec2(tx*8+4,pos.y)
+end
+
 function faller:walking()
 	self.direction.x=0
 	if btn(4) and self.can_grapple then
@@ -30,6 +48,14 @@ function faller:walking()
 		self.grapple_target=find_target(self.global_position)
 		self.children[1].s=50
 		self.can_grapple=false
+		self.grapple_dir=vec2(0,-0.5)
+	elseif btn(5) and self.can_grapple then
+		local dir =self.children[1].hflip and -1 or 1
+		self.state="grappling"
+		self.grapple_target=find_target_side(self.global_position,dir)
+		self.can_grapple=false
+		self.grapple_dir=vec2(dir*0.5,0)
+		self.direction.y=0
 	else
 		self.direction+=vec2(0,0.5)
 		if btn(0) then
@@ -53,8 +79,13 @@ end
 
 function faller:contactcb(c)
 	if getmetatable(c)==vec2mt then
-		if band(fget(mget(c.x,c.y)),2)!=0 then
+		if fget(mget(c.x,c.y),1) then
 			mset(c.x,c.y,0)
+		elseif fget(mget(c.x,c.y),3) then
+			self:set_position(self.checkpoint)
+		elseif fget(mget(c.x,c.y),4) then
+			mset(c.x,c.y,51)
+			self.checkpoint=8*c
 		end
 	else
 		self:collide(c)
@@ -63,16 +94,21 @@ function faller:contactcb(c)
 end
 
 function faller:grappling()
-	self.direction+=vec2(0,-0.5)
+	self.direction+=self.grapple_dir
+	self.direction.x=mid(-5,self.direction.x,5)
 	self.direction.y=max(self.direction.y,-5)
 	local new_pos=self.position+self.direction
 	local hit,hit_normal=self:move(new_pos)
-	if hit and hit_normal.y>0 then
+	if hit and self.grapple_dir.y!=0 and hit_normal.y>0 then
 		self.state="walking"
 		self.children[1].s=49
 	end
 	if hit and hit_normal.y<0 then
 		self.direction.y=0
+	end
+	if hit and hit_normal.x!=0 then
+		self.state="walking"
+		self.children[1].s=49
 	end
 end
 

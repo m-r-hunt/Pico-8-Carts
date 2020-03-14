@@ -124,6 +124,7 @@ function _init()
 			if mget(x,y)==33 then
 				local p=player_scene:instance()
 				p.position=vec2(x*8,y*8)
+				p.checkpoint=vec2(x*8,y*8)
 				root:add_child(p)
 			end
 		end

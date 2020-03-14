@@ -90,13 +90,13 @@ function kinematicbody:unreadycb()
 end
 function kinematicbody:move(new_pos)
 	local pos,hit,hit_normal,contacts=move_collider(self,new_pos:floored())
-	for c in all(contacts) do
-		self:contactcb(c)
-	end
 	if not hit then
 		pos=new_pos
 	end
 	self:set_position(pos)
+	for c in all(contacts) do
+		self:contactcb(c)
+	end
 	return hit,hit_normal
 end
 function kinematicbody:contactcb(c)
