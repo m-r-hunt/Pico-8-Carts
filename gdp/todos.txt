@@ -1,0 +1,3 @@
+* Change lava to object and give it a better hit box
+* Fix grapple/checkpoint bug
+* Restore checkpoint states
