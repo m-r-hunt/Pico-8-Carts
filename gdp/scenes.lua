@@ -21,15 +21,12 @@ player_scene=scene{
 
 	{sprite,s=33},
 	{camerafollow},
-
-	position=vec2(72*8,60*8),
 }
 
 initial_scene=scene{
 	node,
 
 	{maprender},
-	player_scene,
 }
 
 enemy_scene=scene{

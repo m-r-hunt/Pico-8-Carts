@@ -118,6 +118,16 @@ function _init()
 	root=initial_scene:instance()
 	root:set_position()
 	root:ready()
+
+	for x=0,127 do
+		for y=0,63 do
+			if mget(x,y)==33 then
+				local p=player_scene:instance()
+				p.position=vec2(x*8,y*8)
+				root:add_child(p)
+			end
+		end
+	end
 end
 
 function _update()
