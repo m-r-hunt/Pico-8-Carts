@@ -287,6 +287,7 @@ sel=1
 function draw_menu()
 	cls(13)
 	print("∧ormy",50,30,7)
+	print("by max hunt",84,121,7)
 	local mx=43
 	if sel==1 then
 		print(">play",mx-4,80,11)
