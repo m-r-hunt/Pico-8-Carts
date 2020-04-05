@@ -1,6 +1,9 @@
 pico-8 cartridge // http://www.pico-8.com
 version 18
 __lua__
+--wormy v1.0
+--(c) 2020 max hunt (cc by-sa)
+
 function new_level()
 	cls(4)
 	for i=1,20 do
