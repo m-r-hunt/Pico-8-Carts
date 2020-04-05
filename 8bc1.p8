@@ -12,7 +12,7 @@ function new_level()
 	for i=1,20 do
 		spr(242,rnd(120),rnd(112))
 	end
-	pset(px,py,15)
+	pset(px,py,12)
 	memcpy(0x0000,0x6000,0x2000-8*128/2)
 end
 
@@ -89,13 +89,32 @@ function spawn_gem()
 	until gem_ok() or tries>10
 end
 
+speed_curve={
+	[0]=0.5,
+	0.75,
+	0.95,
+	1.0,
+	1.05,
+	1.1,
+	1.2,
+	1.3,
+	1.4,
+	1.5,
+	1.6,
+	1.7,
+	1.8,
+	1.9,
+	2.0,
+}
+
 function update_playing()
 	cls()
 	spr(0,0,0,16,16)
 	if (btn(0))pa+=0.03
 	if (btn(1))pa-=0.03
-	px+=cos(pa)
-	py+=sin(pa)
+	local speed=speed_curve[gems] or 2
+	px+=speed*cos(pa)
+	py+=speed*sin(pa)
 	local tx=flr(px)
 	local ty=flr(py)
 	if tx~=lastpx or ty~=lastpy then
@@ -136,7 +155,7 @@ function update_playing()
 			score+=1
 		end
 	end
-	pset(px,py,15)
+	pset(px,py,12)
 	memcpy(0x0000,0x6000,0x2000-8*128/2)
 	update_particles()
 end
@@ -165,6 +184,7 @@ function draw_playing()
 	end
 	spr(240,32,120)
 	print(gems.."/"..gem_target,40,121,7)
+	pset(px,py,12)
 end
 
 -->8
