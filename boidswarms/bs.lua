@@ -238,6 +238,9 @@ function draw_gameplay()
 	if gameplay_state=="normal" and t>-30 then
 		aprint("go",56,30)
 	end
+	for i=1,lives do
+		spr(17,128-i*8,120)
+	end
 end
 
 score_name={ord("_"),ord("_"),ord("_")}
