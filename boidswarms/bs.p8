@@ -1,6 +1,9 @@
 pico-8 cartridge // http://www.pico-8.com
 version 27
 __lua__
+--bear necessities v0.5
+--(c)2020 max hunt(cc-by-sa)
+
 #include bs.lua
 
 __gfx__

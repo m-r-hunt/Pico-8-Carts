@@ -403,6 +403,7 @@ function draw_title()
 	if (t \ 20) % 2 == 0 then
 		aprint("press start", 20, 80)
 	end
+	aprint("by max hunt",2,118)
 end
 
 function init_attract()
@@ -476,5 +477,5 @@ function _init()
 			{"___",0},
 		}
 	end
-	change_mode("attract")
+	change_mode("title")
 end
