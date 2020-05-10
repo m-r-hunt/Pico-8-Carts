@@ -63,9 +63,11 @@ coordination_factor=32
 target_factor=100
 
 function intersects_map(pos)
-	local tx=(pos.x-4)\8
-	local ty=(pos.y-4)\8
-	return fget(mget(tx,ty),0) or fget(mget(tx+1,ty),0) or fget(mget(tx,ty+1),0) or fget(mget(tx+1,ty+1),0)
+	local tx=(pos.x-3)\8+level*16
+	local ty=(pos.y-3)\8
+	local tx2=(pos.x+3)\8+level*16
+	local ty2=(pos.y+3)\8
+	return fget(mget(tx,ty),0) or fget(mget(tx2,ty),0) or fget(mget(tx,ty2),0) or fget(mget(tx2,ty2),0)
 end
 
 function update_player(self)
@@ -90,11 +92,9 @@ function update_player(self)
 end
 
 function update_honeypot(self)
-	if #(self.pos-player.pos)<4 then
-		for i=1,4 do
-			a=rnd(1.0)
-			add(swarm,{pos=vec2(64+sin(a)*64,64+cos(a)*64),vel=vec2(0,0)})
-		end
+	if abs(self.pos.x - player.pos.x) < 7 and abs(self.pos.y - player.pos.y) < 7 then
+		spawn_bees()
+		score+=10
 		del(objects,self)
 	end
 end
@@ -109,9 +109,6 @@ high_scores={}
 
 function init_swarm()
 	swarm={}
-	for i=1,swarm_size do
-		add(swarm,{pos=vec2(rnd(128),rnd(128)),vel=vec2(0,0)})
-	end
 end
 
 function draw_swarm()
@@ -167,24 +164,79 @@ function update_swarm()
 end
 
 function update_gameplay()
-	for obj in all(objects) do
-		obj:update()
-	end
-	update_swarm()
-	for i=1,#swarm do
-		if #(swarm[i].pos-player.pos)<2  then
-			player.spr=2
-			change_mode("gameover")
+	t-=1
+	if gameplay_state=="spawning" then
+		if t<=0 then
+			gameplay_state="normal"
+		end
+	elseif gameplay_state=="dead" then
+		if t<=0 then
+			gameplay_state="spawning"
+			t=45
+			player.spr=3
+			swarm={}
+			spawn_bees()
+			if lives<0 then
+				change_mode("gameover")
+			end
+		end
+	else
+		--normal
+		for obj in all(objects) do
+			obj:update()
+		end
+		update_swarm()
+		for i=1,#swarm do
+			if #(swarm[i].pos-player.pos)<2  then
+				player.spr=2
+				gameplay_state="dead"
+				t=45
+				lives-=1
+			end
+		end
+		local potcount=0
+		for obj in all(objects) do
+			if obj.update==update_honeypot then
+				potcount+=1
+			end
+		end
+		if potcount==0 then
+			level+=1
+			if level>=8 then
+				level=0
+				difficulty+=1
+			end
+			score+=100
+			score+=#swarm
+			gameplay_state="spawning"
+			t=45
+			load_level()
 		end
 	end
 end
 
 function draw_gameplay()
 	cls(3)
-	map(0,0,0,0,16,16,1)
+	map(level*16,0,0,0,16,16,1)
 	draw_swarm()
 	for obj in all(objects) do
 		obj:draw()
+	end
+	aprint("score "..tostr(score),2,120)
+	if gameplay_state=="spawning" then
+		if t>30 then
+			aprint("3",60,30)
+		elseif t>15 and t<=30 then
+			aprint("2",60,30)
+		elseif t>0 and t<=15 then
+			aprint("1",60,30)
+		end
+	end
+	if gameplay_state=="dead" then
+		aprint("ouch...",36,30)
+	end
+	if gameplay_state=="normal" and t>-30 then
+		aprint("go",56,30)
 	end
 end
 
@@ -195,14 +247,7 @@ end
 
 function update_gameover()
 	t+=1
-
-	if btnp(4) or btnp(5) then
-		if selected<3 then
-			selected+=1
-		else
-			change_mode("title")
-		end
-	end
+	update_swarm()
 
 	if btnp(0) then
 		selected-=1
@@ -244,9 +289,41 @@ function update_gameover()
 		score_name[selected]=c
 	end
 
+	if btnp(4) or btnp(5) then
+		if selected<3 then
+			selected+=1
+		else
+			name=chr(score_name[1])..chr(score_name[2])..chr(score_name[3])
+			change_mode("attract")
+			add_highscore(name,score)
+		end
+	end
+end
 
+function add_highscore(name,score)
+	for i=1,#highscores do
+		if score>highscores[i][2] then
+			local next=highscores[i]
+			for j=i,#highscores do
+				local temp=highscores[j]
+				highscores[j]=next
+				next=temp
+			end
+			highscores[#highscores+1]=next
+			highscores[i]={name,score}
+			break
+		end
+	end
+	highscores[11]=nil
 
-	update_swarm()
+	--save highscores
+	for i=0,9 do
+		local s=highscores[i+1]
+		dset(i*4,ord(sub(s[1],1,1)))
+		dset(i*4+1,ord(sub(s[1],2,2)))
+		dset(i*4+2,ord(sub(s[1],3,3)))
+		dset(i*4+3,s[2])
+	end
 end
 
 function draw_gameover()
@@ -261,18 +338,45 @@ function draw_gameover()
 	end
 end
 
+function spawn_bees()
+	for v in all(bee_spawn_points) do
+		for i=1,difficulty do
+			add(swarm,{pos=vec2(v.x*8+3+i,v.y*8+4),vel=vec2(0,0)})
+		end
+	end
+end
+
 function init_gameplay()
+	lives=3
+	level=0
+	difficulty=1
+	score=0
+	load_level()
+	gameplay_state="spawning"
+	t=45
+end
+
+function load_level()
 	init_swarm()
 	player={pos=vec2(64,64),update=update_player,draw=draw_sprite,spr=3}
 	objects={player}
+	bee_spawn_points={}
 	for y=0,15 do
 		for x=0,15 do
-			if fget(mget(x,y),2) then
+			local xx=x+level*16
+			if fget(mget(xx,y),2) then
 				local honey_pot={pos=vec2(x*8+4,y*8+4),update=update_honeypot,draw=draw_sprite,spr=16}
 				add(objects,honey_pot)
 			end
+			if fget(mget(xx,y),1) then
+				add(bee_spawn_points,vec2(x,y))
+			end
+			if fget(mget(xx,y),3) then
+				player.pos=vec2(x*8+4,y*8+4)
+			end
 		end
 	end
+	spawn_bees()
 end
 
 function init_title()
@@ -281,6 +385,9 @@ end
 
 function update_title()
 	t+=1
+	if t>30*30 then
+		change_mode("attract")
+	end
 	if btnp(4) or btnp(5) then
 		change_mode("gameplay")
 	end
@@ -295,9 +402,29 @@ function draw_title()
 	end
 end
 
+function init_attract()
+	t=0
+end
+
+function update_attract()
+	t+=1
+	if t>30*30 or btnp(4) or btnp(5) then
+		change_mode("title")
+	end
+end
+
+function draw_attract()
+	cls(3)
+	aprint("high scores",20,8)
+	for i=1,#highscores do
+		aprint(highscores[i][1],30,16+i*10)
+		aprint(tostr(highscores[i][2]),80,16+i*10)
+	end
+end
+
 modes={
 	intro={update=update_intro,draw=draw_intro},
-	attract={update=update_attract,draw=draw_attract},
+	attract={init=init_attract,update=update_attract,draw=draw_attract},
 	title={init=init_title,update=update_title,draw=draw_title},
 	gameplay={init=init_gameplay,update=update_gameplay,draw=draw_gameplay},
 	gameover={init=init_gameover,update=update_gameover,draw=draw_gameover},
@@ -319,7 +446,32 @@ function _draw()
 	modes[mode].draw()
 end
 
+function load_highscores()
+	highscores={}
+	for i=0,9 do
+		name=chr(dget(i*4))..chr(dget(i*4+1))..chr(dget(i*4+2))
+		score=dget(i*4+3)
+		add(highscores,{name,score})
+	end
+end
+
 function _init()
-	cartdata("bear_necessities_maximilian_hunt")
-	change_mode("title")
+	local loaded=cartdata("bear_necessities_maximilian_hunt")
+	if loaded then
+		load_highscores()
+	else
+		highscores={
+			{"___",0},
+			{"___",0},
+			{"___",0},
+			{"___",0},
+			{"___",0},
+			{"___",0},
+			{"___",0},
+			{"___",0},
+			{"___",0},
+			{"___",0},
+		}
+	end
+	change_mode("attract")
 end
