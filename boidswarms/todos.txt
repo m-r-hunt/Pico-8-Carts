@@ -1,0 +1,6 @@
+Improve bear-pot collisions
+Advance level after collecting pots
+Spawn bees at hives
+Track score
+Save/load high scores
+Display high score tables in attract mode (and go there after game over)
