@@ -96,6 +96,7 @@ function update_honeypot(self)
 		spawn_bees()
 		score+=10
 		del(objects,self)
+		sfx(4)
 	end
 end
 
@@ -168,16 +169,20 @@ function update_gameplay()
 	if gameplay_state=="spawning" then
 		if t<=0 then
 			gameplay_state="normal"
+			music(1,0,3)
+			sfx(6)
 		end
 	elseif gameplay_state=="dead" then
 		if t<=0 then
 			gameplay_state="spawning"
 			t=45
-			player.spr=3
+			player.spr=6
 			swarm={}
 			spawn_bees()
 			if lives<0 then
 				change_mode("gameover")
+				gameplay_state="normal"
+				t=100
 			end
 		end
 	else
@@ -190,6 +195,8 @@ function update_gameplay()
 			if #(swarm[i].pos-player.pos)<2  then
 				player.spr=2
 				gameplay_state="dead"
+				music()
+				sfx(5)
 				t=45
 				lives-=1
 			end
@@ -208,6 +215,8 @@ function update_gameplay()
 			end
 			score+=100
 			score+=#swarm
+			music()
+			sfx(2)
 			gameplay_state="spawning"
 			t=45
 			load_level()
@@ -245,6 +254,7 @@ end
 
 score_name={ord("_"),ord("_"),ord("_")}
 function init_gameover()
+	music(2)
 	selected=1
 end
 
@@ -253,19 +263,24 @@ function update_gameover()
 	update_swarm()
 
 	if btnp(0) then
+		sfx(1)
 		selected-=1
 	end
 	if btnp(1) then
+		sfx(1)
 		selected+=1
 	end
 	if selected<=0 then
+		sfx(1)
 		selected=3
 	end
 	if selected>3 then
+		sfx(1)
 		selected=1
 	end
 
 	if btnp(2) then
+		sfx(1)
 		local c=score_name[selected]-1
 		if c<ord(".") then
 			c=ord("z")
@@ -279,6 +294,7 @@ function update_gameover()
 		score_name[selected]=c
 	end
 	if btnp(3) then
+		sfx(1)
 		local c=score_name[selected]+1
 		if c>ord(".") and c<ord("0") then
 			c=ord("0")
@@ -293,6 +309,7 @@ function update_gameover()
 	end
 
 	if btnp(4) or btnp(5) then
+		sfx(1)
 		if selected<3 then
 			selected+=1
 		else
@@ -350,6 +367,7 @@ function spawn_bees()
 end
 
 function init_gameplay()
+	music(-1,500)
 	lives=3
 	level=0
 	difficulty=1
@@ -361,7 +379,7 @@ end
 
 function load_level()
 	init_swarm()
-	player={pos=vec2(64,64),update=update_player,draw=draw_sprite,spr=3}
+	player={pos=vec2(64,64),update=update_player,draw=draw_sprite,spr=6}
 	objects={player}
 	bee_spawn_points={}
 	for y=0,15 do
@@ -383,6 +401,7 @@ function load_level()
 end
 
 function init_title()
+	music(4)
 	t=0
 end
 
@@ -392,6 +411,7 @@ function update_title()
 		change_mode("attract")
 	end
 	if btnp(4) or btnp(5) then
+		sfx(1)
 		change_mode("gameplay")
 	end
 end
@@ -413,6 +433,7 @@ end
 function update_attract()
 	t+=1
 	if t>30*30 or btnp(4) or btnp(5) then
+		sfx(1)
 		change_mode("title")
 	end
 end
@@ -465,7 +486,7 @@ function _init()
 		load_highscores()
 	else
 		highscores={
-			{"___",0},
+			{"max",1011},
 			{"___",0},
 			{"___",0},
 			{"___",0},
