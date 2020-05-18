@@ -76,7 +76,7 @@ end
 
 function compress_map(cart)
 	reload(0,0,0x4300,cart)
-	local clen=px9_comp(0,0,128,64,0x4300,mget)
+	local clen=px9_comp(0,0,128,60,0x4300,mget)
 	assert(clen<=max_comp_size)
 	cstore(next_addr,0x4300,clen,"main.p8")
 	next_addr+=clen
@@ -95,9 +95,16 @@ function _init()
 
 	compress_gfx "overworld.p8"
 	compress_map "overworld.p8"
+	compress_gfx "underworld.p8"
+	compress_map "underworld.p8"
 	
+	poke2(0x2ffa,addrs[3])
+	poke2(0x2ffc,addrs[2])
 	poke2(0x2ffe,addrs[1])
-	cstore(0x2ffe,0x2ffe,2,"main.p8")
+	cstore(0x2ffa,0x2ffa,6,"main.p8")
+
+	print("total usage: "..next_addr.."/"..max_store_addr.." bytes")
+	print(""..(next_addr/max_store_addr*100).."%")
 end 
 
 -->8
