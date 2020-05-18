@@ -65,6 +65,7 @@ max_store_addr=0x3100
 function compress_gfx(cart)
 	reload(0,0,0x4300,cart)
 	local clen=px9_comp(0,0,128,64,0x4300,sget)
+	clen+=1
 	assert(clen<=max_comp_size)
 	cstore(next_addr,0x4300,clen,"main.p8")
 	next_addr+=clen
@@ -88,6 +89,7 @@ end
 function compress_map(cart)
 	reload(0,0,0x4300,cart)
 	local clen=px9_comp(0,0,128,60,0x4300,mget)
+	clen+=1
 	assert(clen<=max_comp_size)
 	cstore(next_addr,0x4300,clen,"main.p8")
 	next_addr+=clen
