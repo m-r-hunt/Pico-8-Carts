@@ -4,7 +4,7 @@ __lua__
 #include palettes.p8
 
 overworld_palette()
-poke(0x5f2e,1)
+keep_palette()
 
 function _draw()
 	cls()

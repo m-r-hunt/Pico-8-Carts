@@ -11,7 +11,7 @@ px9_decomp(0,0,0x4300,sget,sset)
 reload(0x4300,overworldmap,0x1b00)
 px9_decomp(0,0,0x4300,mget,mset)
 
-#include palettes.p8
+#include palettes.p8:0
 overworld_palette()
 
 function _draw()

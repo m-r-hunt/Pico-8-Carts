@@ -4,7 +4,7 @@ __lua__
 #include palettes.p8
 
 underworld_palette()
-poke(0x5f2e,1)
+keep_pal()
 
 t=0
 function _update()
