@@ -3,7 +3,7 @@ version 27
 __lua__
 #include palettes.p8
 
-overworld_palette()
+pal(overworld,1)
 keep_pal()
 
 function _draw()

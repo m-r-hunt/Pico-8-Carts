@@ -3,7 +3,7 @@ version 27
 __lua__
 #include palettes.p8
 
-underworld_palette()
+pal(underworld,1)
 keep_pal()
 
 t=0

@@ -1,11 +1,6 @@
 pico-8 cartridge // http://www.pico-8.com
 version 27
 __lua__
-function p(plt)
-	for src,dest in pairs(plt) do
-		pal(src,dest,1)
-	end
-end
 
 overworld={
 	131,
@@ -25,10 +20,6 @@ overworld={
 	143,
 }
 
-function overworld_palette()
-	p(overworld)
-end
-
 underworld={
 	128,
 	130,
@@ -46,10 +37,6 @@ underworld={
 	140,
 	3,
 }
-
-function underworld_palette()
-	p(underworld)
-end
 
 -->8
 function keep_pal()

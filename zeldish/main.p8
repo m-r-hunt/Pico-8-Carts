@@ -19,7 +19,7 @@ function load_overworld()
 	reload(0x3000,overworldflags,0x50)
 	reload(0x4300,overworldmap,0x1b00)
 	px9_decomp(0,0,0x4300,mget,mset)
-	overworld_palette()
+	pal(overworld,1)
 	world="overworld"
 end
 function load_underworld()
@@ -28,7 +28,7 @@ function load_underworld()
 	reload(0x3000,underworldflags,0x50)
 	reload(0x4300,underworldmap,0x1b00)
 	px9_decomp(0,0,0x4300,mget,mset)
-	underworld_palette()
+	pal(underworld,1)
 	world="underworld"
 end
 
