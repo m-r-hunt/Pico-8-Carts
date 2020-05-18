@@ -54,6 +54,7 @@ __lua__
 		
 ]]
 
+loaded_cart=""
 next_addr=0
 addrs={}
 
@@ -63,7 +64,10 @@ max_comp_size=0x1b00
 max_store_addr=0x3100
 
 function compress_gfx(cart)
-	reload(0,0,0x4300,cart)
+	if loaded_cart!=cart then
+		reload(0,0,0x4300,cart)
+		loaded_cart=cart
+	end
 	local clen=px9_comp(0,0,128,64,0x4300,sget)
 	clen+=1
 	assert(clen<=max_comp_size)
@@ -76,7 +80,10 @@ function compress_gfx(cart)
 end
 
 function store_flags(cart)
-	reload(0,0,0x4300,cart)
+	if loaded_cart!=cart then
+		reload(0,0,0x4300,cart)
+		loaded_cart=cart
+	end
 	local len=0x50
 	cstore(next_addr,0x3000,len,"main.p8")
 	next_addr+=len
@@ -87,7 +94,10 @@ function store_flags(cart)
 end
 
 function compress_map(cart)
-	reload(0,0,0x4300,cart)
+	if loaded_cart!=cart then
+		reload(0,0,0x4300,cart)
+		loaded_cart=cart
+	end
 	local clen=px9_comp(0,0,128,60,0x4300,mget)
 	clen+=1
 	assert(clen<=max_comp_size)
