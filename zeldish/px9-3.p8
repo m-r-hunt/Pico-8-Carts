@@ -84,7 +84,7 @@ function store_flags(cart)
 		reload(0,0,0x4300,cart)
 		loaded_cart=cart
 	end
-	local len=0x50
+	local len=0x80
 	cstore(next_addr,0x3000,len,"main.p8")
 	next_addr+=len
 	assert(next_addr<max_store_addr)
