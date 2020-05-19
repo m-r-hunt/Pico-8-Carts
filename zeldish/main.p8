@@ -29,6 +29,9 @@ vec2mt={
 	tostring=function(v)
 		return "vec2("..v.x..","..v.y..")"
 	end,
+	copy=function(v)
+		return vec2(v.x,v.y)
+	end,
 }
 vec2mt.__index=vec2mt
 function vec2(x,y)
@@ -63,10 +66,13 @@ function load_underworld()
 	world="underworld"
 end
 
-function _init()
+function new_game()
 	load_overworld()
 	pl = make_actor(64,2,2)
 	screen=vec2(0,0)
+end
+
+function init_gameplay()
 end
 
 actor={}
@@ -190,23 +196,31 @@ function control_player(pl)
 	if (btn(3)) pl.dx.y += accel 
 end
 
-function _update()
+function update_gameplay()
 	control_player(pl)
 	foreach(actor, move_actor)
 	local screenp=vec2(screen.x*16,screen.y*15)
 
 	--todo: Nice transition
 	if pl.pos.x<screenp.x-2/8 then
+		trans_start=screen:copy()
 		screen.x-=1
+		change_mode("screentrans")
 	end
 	if pl.pos.x>screenp.x+16+2/8 then
+		trans_start=screen:copy()
 		screen.x+=1
+		change_mode("screentrans")
 	end
 	if pl.pos.y<screenp.y-2/8 then
+		trans_start=screen:copy()
 		screen.y-=1
+		change_mode("screentrans")
 	end
 	if pl.pos.y>screenp.y+15+2/8 then
+		trans_start=screen:copy()
 		screen.y+=1
+		change_mode("screentrans")
 	end
 end
 
@@ -216,22 +230,83 @@ function draw_actor(a)
 	spr(a.k + a.frame, sx, sy)
 end
 
-function _draw()
-	camera()
-	cls(15)
-
+function draw_world(screen_pos)
 	clip(0,0,128,120)
 	--game world
 	local bg=world=="overworld" and 13 or 5
 	rectfill(0,0,128,128,bg)
-	camera(screen.x*16*8,screen.y*15*8)
+	camera(screen_pos.x*16*8,screen_pos.y*15*8)
 	map(0,0,0,0,128,64)
 	foreach(actor,draw_actor)
+end
+
+function draw_gameplay()
+	camera()
+	cls(15)
+
+	draw_world(screen)
 
 	clip(0,120,128,128)
 	camera()
 	--ui
 end
+
+function init_screentrans()
+	transt=0
+end
+
+function update_screentrans()
+	transt+=1
+	if transt>=15 then
+		change_mode("gameplay")
+	end
+end
+
+function ease(t,b,c,d)
+	t/=d/2
+	if (t < 1) return c/2*t*t + b
+	t-=1
+	return -c/2 * (t*(t-2) - 1) + b
+end
+
+function draw_screentrans()
+	camera_pos=trans_start+ease(transt,0,1,15)*(screen-trans_start)
+
+	camera()
+	cls(15)
+
+	draw_world(camera_pos)
+
+	clip(0,120,128,128)
+	camera()
+	print(ease(transt,0,1,15),0,121,7)
+
+end
+
+
+modes={}
+mode=""
+function mode(name,u,d,i)
+	modes[name]={u,d,i}
+end
+function change_mode(new)
+	mode=new
+	if modes[mode][3] then
+		modes[mode][3]()
+	end
+end
+function _init()
+	new_game()
+	change_mode("gameplay")
+end
+function _update()
+	modes[mode][1]()
+end
+function _draw()
+	modes[mode][2]()
+end
+mode("gameplay",update_gameplay,draw_gameplay,init_gameplay)
+mode("screentrans",update_screentrans,draw_screentrans,init_screentrans)
 
 __gfx__
 ffffff0fff73af31c6703ac4aad1db7dd51163d9c2783c312c1c9bbe264efee77e7fd813659555ad1bacafa3b1d6ed7ae4437edb1f3c3c5bfec7e06e8f786cd6
