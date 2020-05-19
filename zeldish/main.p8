@@ -251,17 +251,20 @@ function draw_gameplay()
 	--ui
 end
 
+trans_duration=15
+
 function init_screentrans()
 	transt=0
 end
 
 function update_screentrans()
 	transt+=1
-	if transt>=15 then
+	if transt>trans_duration then
 		change_mode("gameplay")
 	end
 end
 
+--quadratic easing in/out
 function ease(t,b,c,d)
 	t/=d/2
 	if (t < 1) return c/2*t*t + b
@@ -270,7 +273,7 @@ function ease(t,b,c,d)
 end
 
 function draw_screentrans()
-	camera_pos=trans_start+ease(transt,0,1,15)*(screen-trans_start)
+	camera_pos=trans_start+ease(transt,0,1,trans_duration)*(screen-trans_start)
 
 	camera()
 	cls(15)
@@ -279,7 +282,7 @@ function draw_screentrans()
 
 	clip(0,120,128,128)
 	camera()
-	print(ease(transt,0,1,15),0,121,7)
+	print(ease(transt,0,1,15),0,121,2)
 
 end
 
