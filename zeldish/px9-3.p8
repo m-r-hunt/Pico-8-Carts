@@ -57,6 +57,7 @@ __lua__
 loaded_cart=""
 next_addr=0
 addrs={}
+uncomp_size=0
 
 --using work ram for comp/decomp
 max_comp_size=0x1b00
@@ -77,6 +78,7 @@ function compress_gfx(cart)
 	add(addrs,next_addr)
 	print("comp "..cart.." gfx: "..clen.." bytes")
 	flip()
+	uncomp_size+=0x1000
 end
 
 function store_flags(cart)
@@ -91,6 +93,7 @@ function store_flags(cart)
 	add(addrs,next_addr)
 	print("comp "..cart.." flags: "..len.." bytes")
 	flip()
+	uncomp_size+=0x80
 end
 
 function compress_map(cart)
@@ -107,6 +110,7 @@ function compress_map(cart)
 	add(addrs,next_addr)
 	print("comp "..cart.." map: "..clen.." bytes")
 	flip()
+	uncomp_size+=0x2000
 end
 
 
@@ -131,7 +135,9 @@ function _init()
 	cstore(0x30f6,0x30f6,10,"main.p8")
 
 	print("total usage: "..next_addr.."/"..max_store_addr.." bytes")
-	print(""..(next_addr/max_store_addr*100).."%")
+	print(""..(next_addr/max_store_addr*100).."% used")
+	print(""..uncomp_size.."->"..next_addr)
+	print(""..(next_addr/uncomp_size*100).."% comp ratio")
 end 
 
 -->8
