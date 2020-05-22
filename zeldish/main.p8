@@ -106,8 +106,8 @@ function make_actor(k, x, y)
 		dx =vec2(0,0),
 		frame = 0,
 		t = 0,
-		friction = 0.15,
-		bounce  = 0.3,
+		friction = 0.2,
+		bounce  = 0.1,
 		frames = 2,
 		dim=vec2(0.4,0.4),
 	}
