@@ -62,7 +62,7 @@ uncomp_size=0
 --using work ram for comp/decomp
 max_comp_size=0x1b00
 --gfx/map/flags for storage
-max_store_addr=0x3100
+max_store_addr=0x30f0
 
 function compress_gfx(cart)
 	if loaded_cart!=cart then
@@ -78,7 +78,7 @@ function compress_gfx(cart)
 	add(addrs,next_addr)
 	print("comp "..cart.." gfx: "..clen.." bytes")
 	flip()
-	uncomp_size+=0x1000
+	uncomp_size+=0x1000/100
 end
 
 function store_flags(cart)
@@ -93,7 +93,7 @@ function store_flags(cart)
 	add(addrs,next_addr)
 	print("comp "..cart.." flags: "..len.." bytes")
 	flip()
-	uncomp_size+=0x80
+	uncomp_size+=0x80/100
 end
 
 function compress_map(cart)
@@ -110,7 +110,7 @@ function compress_map(cart)
 	add(addrs,next_addr)
 	print("comp "..cart.." map: "..clen.." bytes")
 	flip()
-	uncomp_size+=0x2000
+	uncomp_size+=0x2000/100
 end
 
 
@@ -123,21 +123,22 @@ function _init()
 	compress_gfx "overworld.p8"
 	store_flags "overworld.p8"
 	compress_map "overworld.p8"
+	compress_map "overworld_south.p8"
 	compress_gfx "underworld.p8"
 	store_flags "underworld.p8"
 	compress_map "underworld.p8"
 
-	poke2(0x30f6,addrs[5])
-	poke2(0x30f8,addrs[4])
-	poke2(0x30fa,addrs[3])
-	poke2(0x30fc,addrs[2])
-	poke2(0x30fe,addrs[1])
-	cstore(0x30f6,0x30f6,10,"main.p8")
+	assert(#addrs-1<0x10/2)
+
+	for i=1,#addrs-1 do
+		poke2(0x30f0+(i-1)*2,addrs[i])
+	end
+	cstore(0x30f0,0x30f0,0x10,"main.p8")
 
 	print("total usage: "..next_addr.."/"..max_store_addr.." bytes")
 	print(""..(next_addr/max_store_addr*100).."% used")
-	print(""..uncomp_size.."->"..next_addr)
-	print(""..(next_addr/uncomp_size*100).."% comp ratio")
+	print("~"..ceil(uncomp_size).."00->"..next_addr)
+	print(""..((next_addr/100)/uncomp_size*100).."% comp ratio")
 end 
 
 -->8
