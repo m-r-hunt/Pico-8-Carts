@@ -1,22 +1,43 @@
 pico-8 cartridge // http://www.pico-8.com
 version 27
 __lua__
--- px9 data compression
+-- px9 data compression v4
 -- by zep
--- v3:smaller decomp by @felice
+--
+-- changelog:
+--
+-- v4:
+--  @catatafish
+--  ★ smaller decomp
+--
+--  @felice
+--  ★ fix bit flush at end
+--  ★ use 0.2.0 functionality
+--  ★ even smaller decomp
+--  ★ some code simpler/cleaner
+--  ★ hey look, a changelog!
+--
+-- v3:
+--  @felice
+--  ★ smaller decomp
+--
+-- v2:
+--  @zep
+--  ★ original release
+--
 --[[
 
 	features:
-	★ 292 token decompress
+	★ 273 token decompress
 	★ handles any bit size data
 	★ no manual tuning required
 	★ decent compression ratios
-	
+
 
 	██▒ how to use ▒██
-	
+
 	1. compress your data
-	
+
 		px9_comp(source_x, source_y,
 			width, height,
 			destination_memory_addr,
@@ -35,18 +56,18 @@ __lua__
 			source_memory_addr,
 			read_function,
 			write_function)
-			
+
 		e.g. to decompress from map
 		memory space back to the
 		screen:
 		
 		px8_decomp(0,0,0x2000,
 			pget,pset)
-			
+
 		…………………………………
 
 		(see example below)
-	
+
 		note: only the decompress
 		code (tab 1) is needed in
 		your release cart after
@@ -70,7 +91,6 @@ function compress_gfx(cart)
 		loaded_cart=cart
 	end
 	local clen=px9_comp(0,0,128,64,0x4300,sget)
-	clen+=1
 	assert(clen<=max_comp_size)
 	cstore(next_addr,0x4300,clen,"main.p8")
 	next_addr+=clen
@@ -102,7 +122,6 @@ function compress_map(cart)
 		loaded_cart=cart
 	end
 	local clen=px9_comp(0,0,128,60,0x4300,mget)
-	clen+=1
 	assert(clen<=max_comp_size)
 	cstore(next_addr,0x4300,clen,"main.p8")
 	next_addr+=clen
@@ -139,7 +158,7 @@ function _init()
 	print(""..(next_addr/max_store_addr*100).."% used")
 	print("~"..ceil(uncomp_size).."00->"..next_addr)
 	print(""..((next_addr/100)/uncomp_size*100).."% comp ratio")
-end 
+end
 
 -->8
 -- px9 decompress
@@ -173,54 +192,59 @@ function
 	function getval(bits)
 		if cache_bits<16 then
 			-- cache next 16 bits
-			cache+=lshr(peek2(src),16-cache_bits)
+			cache+=%src>>>16-cache_bits
 			cache_bits+=16
 			src+=2
 		end
 		-- clip out the bits we want
 		-- and shift to integer bits
-		local val=lshr(shl(cache,32-bits),16-bits)
+		local val=cache<<32-bits>>>16-bits
 		-- now shift those bits out
 		-- of the cache
-		cache=lshr(cache,bits)
+		cache=cache>>>bits
 		cache_bits-=bits
 		return val
 	end
 
-	-- 1-based number
-	function gn1()
-		local bits,tot=1,1
-
-		while 1 do
-			local mx,vv=2^bits-1,
-				getval(bits)
-			tot+=vv
+	-- get number plus n
+	function gnp(n)
+		local bits=0
+		repeat
 			bits+=1
-			if (vv<mx) return tot
-		end
+			local vv=getval(bits)
+			n+=vv
+		until vv<(1<<bits)-1
+		return n
 	end
 
 	-- header
 
-	local w,h,b,
-	el,pr,x,y,splen,mode =
-		gn1(),gn1(),gn1(),
-		{},{},0,0,0
+	local 
+		w,h_1,      -- w,h-1
+		eb,el,pr,
+		x,y,
+		splen,
+		predict
+		=
+		gnp"1",gnp"0",
+		gnp"1",{},{},
+		0,0,
+		0
+		--,nil
 
-	for i=1,gn1() do
-		add(el,getval(b))
+	for i=1,gnp"1" do
+		add(el,getval(eb))
 	end
-	for y=y0,y0+h-1 do
+	for y=y0,y0+h_1 do
 		for x=x0,x0+w-1 do
-		
 			splen-=1
-			
-			if splen<1 then
-				splen,mode=gn1(),not mode
+
+			if(splen<1) then
+				splen,predict=gnp"1",not predict
 			end
-			
-			local a= y>y0 and vget(x,y-1) or 0
-			
+
+			local a=y>y0 and vget(x,y-1) or 0
+
 			-- create vlist if needed
 			local l=pr[a]
 			if not l then
@@ -230,28 +254,25 @@ function
 				end
 				pr[a]=l
 			end
-			
+
 			-- grab index from stream
 			-- iff predicted, always 1
 
-			local idx=mode and 1 or gn1()+1
-			local v=l[idx]
+			local v=l[predict and 1 or gnp"2"]
 
 			-- update predictions
 			vlist_val(l, v)
 			vlist_val(el, v)
-			
+
 			-- set
 			vset(x,y,v)
-			
+
 			-- advance
 			x+=1
-			y+=flr(x/w)
+			y+=x\w
 			x%=w
-			
 		end
 	end
-	
 end
 
 -->8
@@ -263,165 +284,156 @@ end
 -- vget  read function (x,y)
 
 function 
-	px9_comp(x0,y0,w,h,dest,vget)
+px9_comp(x0,y0,w,h,dest,vget)
 
-local dest0=dest
-local bit=1 
-local byte=0
+	local dest0=dest
+	local bit=1 
+	local byte=0
 
-local function vlist_val(l, val)
-	-- find positon
-	for i=1,#l do
-		if(l[i] == val) then
-		
-			-- jump to top
-			for j=i,2,-1 do
-				l[j]=l[j-1]
+	local function vlist_val(l, val)
+		-- find positon
+		for i=1,#l do
+			if l[i] == val then
+				-- jump to top
+				for j=i,2,-1 do
+					l[j]=l[j-1]
+				end
+				l[1] = val
+				return i
 			end
-			l[1] = val
-			return i
 		end
 	end
-end
 
-
-function putbit(bval)
-	if (bval) byte+=bit 
-	poke(dest, byte) bit*=2
-	if (bit==256) then
-		bit=1 byte=0
-		dest += 1			
-	end
-end
-
-function putval(val, bits)
-	if (bits == 0) return
-	for i=0,bits-1 do
-		putbit(band(val,shl(1,i))>0)
-	end
-end
-
-function putnum(val)
-	local bits = 1
-	while true do
-		local mx=shl(1,bits)-1
-		local vv=min(val,mx)
-		putval(vv,bits)
-		val -= vv
-		bits += 1
-		if (vv<mx) return
-	end
-end
-
-
-
--- first_used
-
-local el={}
-local found={}
-local highest=0
-for y=y0,y0+h-1 do
-	for x=x0,x0+w-1 do
-		c=vget(x,y)
-		if not found[c] then
-			found[c]=true
-			add(el,c)
-			highest=max(highest,c)
+	function putbit(bval)
+		if (bval) byte+=bit 
+		poke(dest, byte) bit<<=1
+		if (bit==256) then
+			bit=1 byte=0
+			dest += 1
 		end
 	end
-end
 
--- header
+	function putval(val, bits)
+		for i=0,bits-1 do
+			putbit(val&1<<i > 0)
+		end
+	end
 
-local bits=1
-while (highest>(2^bits)-1) do
-	bits+=1
-end
-
-putnum(w-1)
-putnum(h-1)
-putnum(bits-1)
-putnum(#el-1)
-for i=1,#el do
-	putval(el[i],bits)
-end
+	function putnum(val)
+		local bits = 0
+		repeat
+			bits += 1
+			local mx=(1<<bits)-1
+			local vv=min(val,mx)
+			putval(vv,bits)
+			val -= vv
+		until vv<mx
+	end
 
 
--- data
+	-- first_used
 
-local pr={} -- predictions
-
-local dat={}
-
-for y=y0,y0+h-1 do
-	for x=x0,x0+w-1 do
-		local v=vget(x,y)  
-		
-		local a=0
-		if (y>y0) a+=vget(x,y-1)
-		
-		-- create vlist if needed
-		local l=pr[a]
-		if not l then
-			l={}
-			for i=1,#el do
-				l[i]=el[i]
+	local el={}
+	local found={}
+	local highest=0
+	for y=y0,y0+h-1 do
+		for x=x0,x0+w-1 do
+			c=vget(x,y)
+			if not found[c] then
+				found[c]=true
+				add(el,c)
+				highest=max(highest,c)
 			end
-			pr[a]=l
-		end
-		
-		-- add to vlist
-		add(dat,vlist_val(l,v))
-		
-		-- and to running list
-		vlist_val(el, v)
-		
-	end
-end
-
--- write
--- store bit-0 as runtime len
--- start of each run
-
-local mode=1 -- predicted
-local pos=1
-
-while (pos <= #dat) do
-
-	-- count length
-	local pos0=pos
-	
-	if (mode == 0) then
-		-- not predicted
-		while (dat[pos]!=1 and 
-			pos <= #dat) do pos+=1 end
-	else
-		-- predicted
-		while (dat[pos]==1 and 
-			pos <= #dat) do pos+=1 end
-	end
-
-	local splen = pos-pos0
-	putnum(splen-1)
-
-	if (mode==0) do
-		-- not predicted:
-		-- values will all be >= 2
-		while (pos0 < pos) do
-			putnum(dat[pos0]-2)
-			pos0+=1
 		end
 	end
 
-	mode=1-mode -- flip
+	-- header
+
+	local bits=1
+	while highest >= 1<<bits do
+		bits+=1
+	end
+
+	putnum(w-1)
+	putnum(h-1)
+	putnum(bits-1)
+	putnum(#el-1)
+	for i=1,#el do
+		putval(el[i],bits)
+	end
+
+
+	-- data
+
+	local pr={} -- predictions
+
+	local dat={}
+
+	for y=y0,y0+h-1 do
+		for x=x0,x0+w-1 do
+			local v=vget(x,y)  
+
+			local a=0
+			if (y>y0) a+=vget(x,y-1)
+
+			-- create vlist if needed
+			local l=pr[a]
+			if not l then
+				l={}
+				for i=1,#el do
+					l[i]=el[i]
+				end
+				pr[a]=l
+			end
+
+			-- add to vlist
+			add(dat,vlist_val(l,v))
+			
+			-- and to running list
+			vlist_val(el, v)
+		end
+	end
+
+	-- write
+	-- store bit-0 as runtime len
+	-- start of each run
+
+	local nopredict
+	local pos=1
+
+	while pos <= #dat do
+		-- count length
+		local pos0=pos
+
+		if nopredict then
+			while dat[pos]!=1 and pos<=#dat do
+				pos+=1
+			end
+		else
+			while dat[pos]==1 and pos<=#dat do
+				pos+=1
+			end
+		end
+
+		local splen = pos-pos0
+		putnum(splen-1)
+
+		if nopredict then
+			-- values will all be >= 2
+			while pos0 < pos do
+				putnum(dat[pos0]-2)
+				pos0+=1
+			end
+		end
+
+		nopredict=not nopredict
+	end
+
+	if (bit!=1) dest+=1 -- flush
+
+	return dest-dest0
 end
 
-local len=dest-dest0
-if (bit==1) len-=1--unused byte
-
-return len
-
-end
 __gfx__
 ccccccccccccccccccccccccccc11111111111111ccccccccccccc111111111111111111ccccccccc1111111cccc111111111111111111111111111111111111
 ccccccccccccccccccc11cccccccc1111111111111111c1111111111111c111cc11ccc111ccccccccc1111111cccc11111111111111111111111111111111111
