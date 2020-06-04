@@ -127,6 +127,7 @@ function init_tileobjs()
 end
 
 function new_game()
+	actor={}
 	load_overworld()
 	pl=make_actor(64,3,3)
 	pl.state="normal"
@@ -134,12 +135,12 @@ function new_game()
 	pl.update=control_player
 	pl.lastdir=vec2(1,0)
 	load_screen(screen)
+	particles={}
 end
 
 function init_gameplay()
 end
 
-actor={}
 function make_actor(k, x, y)
 	a={
 		k = k,
@@ -295,6 +296,7 @@ function move_actor(a)
 end
 
 function update_fireball(fb)
+	add(particles,{x=fb.pos.x*8,y=fb.pos.y*8,c=0,lifetime=4+rnd(7),dy=-1,dx=rnd(0.2)-0.1})
 end
 
 function control_player(pl)
@@ -346,6 +348,9 @@ function update_gameplay()
 	for y=base_y,base_y+15 do
 		for x=base_x,base_x+16 do
 			if tileobjs[y][x] and tileobjs[y][x].fire then
+				if tileobjs[y][x].fire%4==0 then
+					add(particles,{x=x*8+4,y=y*8,c=0,lifetime=4+rnd(7),dy=-1,dx=rnd(0.4)-0.2})
+				end
 				tileobjs[y][x].fire+=1
 				if tileobjs[y][x].fire==10 then
 					for d in all({vec2(-1,0),vec2(1,0),vec2(0,-1),vec2(0,1)}) do
@@ -360,6 +365,15 @@ function update_gameplay()
 				end
 			end
 		end
+	end
+
+	for p in all(particles) do
+		p.lifetime-=1
+		if p.lifetime<=0 then
+			del(particles,p)
+		end
+		p.x+=p.dx
+		p.y+=p.dy
 	end
 
 	local screenp=vec2(screen.x*16,screen.y*15)
@@ -425,6 +439,10 @@ function draw_world(screen_pos)
 	end
 
 	foreach(actor,draw_actor)
+
+	for p in all(particles) do
+		pset(p.x,p.y,p.c)
+	end
 end
 
 function draw_gameplay()
