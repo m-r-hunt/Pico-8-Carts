@@ -376,14 +376,16 @@ end
 
 function draw_gameplay()
 	camera()
-	cls(15)
+	cls(7)
 
 	draw_world(screen)
 
 	clip(0,120,128,128)
 	camera()
 	--ui
-	print(mget(pl.pos.x,pl.pos.y),1,121,0)
+	--print(mget(pl.pos.x,pl.pos.y),1,121,0)
+	spr(80,0,120)
+	print("❎",8,122,2)
 end
 
 trans_duration=15
