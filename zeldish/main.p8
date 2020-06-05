@@ -173,7 +173,7 @@ end
 function solid_tileobj1(x,y)
 	local x=flr(x)
 	local y=flr(y)
-	if y<0 then
+	if y<0 or y>=60 then
 		return false
 	end
 	return (tileobjs[y][x]!=nil) and vec2(x, y)
@@ -317,10 +317,8 @@ function control_player(pl)
 			pl.firet=15
 			pl.k=66
 			pl.frame=0
-			local dx=pl.dx.x!=0 and sgn(pl.dx.x) or 0
-			local dy=pl.dx.y!=0 and sgn(pl.dx.y) or 0
 			if (dx==0 and dy==0) dx=1
-			local fb=make_actor(76,pl.pos.x+dx,pl.pos.y+dy)
+			local fb=make_actor(76,pl.pos.x+pl.lastdir.x,pl.pos.y+pl.lastdir.y)
 			fb.dx=0.5*pl.lastdir
 			fb.projectile=true
 			fb.update=update_fireball
