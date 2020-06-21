@@ -114,7 +114,7 @@ function load_screen(pos)
 		for y=pos.y*15,pos.y*15+14 do
 			local tile=mget(x,y)
 			if not fget(tile,0) then
-				tileobjs[y][x]={spr=tile,flammable=fget(tile,1),lightable=fget(tile,2)}
+				tileobjs[y][x]={spr=tile,flammable=fget(tile,1),lightable=fget(tile,2),frames=1,frame=0}
 			end
 		end
 	end
@@ -138,6 +138,7 @@ function new_game()
 	load_screen(screen)
 	particles={}
 	mp=100
+	hp=3
 end
 
 function init_gameplay()
@@ -255,7 +256,12 @@ function collide_tileobj_event(a,to)
 		elseif lightable(to) then
 			tileobjs[to.y][to.x].spr+=1
 			tileobjs[to.y][to.x].lightable=false
+			tileobjs[to.y][to.x].frames=2
 		end
+	end
+
+	if a==pl and tileobjs[to.y][to.x].fire then
+		hp-=1
 	end
 end
 
@@ -356,22 +362,26 @@ function update_gameplay()
 	local base_y=flr(screen.y*15)
 	for y=base_y,base_y+15 do
 		for x=base_x,base_x+16 do
-			if tileobjs[y][x] and tileobjs[y][x].fire then
-				if tileobjs[y][x].fire%4==0 then
-					add(particles,{x=x*8+4,y=y*8,c=0,lifetime=4+rnd(7),dy=-1,dx=rnd(0.4)-0.2})
-				end
-				tileobjs[y][x].fire+=1
-				if tileobjs[y][x].fire==10 then
-					for d in all({vec2(-1,0),vec2(1,0),vec2(0,-1),vec2(0,1)}) do
-						if tileobjs[y+d.y][x+d.x] and tileobjs[y+d.y][x+d.x].flammable then
-							tileobjs[y+d.y][x+d.x].fire=max(0,tileobjs[y+d.y][x+d.x].fire)
-						end
+			if tileobjs[y][x] then 
+				if tileobjs[y][x].fire then
+					if tileobjs[y][x].fire%4==0 then
+						add(particles,{x=x*8+4,y=y*8,c=0,lifetime=4+rnd(7),dy=-1,dx=rnd(0.4)-0.2})
 					end
-				elseif tileobjs[y][x].fire>=60 then
-					tileobjs[y][x].spr=73
-					tileobjs[y][x].flammable=false
-					tileobjs[y][x].fire=nil
+					tileobjs[y][x].fire+=1
+					if tileobjs[y][x].fire==10 then
+						for d in all({vec2(-1,0),vec2(1,0),vec2(0,-1),vec2(0,1)}) do
+							if tileobjs[y+d.y][x+d.x] and tileobjs[y+d.y][x+d.x].flammable then
+								tileobjs[y+d.y][x+d.x].fire=max(0,tileobjs[y+d.y][x+d.x].fire)
+							end
+						end
+					elseif tileobjs[y][x].fire>=60 then
+						tileobjs[y][x].spr=73
+						tileobjs[y][x].flammable=false
+						tileobjs[y][x].fire=nil
+					end
 				end
+				tileobjs[y][x].frame+=0.2
+				tileobjs[y][x].frame=tileobjs[y][x].frame%tileobjs[y][x].frames
 			end
 		end
 	end
@@ -437,7 +447,7 @@ function draw_world(screen_pos)
 	for y=base_y,base_y+15 do
 		for x=base_x,base_x+16 do
 			if tileobjs[y][x] then
-				spr(tileobjs[y][x].spr,x*8,y*8)
+				spr(tileobjs[y][x].spr+tileobjs[y][x].frame,x*8,y*8)
 				if tileobjs[y][x].fire then
 					local t=globalt+y*x
 					local s=(t%15>=7) and 74 or 75
@@ -473,6 +483,10 @@ function draw_gameplay()
 	pal(6,6)
 	pal(12,12)
 	spr(93,104,120,mp/100*3,1)
+
+	for i=1,hp do
+		print("♥",104-7*i,122,2)
+	end
 end
 
 trans_duration=15
