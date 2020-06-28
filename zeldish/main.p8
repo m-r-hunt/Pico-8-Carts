@@ -110,6 +110,11 @@ overworld_transitions={
 }
 
 function load_screen(pos)
+	for a in all(actor) do
+		if a ~= pl then
+			del(actor, a)
+		end
+	end
 	--todo clear out old objects that may have moved
 	for x=pos.x*16,pos.x*16+15 do
 		for y=pos.y*15,pos.y*15+14 do
@@ -188,7 +193,7 @@ function solid_tileobj1(x,y)
 	if y<0 or y>=60 then
 		return false
 	end
-	return (tileobjs[y][x]!=nil) and vec2(x, y)
+	return (tileobjs[y][x]!=nil) and (not tileobjs[y][x].unsolid) and vec2(x, y)
 end
 
 function solid_tileobj(x,y,w,h)
@@ -415,6 +420,7 @@ function update_gameplay()
 						tileobjs[y][x].spr=73
 						tileobjs[y][x].flammable=false
 						tileobjs[y][x].fire=nil
+						tileobjs[y][x].unsolid=true
 					end
 				end
 				tileobjs[y][x].frame+=0.2
