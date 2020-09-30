@@ -19,6 +19,9 @@ function log(s)
 end
 
 blank_window={}
+function blank_window.get_dimensions()
+	return 50, 60
+end
 function blank_window:init()
 	self.c=11
 end
@@ -29,8 +32,22 @@ function blank_window:onclick(x,y)
 	self.c+=1
 end
 
+default_width=22
+default_height=19
+window_left_size=1
+window_extra_w=2
+window_extra_h=5
+close_button_w=4
+titlebar_h=4
+
 function create_window(class,x,y)
-	local newwin={x=x,y=y,class=class,data={}}
+	local w,h=default_width,default_height
+	if class.get_dimensions then
+		w,h=class.get_dimensions()
+	end
+	w=mid(5,w,128)
+	h=mid(1,h,120)
+	local newwin={x=x,y=y,w=w,h=h,class=class,data={}}
 	add(windows,newwin)
 	newwin.class.init(newwin.data)
 end
@@ -46,8 +63,8 @@ end
 function get_mouse_target()
 	for i=#windows,1,-1 do
 		local w=windows[i]
-		local inx=mousex>=w.x and mousex<=w.x+24
-		local iny=mousey>=w.y and mousey<=w.y+24
+		local inx=mousex>=w.x and mousex<w.x+w.w+window_extra_w
+		local iny=mousey>=w.y and mousey<w.y+w.h+window_extra_h
 		if iny and inx then
 			return i
 		end
@@ -72,32 +89,32 @@ function _update()
 		del(windows,w)
 		add(windows,w)
 		
-		if mousey-w.y<=4 and mousex-w.x<=20 then
+		if mousey-w.y<titlebar_h and mousex-w.x<w.w+window_extra_w-close_button_w then
 			dragging=true
 			dragx=mousex
 			dragy=mousey
+			origx=w.x
+			origy=w.y
 			dragw=#windows
 		end
 	end
 	
 	if dragging then
 		local w=windows[dragw]
-		w.x=mid(0,w.x+mousex-dragx,104)
-		w.y=mid(0,w.y+mousey-dragy,96)
-		dragx=mousex
-		dragy=mousey
+		w.x=mid(0,origx+mousex-dragx,128-w.w-window_extra_w)
+		w.y=mid(0,origy+mousey-dragy,128-w.h-window_extra_h-8)
 	end
 	
 	if not dragging and lreleased and mouse_target~=-1 then
 		local w=windows[mouse_target]
 		local lx=mousex-w.x
 		local ly=mousey-w.y
-		if lx>=20 and ly<=4 then
+		if lx>=w.w+window_extra_w-close_button_w and ly<titlebar_h then
 			--close button
 			del(windows,w)
 		end
-		if w.class.onclick and ly>=5 and ly<24 then
-			w.class.onclick(w.data,lx-1,ly-4)
+		if w.class.onclick and lx>0 and lx<w.w+window_left_size and ly>=titlebar_h and ly<titlebar_h+w.h then
+			w.class.onclick(w.data,lx-window_left_size,ly-titlebar_h)
 		end
 	end
 	
@@ -111,9 +128,15 @@ function draw_windows()
 		window=windows[i]
 		camera()
 		clip()
-		spr(4,window.x,window.y,3,3)
-		clip(window.x+1,window.y+4,22,19)
-		camera(-window.x-1,-window.y-4)
+		
+		sspr(48,0,4,4,window.x+window_left_size,window.y,window.w+window_extra_w-close_button_w-1,titlebar_h)
+		sspr(52,0,4,4,window.x+window.w-window_extra_w,window.y)
+		line(window.x,window.y+1,window.x,window.y+window.h+window_extra_h-2,5)
+		line(window.x+1,window.y+window.h+window_extra_h-1,window.x+window.w,window.y+window.h+window_extra_h-1,5)
+		line(window.x+window.w+1,window.y+1,window.x+window.w+1,window.y+window.h+window_extra_h-2,5)
+		
+		clip(window.x+window_left_size,window.y+titlebar_h,window.w,window.h)
+		camera(-window.x-window_left_size,-window.y-titlebar_h)
 		window.class.draw(window.data)
 	end
 	camera()
@@ -141,14 +164,14 @@ function _draw()
 	draw_mouse()
 end
 __gfx__
-00000000000500008888888855550000055555555555555555555550000000000000000000000000000000000000000000000000000000000000000000000000
-000000000058500077777777577750005eeeeeeeeeeeeeeeeeee8e85000000000000000000000000000000000000000000000000000000000000000000000000
-007007000597f500eeeeeeee577750005eeeeeeeeeeeeeeeeeeee8e5000000000000000000000000000000000000000000000000000000000000000000000000
-000770005a777e50eeeeeeee577750005eeeeeeeeeeeeeeeeeee8e85000000000000000000000000000000000000000000000000000000000000000000000000
-0007700005b7d500eeeeeeee05557500500000000000000000000005000000000000000000000000000000000000000000000000000000000000000000000000
-00700700005c5000eeeeeeee00005750500000000000000000000005000000000000000000000000000000000000000000000000000000000000000000000000
-0000000000050000eeeeeeee00000575500000000000000000000005000000000000000000000000000000000000000000000000000000000000000000000000
-00000000000000008888888800000055500000000000000000000005000000000000000000000000000000000000000000000000000000000000000000000000
+000000000005000088888888c5555000055555555555555555555550000000000000000000000000000000000000000000000000000000000000000000000000
+000000000058500077777777577775005eeeeeeeeeeeeeeeeeee8e85000000000000000000000000000000000000000000000000000000000000000000000000
+007007000597f500eeeeeeee567777505eeeeeeeeeeeeeeeeeeee8e5000000000000000000000000000000000000000000000000000000000000000000000000
+000770005a777e50eeeeeeee567777505eeeeeeeeeeeeeeeeeee8e85000000000000000000000000000000000000000000000000000000000000000000000000
+0007700005b7d500eeeeeeee56677750500000000000000000000005000000000000000000000000000000000000000000000000000000000000000000000000
+00700700005c5000eeeeeeee05667775500000000000000000000005000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000050000eeeeeeee00555675500000000000000000000005000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000008888888800000550500000000000000000000005000000000000000000000000000000000000000000000000000000000000000000000000
 00000000000000000000000000000000500000000000000000000005000000000000000000000000000000000000000000000000000000000000000000000000
 00000000000000000000000000000000500000000000000000000005000000000000000000000000000000000000000000000000000000000000000000000000
 00000000000000000000000000000000500000000000000000000005000000000000000000000000000000000000000000000000000000000000000000000000
