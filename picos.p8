@@ -1,6 +1,10 @@
 pico-8 cartridge // http://www.pico-8.com
 version 29
 __lua__
+function clw(c)
+	rectfill(0,0,128,128,c or 7)
+end
+
 debug_window={}
 function debug_window:init()
 	debug_log={}
@@ -32,6 +36,43 @@ function blank_window:onclick(x,y)
 	self.c+=1
 end
 
+calculator={}
+function calculator.get_dimensions()
+	return 27, 42
+end
+function calculator:init()
+	self.value=0
+end
+function draw_calc_button(x,y,s)
+	rect(x*7,y*9+7,x*7+6,y*9+15,5)
+	print(s,x*7+2,y*9+9,5)
+end
+function calculator:draw()
+	clw()
+	print(self.value,1,1,5)
+
+	draw_calc_button(0,0,"7")
+	draw_calc_button(1,0,"8")
+	draw_calc_button(2,0,"9")
+
+	draw_calc_button(0,1,"4")
+	draw_calc_button(1,1,"5")
+	draw_calc_button(2,1,"6")
+
+	draw_calc_button(0,2,"1")
+	draw_calc_button(1,2,"2")
+	draw_calc_button(2,2,"3")
+
+	draw_calc_button(0,3,"0")
+
+	draw_calc_button(3,0,"+")
+	draw_calc_button(3,1,"-")
+	draw_calc_button(3,2,"*")
+	draw_calc_button(3,3,"/")
+	draw_calc_button(1,3,"C")
+	draw_calc_button(2,3,"=")
+end
+
 default_width=22
 default_height=19
 window_left_size=1
@@ -47,6 +88,8 @@ function create_window(class,x,y)
 	end
 	w=mid(5,w,128)
 	h=mid(1,h,120)
+	local x=mid(0,x,128-w-window_extra_w)
+	local y=mid(0,y,128-h-window_extra_h)
 	local newwin={x=x,y=y,w=w,h=h,class=class,data={}}
 	add(windows,newwin)
 	newwin.class.init(newwin.data)
@@ -58,6 +101,7 @@ function _init()
 	create_window(debug_window,10,10)
 	create_window(blank_window,50,16)
 	create_window(blank_window,60,26)
+	create_window(calculator,70,26)
 end
 
 function get_mouse_target()
