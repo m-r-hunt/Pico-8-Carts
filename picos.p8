@@ -38,7 +38,7 @@ end
 
 calculator={}
 function calculator.get_dimensions()
-	return 27, 42
+	return 28, 43
 end
 function calculator:init()
 	self.value=0
@@ -47,30 +47,67 @@ function draw_calc_button(x,y,s)
 	rect(x*7,y*9+7,x*7+6,y*9+15,5)
 	print(s,x*7+2,y*9+9,5)
 end
+calc_buttons={
+	{"7","8","9","+"},
+	{"4","5","6","-"},
+	{"1","2","3","*"},
+	{"0","c","=","/"},
+}
 function calculator:draw()
 	clw()
-	print(self.value,1,1,5)
+	if self.last and self.value==0 then
+		print(self.last,1,1,5)
+	else
+		print(self.value,1,1,5)
+	end
+	
+	for y=0,3 do
+		for x=0,3 do
+			draw_calc_button(x,y,calc_buttons[y+1][x+1])
+		end
+	end
+end
 
-	draw_calc_button(0,0,"7")
-	draw_calc_button(1,0,"8")
-	draw_calc_button(2,0,"9")
+function apply_op(self)
+	if self.op=="+" then
+		self.value+=self.last
+	elseif self.op=="-" then
+		self.value-=self.last
+	elseif self.op=="*" then
+		self.value*=self.last
+	elseif self.op=="/" then
+		self.value=self.last/self.value
+	end
+	self.op=nil
+	self.last=nil
+end
 
-	draw_calc_button(0,1,"4")
-	draw_calc_button(1,1,"5")
-	draw_calc_button(2,1,"6")
-
-	draw_calc_button(0,2,"1")
-	draw_calc_button(1,2,"2")
-	draw_calc_button(2,2,"3")
-
-	draw_calc_button(0,3,"0")
-
-	draw_calc_button(3,0,"+")
-	draw_calc_button(3,1,"-")
-	draw_calc_button(3,2,"*")
-	draw_calc_button(3,3,"/")
-	draw_calc_button(1,3,"C")
-	draw_calc_button(2,3,"=")
+function calculator:onclick(mx,my)
+	local x=flr(mx/7)
+	local y=flr((my-7)/9)
+	if x>=0 and x<=3 and y>=0 and y<=3 then
+		local b=calc_buttons[y+1][x+1]
+		local n=tonum(b)
+		if n then
+			self.value=self.value*10+n
+		elseif b=="c" then
+			self.value=0
+			self.last=nil
+			self.op=nil
+		elseif b=="=" then
+		 if self.last and self.op then
+				apply_op(self)
+			end
+		else
+			if self.last and self.op then
+				apply_op(self)
+			end
+			self.last=self.value
+			self.op=b
+			self.value=0
+		end
+	end
+	log(b)
 end
 
 default_width=22
