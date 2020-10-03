@@ -13,6 +13,7 @@ __lua__
 --day summary screen
 --banners/transitions between states
 --reconceptualize crate management as push/pull
+--redraw crates as nicer icons
 
 --done
 --multi delivery
