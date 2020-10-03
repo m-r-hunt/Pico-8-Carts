@@ -3,6 +3,7 @@ version 29
 __lua__
 function _init()
 	px=0
+	pcarried=nil
 	cargo={}
 	for i=1,12 do
 		cargo[i]={}
@@ -12,11 +13,49 @@ end
 loop_width=48*8
 half_loop_width=24*8
 
+function get_target_crate()
+	local row=flr((px%half_loop_width)/16)+1
+	local aside=px<half_loop_width
+	local pos
+	if aside then
+		if cargo[row].b then
+			pos="b"
+		elseif cargo[row].mid then
+			pos=pcarried and "b" or "mid"
+		elseif cargo[row].a then
+			pos=pcarried and "mid" or "a"
+		else
+			pos="a"
+		end
+	else
+		if cargo[row].a then
+			pos="a"
+		elseif cargo[row].mid then
+			pos=pcarried and "a" or "mid"
+		elseif cargo[row].b then
+			pos=pcarried and "mid" or "b"
+		else
+			pos="b"
+		end
+	end
+	return row,pos
+end
+
 function _update()
 	if (btn(0)) px-=1
 	if (btn(1)) px+=1
 	if (px<0) px+=loop_width
 	if (px>=loop_width) px-=loop_width
+	if btnp(4) then
+		local n,pos=get_target_crate()
+		if not pcarried and cargo[n][pos] then
+			pcarried=cargo[n][pos]
+			cargo[n][pos]=nil
+		elseif pcarried and not cargo[n][pos] then
+			cargo[n][pos]=pcarried
+			pcarried=nil
+		end
+	end
 end
 
 function _draw()
@@ -43,6 +82,13 @@ function _draw()
 			end
 		end
 	end
+	local n,pos=get_target_crate()
+	local t1={a=9*8,mid=7*8,b=5*8}
+	local y1=t1[pos]
+	local t2={a=5*8,mid=7*8,b=9*8}
+	local y2=t2[pos]
+	spr(108,-px+n*16,y1,2,2)
+	spr(108,-px+half_loop_width+n*16,y2,2,2)
 	
 	spr(64,60,104)
 end
@@ -82,7 +128,7 @@ __gfx__
 50500505000000006511111111111156000000000000000000000000000000000000000000000000000000000000000000000000000000008666666886666668
 05055050000000006511111111111156000000000000000000000000000000000000000000000000000000000000000000000000000000008666666886666668
 05166150000000006511111111111156000000000000000000000000000000000000000000000000000000000000000000000000000000008666666886666668
-0d5665d0000000006511111111111156000000000000000000000000000000000000000000000000000000000000000000000000000000008666666886666668
+0d56c5d0000000006511111111111156000000000000000000000000000000000000000000000000000000000000000000000000000000008666666886666668
 05666650000000006511111111111156000000000000000000000000000000000000000000000000000000000000000000000000000000008666666886666668
 01555510000000006511111111111156000000000000000000000000000000000000000000000000000000000000000000000000000000008666666886666668
 56d66d65000000006555555555555556000000000000000000000000000000000000000000000000000000000000000000000000000000008666666886666668
