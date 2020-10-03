@@ -8,39 +8,46 @@ function _init()
 	for i=1,12 do
 		cargo[i]={}
 	end
+	cargo[2].a=128
+	cargo[3].b=128
+	cargo[4].mid=128
 end
 
 loop_width=48*8
 half_loop_width=24*8
 
+function get_empty_slot(row,aside)
+	local order=aside and {"mid","a","b"} or {"mid", "b", "a"}
+	for i=1,#order do
+		if not cargo[row][order[i]] then
+			return order[i]
+		end
+	end
+	return "b"
+end
+
+function get_filled_slot(row,aside)
+	local order=aside and {"b","mid","a"} or {"a", "mid", "b"}
+	for i=1,#order do
+		if cargo[row][order[i]] then
+			return order[i]
+		end
+	end
+	return "a"
+end
+
 function get_target_crate()
-	local row=flr((px%half_loop_width)/16)
+	local row=flr((px%half_loop_width)/16)+1
 	local aside=px<half_loop_width
-	if (row==0) then
+	if row==0 then
 		row=12
 		aside=not aside
 	end
 	local pos
-	if aside then
-		if cargo[row].b then
-			pos="b"
-		elseif cargo[row].mid then
-			pos=pcarried and "b" or "mid"
-		elseif cargo[row].a then
-			pos=pcarried and "mid" or "a"
-		else
-			pos="a"
-		end
+	if pcarried then
+		pos=get_empty_slot(row,aside)
 	else
-		if cargo[row].a then
-			pos="a"
-		elseif cargo[row].mid then
-			pos=pcarried and "a" or "mid"
-		elseif cargo[row].b then
-			pos=pcarried and "mid" or "b"
-		else
-			pos="b"
-		end
+		pos=get_filled_slot(row,aside)
 	end
 	return row,pos
 end
@@ -89,8 +96,8 @@ function draw_objects()
 	local y1=t1[pos]
 	local t2={a=5*8,mid=7*8,b=9*8}
 	local y2=t2[pos]
-	spr(108,n*16,y1,2,2)
-	spr(108,half_loop_width+n*16,y2,2,2)
+	spr(108,(n-1)*16,y1,2,2)
+	spr(108,half_loop_width+(n-1)*16,y2,2,2)
 	spr(64,px-4,104)
 end
 
