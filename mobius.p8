@@ -1,8 +1,25 @@
 pico-8 cartridge // http://www.pico-8.com
 version 29
 __lua__
+--mobius station
+--by maximilian hunt
+--(c) 2020 cc-by-sa
+
+-->8
+--core
+
 loop_width=48*8
 half_loop_width=24*8
+
+function new_game()
+	px=0
+	pcarried=nil
+	cargo={}
+	for i=1,12 do
+		cargo[i]={}
+	end
+	inventory={}
+end
 
 function get_empty_slot(row,aside)
 	local order=aside and {"mid","a","b"} or {"mid", "b", "a"}
@@ -111,6 +128,9 @@ function draw_world()
 	print(t,0,0,7)
 end
 
+-->8
+--delivery
+
 function add_crate(c)
 	inventory[c]=inventory[c] and inventory[c]+1 or 1
 	for x=0,6 do
@@ -157,6 +177,9 @@ function draw_delivery()
 	draw_world()
 end
 
+-->8
+--chill
+
 function update_chill()
 	update_player()
 
@@ -168,6 +191,9 @@ end
 function draw_chill()
 	draw_world()
 end
+
+-->8
+--fment
 
 function enter_fment()
 	local types={}
@@ -197,6 +223,9 @@ function draw_fment()
 	spr(target,0,0,2,2)
 end
 
+-->8
+--menus
+
 function update_gameover()
 	if band(btnp(),0b110000)~=0 then
 		transition("title")
@@ -222,6 +251,9 @@ function draw_title()
 	print("🅾️/❎: start game",60,78,7)
 end
 
+-->8
+--state machine & callbacks
+
 states={
 	title={update=update_title,draw=draw_title},
 
@@ -239,16 +271,6 @@ function transition(new_state)
 	end
 	current_state=new_state
 	t=0
-end
-
-function new_game()
-	px=0
-	pcarried=nil
-	cargo={}
-	for i=1,12 do
-		cargo[i]={}
-	end
-	inventory={}
 end
 
 function _init()
