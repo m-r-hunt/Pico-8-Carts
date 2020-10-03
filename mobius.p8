@@ -5,6 +5,19 @@ __lua__
 --by maximilian hunt
 --(c) 2020 cc-by-sa
 
+--todo
+
+--animated crates
+--better ui on fment
+--day summary screen
+--banners/transitions between states
+--reconceptualize crate management as push/pull
+--switch to more small crates(?)
+
+--done
+--multi delivery
+--multi fment
+
 -->8
 --core
 
@@ -158,18 +171,41 @@ function random_crate_type()
 	return c
 end
 
-function enter_delivery()
-	add_crate(random_crate_type())
-	add_crate(random_crate_type())
-	add_crate(random_crate_type())
-	add_crate(random_crate_type())
+total_slots=12*3
+max_fraction=flr(2/3*total_slots)
+
+function count_inventory()
+	local total=0
+	for _,n in pairs(inventory) do
+		total+=n
+	end
+	return total
 end
+
+function enter_delivery_prep()
+	local filled_slots=count_inventory()
+	local max_delivered=mid(1,max_fraction-filled_slots,6)
+	delivery_type=random_crate_type()
+	delivery_n=ceil(rnd(max_delivered))
+	transition("delivering")
+end
+
+function enter_delivering()
+	add_crate(delivery_type)
+	delivery_n-=1
+end
+
+delivery_time=1.5
 
 function update_delivery()
 	update_player()
 
-	if t>=3 then
-		transition("chill")
+	if t>=delivery_time then
+		if delivery_n>=0 then
+			transition("delivering")
+		else
+			transition("chill")
+		end
 	end
 end
 
@@ -203,6 +239,8 @@ function enter_fment()
 		end
 	end
 	target=rnd(types)
+	local max_target_number=min(3,inventory[target])
+	target_number=ceil(rnd(max_target_number))
 	time_limit=10
 end
 
@@ -211,7 +249,10 @@ function update_fment()
 	if btnp(5) and px>=26*8 and px<=28*8 and pcarried==target then
 		pcarried=nil
 		inventory[target]-=1
-		transition("delivery")
+		target_number-=1
+		if target_number<=0 then
+			transition("delivery_prep")
+		end
 	elseif t>=time_limit then
 		transition("gameover")
 	end
@@ -221,6 +262,7 @@ end
 function draw_fment()
 	draw_world()
 	spr(target,0,0,2,2)
+	print(target_number,8,8,7)
 end
 
 -->8
@@ -241,7 +283,7 @@ end
 function update_title()
 	if band(btnp(),0b110000)~=0 then
 		new_game()
-		transition("delivery")
+		transition("delivery_prep")
 	end
 end
 
@@ -257,7 +299,8 @@ end
 states={
 	title={update=update_title,draw=draw_title},
 
-	delivery={enter=enter_delivery,update=update_delivery,draw=draw_delivery},
+	delivery_prep={enter=enter_delivery_prep},
+	delivering={enter=enter_delivering,update=update_delivery,draw=draw_delivery},
 	chill={update=update_chill,draw=draw_chill},
 	fment={enter=enter_fment,update=update_fment,draw=draw_fment},
 	summary={update=update_summary,draw=draw_summary},
@@ -266,11 +309,11 @@ states={
 }
 
 function transition(new_state)
+	current_state=new_state
+	t=0
 	if states[new_state].enter then
 		states[new_state].enter()
 	end
-	current_state=new_state
-	t=0
 end
 
 function _init()
