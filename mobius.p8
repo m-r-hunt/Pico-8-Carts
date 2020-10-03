@@ -14,8 +14,12 @@ loop_width=48*8
 half_loop_width=24*8
 
 function get_target_crate()
-	local row=flr((px%half_loop_width)/16)+1
+	local row=flr((px%half_loop_width)/16)
 	local aside=px<half_loop_width
+	if (row==0) then
+		row=12
+		aside=not aside
+	end
 	local pos
 	if aside then
 		if cargo[row].b then
@@ -58,39 +62,62 @@ function _update()
 	end
 end
 
-function _draw()
-	cls()
-	map(0,0,-loop_width-px,0,48,16)
-	map(0,0,-px,0,48,16)
-	map(0,0,loop_width-px,0,48,16)
-	
+function draw_loop()
+	map(0,0,0,0,48,16)
+end
+
+function draw_objects()
 	for i=1,12 do
 		local c=cargo[i]
-		local x=(i-1)*16-px
-		for xoff=-loop_width,loop_width,loop_width do
-			if c.a then
-				spr(c.a,xoff+x,9*8,2,2)
-				spr(c.a,xoff+x+half_loop_width,5*8,2,2,false,true)
-			end
-			if c.mid then
-				spr(c.mid,xoff+x,7*8,2,2)
-				spr(c.mid,xoff+x+half_loop_width,7*8,2,2,false,true)
-			end
-			if c.b then
-				spr(c.b,xoff+x,5*8,2,2)
-				spr(c.b,xoff+x+half_loop_width,9*8,2,2,false,true)
-			end
+		local x=(i-1)*16
+		if c.a then
+			spr(c.a,x,9*8,2,2)
+			spr(c.a,x+half_loop_width,5*8,2,2,false,true)
+		end
+		if c.mid then
+			spr(c.mid,x,7*8,2,2)
+			spr(c.mid,x+half_loop_width,7*8,2,2,false,true)
+		end
+		if c.b then
+			spr(c.b,x,5*8,2,2)
+			spr(c.b,x+half_loop_width,9*8,2,2,false,true)
 		end
 	end
+
 	local n,pos=get_target_crate()
 	local t1={a=9*8,mid=7*8,b=5*8}
 	local y1=t1[pos]
 	local t2={a=5*8,mid=7*8,b=9*8}
 	local y2=t2[pos]
-	spr(108,-px+n*16,y1,2,2)
-	spr(108,-px+half_loop_width+n*16,y2,2,2)
-	
-	spr(64,60,104)
+	spr(108,n*16,y1,2,2)
+	spr(108,half_loop_width+n*16,y2,2,2)
+	spr(64,px-4,104)
+end
+
+function _draw()
+	cls()
+
+	camera(px-60+loop_width)
+	draw_loop()
+
+	camera(px-60)
+	draw_loop()
+
+	camera(px-60-loop_width)
+	draw_loop()
+
+	camera(px-60+loop_width)
+	draw_objects()
+
+	camera(px-60)
+	draw_objects()
+
+	camera(px-60-loop_width)
+	draw_objects()
+
+	camera()
+	--ui probably
+	print(px,0,0,7)
 end
 __gfx__
 00000000000000005555555566666666000000000000000000000000000000000000000000000000000000000000000000000000000000006888888888888886
