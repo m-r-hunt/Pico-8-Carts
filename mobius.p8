@@ -177,6 +177,7 @@ function enter_fment()
 		end
 	end
 	target=rnd(types)
+	time_limit=10
 end
 
 function update_fment()
@@ -185,12 +186,40 @@ function update_fment()
 		pcarried=nil
 		inventory[target]-=1
 		transition("delivery")
+	elseif t>=time_limit then
+		transition("gameover")
 	end
+	
 end
 
 function draw_fment()
 	draw_world()
 	spr(target,0,0,2,2)
+end
+
+function update_gameover()
+	if band(btnp(),0b110000)~=0 then
+		transition("title")
+	end
+end
+
+function draw_gameover()
+	cls()
+	print("game over",60,64,7)
+	print("🅾️/❎: return to title",60,78,7)
+end
+
+function update_title()
+	if band(btnp(),0b110000)~=0 then
+		new_game()
+		transition("delivery")
+	end
+end
+
+function draw_title()
+	cls()
+	print("mobius station",60,64,7)
+	print("🅾️/❎: start game",60,78,7)
 end
 
 states={
@@ -224,7 +253,7 @@ end
 
 function _init()
 	new_game()
-	transition("delivery")
+	transition("title")
 end
 
 function _update60()
