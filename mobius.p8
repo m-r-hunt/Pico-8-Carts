@@ -7,16 +7,17 @@ __lua__
 
 --todo
 
---animated crates
+--switch to more small crates(?)
+--fix crate pathfinding around joins
 --better ui on fment
 --day summary screen
 --banners/transitions between states
 --reconceptualize crate management as push/pull
---switch to more small crates(?)
 
 --done
 --multi delivery
 --multi fment
+--animated crates
 
 -->8
 --core
@@ -32,6 +33,7 @@ function new_game()
 		cargo[i]={}
 	end
 	inventory={}
+	crates={}
 end
 
 function get_empty_slot(row,aside)
@@ -55,7 +57,7 @@ function get_filled_slot(row,aside)
 end
 
 function get_target_crate()
-	local row=flr((px%half_loop_width)/16)+1
+	local row=(px%half_loop_width)\16+1
 	local aside=px<half_loop_width
 	local pos
 	if pcarried then
@@ -75,11 +77,33 @@ function update_player()
 		local n,pos=get_target_crate()
 		if not pcarried and cargo[n][pos] then
 			pcarried=cargo[n][pos]
+			pcarried.target="player"
 			cargo[n][pos]=nil
 		elseif pcarried and not cargo[n][pos] then
 			cargo[n][pos]=pcarried
+			pcarried.target="storage"
+			pcarried.targetshelf=n
+			pcarried.targetpos=pos
 			pcarried=nil
 		end
+	end
+end
+
+function get_crate_target_pos(c)
+	if c.target=="storage" then
+		local post={a=9*8,mid=7*8,b=5*8}
+		assert(post[c.targetpos],c.targetpos)
+		return (c.targetshelf-1)*16,post[c.targetpos]
+	elseif c.target=="player" then
+		return px,10*8
+	end
+end
+
+function update_crates()
+	for _,c in pairs(crates) do
+		local tx,ty=get_crate_target_pos(c)
+		c.x=c.x+(tx-c.x)/2
+		c.y=c.y+(ty-c.y)/2
 	end
 end
 
@@ -88,21 +112,9 @@ function draw_loop()
 end
 
 function draw_objects()
-	for i=1,12 do
-		local c=cargo[i]
-		local x=(i-1)*16
-		if c.a then
-			spr(c.a,x,9*8,2,2)
-			spr(c.a,x+half_loop_width,5*8,2,2,false,true)
-		end
-		if c.mid then
-			spr(c.mid,x,7*8,2,2)
-			spr(c.mid,x+half_loop_width,7*8,2,2,false,true)
-		end
-		if c.b then
-			spr(c.b,x,5*8,2,2)
-			spr(c.b,x+half_loop_width,9*8,2,2,false,true)
-		end
+	for _,crate in pairs(crates) do
+		spr(crate.type,crate.x,crate.y,2,2)
+		spr(crate.type,crate.x+half_loop_width,112-crate.y,2,2)
 	end
 
 	local n,pos=get_target_crate()
@@ -151,11 +163,15 @@ function add_crate(c)
 			local pt={"mid","a","b"}
 			local p=pt[pos]
 			if not cargo[1+x][p] then
-				cargo[1+x][p]=c
+				local newc={type=c,x=0,y=0,target="storage",targetshelf=1+x,targetpos=p}
+				cargo[1+x][p]=newc
+				add(crates,newc)
 				return
 			end
 			if not cargo[12-x][p] then
-				cargo[12-x][p]=c
+				local newc={type=c,x=0,y=0,target="storage",targetshelf=12-x,targetpos=p}
+				cargo[12-x][p]=newc
+				add(crates,newc)
 				return
 			end
 		end
@@ -199,6 +215,7 @@ delivery_time=1.5
 
 function update_delivery()
 	update_player()
+	update_crates()
 
 	if t>=delivery_time then
 		if delivery_n>=0 then
@@ -218,6 +235,7 @@ end
 
 function update_chill()
 	update_player()
+	update_crates()
 
 	if btnp(5) and px>=25*8 and px<=26*8 then
 		transition("fment")
@@ -246,6 +264,7 @@ end
 
 function update_fment()
 	update_player()
+	update_crates()
 	if btnp(5) and px>=26*8 and px<=28*8 and pcarried==target then
 		pcarried=nil
 		inventory[target]-=1
@@ -269,7 +288,7 @@ end
 --menus
 
 function update_gameover()
-	if band(btnp(),0b110000)~=0 then
+	if btnp()&0b110000~=0 then
 		transition("title")
 	end
 end
@@ -281,7 +300,7 @@ function draw_gameover()
 end
 
 function update_title()
-	if band(btnp(),0b110000)~=0 then
+	if btnp()&0b110000~=0 then
 		new_game()
 		transition("delivery_prep")
 	end
