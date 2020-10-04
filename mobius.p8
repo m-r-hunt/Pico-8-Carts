@@ -7,8 +7,6 @@ __lua__
 
 --todo
 
---switch to more small crates(?)
---fix crate pathfinding around joins
 --better ui on fment
 --day summary screen
 --banners/transitions between states
@@ -19,6 +17,8 @@ __lua__
 --multi delivery
 --multi fment
 --animated crates
+--switch to more small crates(?)
+--fix crate pathfinding around joins(ish)
 
 -->8
 --core
