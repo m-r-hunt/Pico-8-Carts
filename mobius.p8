@@ -200,8 +200,8 @@ end
 function closest_in_m_space(x,y,tx,ty)
 	local candidates={
 		{tx,ty},
-		{tx-half_loop_width,112-ty},
-		{tx+half_loop_width,112-ty},
+		{tx-half_loop_width,128-ty},
+		{tx+half_loop_width,128-ty},
 	}
 	local ox,oy
 	local mindist=32000
@@ -241,9 +241,11 @@ function update_crates()
 		end
 		if c.x<0 then
 			c.x+=half_loop_width
+			c.y=128-c.y
 		end
 		if c.x>=half_loop_width then
 			c.x-=half_loop_width
+			c.y=128-c.y
 		end
 	end
 end
