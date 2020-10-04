@@ -7,8 +7,6 @@ __lua__
 
 --todo
 
---day summary screen
---cap crate speed
 
 --done
 --multi delivery
@@ -20,6 +18,8 @@ __lua__
 --banners/transitions between states
 --reconceptualize crate management as push/pull
 --redraw crates as nicer icons
+--day summary screen
+--cap crate speed
 
 -->8
 --core
@@ -230,11 +230,19 @@ function get_crate_target_pos(c)
 	end
 end
 
+max_crate_speed=5
 function update_crates()
 	for _,c in pairs(crates) do
 		local tx,ty=get_crate_target_pos(c)
-		c.x=c.x+(tx-c.x)/2
-		c.y=c.y+(ty-c.y)/2
+		local dx=(tx-c.x)/2
+		local dy=(ty-c.y)/2
+		local dist=sqrt(dx^2+dy^2)
+		if dist>0 and dist>max_crate_speed then
+			dx=dx/dist*max_crate_speed
+			dy=dy/dist*max_crate_speed
+		end
+		c.x+=dx
+		c.y+=dy
 		if abs(c.x-tx)<0.1 and abs(c.y-ty)<0.1 then
 			c.x=tx
 			c.y=ty
