@@ -429,7 +429,13 @@ function enter_fment()
 		end
 	end
 	targets={}
-	for i=1,min(#types,3) do
+	ntargets=3
+	if #types<4 then
+		ntargets=1
+	elseif #types<8 then
+		ntargets=2
+	end
+	for i=1,ntargets do
 		local target=rnd(types)
 		--while target_used(target) do
 			--local target=rnd(types)
