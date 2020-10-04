@@ -625,7 +625,6 @@ end
 function _init()
 	new_game()
 	transition("title")
-	transition("gameover")
 end
 
 function _update60()
