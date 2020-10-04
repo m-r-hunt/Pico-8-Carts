@@ -526,10 +526,10 @@ function draw_fment()
 	local s="deliver:"
 	for i=1,#targets do
 		s=s.."  "..targets[i].number
-		spr(targets[i].type,(i-1)*15+35,-1)
+		spr(targets[i].type,(i-1)*12+33,-1)
 	end
 	print(s,2,1,7)
-	print("time: "..time_limit-t.."s",100,1,time_limit-t<5 and 8 or 7)
+	print("time: "..ceil(time_limit-t),92,1,time_limit-t<5 and 8 or 7)
 end
 
 -->8
