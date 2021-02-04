@@ -27,19 +27,53 @@ function interface(tab)
 	return tab
 end
 
-square=class{
-	x=0,
-	y=0,
-	w=2,
+current_state="start"
+states={}
+
+state_interface=interface{
+	name="string",
+	enter="function",
+	update="function",
+	draw="function",
+	transitions="table",
 }
 
-function square:construct(x,y)
-	self.x=x
-	self.y=y
+function state(tab)
+	state_interface(tab)
+	states[tab.name]=tab
 end
 
-cls()
+function emit(signal)
+	current_state=states[current_state].transitions[signal]
+	states[current_state]:enter()
+end
 
-sq=square(1,2)
+function _update()
+	states[current_state]:update()
+end
 
-print(sq.x)
+function _draw()
+	states[current_state]:draw()
+end
+
+function _init()
+	states[current_state]:enter()
+end
+
+state{
+	name="start",
+	enter=function(self)
+		self.t=0
+	end,
+	update=function(self)
+		self.t+=1
+		if btnp(4) then
+			emit("switch")
+		end
+	end,
+	draw=function(self)
+		cls()
+		print(self.t)
+	end,
+	transitions={switch="start"},
+}
