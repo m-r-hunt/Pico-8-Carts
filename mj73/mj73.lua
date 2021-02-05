@@ -74,6 +74,32 @@ state{
 	draw=function(self)
 		cls()
 		print(self.t)
+		sspr(8,0,8,8,0,0,128,128)
 	end,
 	transitions={switch="start"},
 }
+
+poke(0x5f2e,1)
+pal(1,140,1)
+pal(2,12,1)
+pal(3,7,1)
+pal(4,10,1)
+
+actor=interface{
+	x="number",
+	y="number",
+	dx="number",
+	dy="number",
+	w="number",
+	h="number",
+}
+
+player=class{
+	x=0,
+	y=0,
+	dx=0,
+	dy=0,
+	w=6,
+	h=12,
+}
+actor(player)
