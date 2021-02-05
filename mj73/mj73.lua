@@ -27,7 +27,7 @@ function interface(tab)
 	return tab
 end
 
-current_state="start"
+current_state="newgame"
 states={}
 
 state_interface=interface{
@@ -57,33 +57,15 @@ function _draw()
 end
 
 function _init()
+	--palette setup (persistence enabled)
+	poke(0x5f2e,1)
+	pal(1,140,1)
+	pal(2,12,1)
+	pal(3,7,1)
+	pal(4,10,1)
+
 	states[current_state]:enter()
 end
-
-state{
-	name="start",
-	enter=function(self)
-		self.t=0
-	end,
-	update=function(self)
-		self.t+=1
-		if btnp(4) then
-			emit("switch")
-		end
-	end,
-	draw=function(self)
-		cls()
-		print(self.t)
-		sspr(8,0,8,8,0,0,128,128)
-	end,
-	transitions={switch="start"},
-}
-
-poke(0x5f2e,1)
-pal(1,140,1)
-pal(2,12,1)
-pal(3,7,1)
-pal(4,10,1)
 
 actor=interface{
 	x="number",
@@ -92,7 +74,19 @@ actor=interface{
 	dy="number",
 	w="number",
 	h="number",
+	update="function",
+	draw="function",
 }
+
+sprite_anim=class{
+	base=0,
+	frames=0,
+	w=1,
+	h=1,
+}
+function sprite_anim:draw(x,y)
+	spr(self.base,x*8,y*8,self.w,self.h)
+end
 
 player=class{
 	x=0,
@@ -102,4 +96,49 @@ player=class{
 	w=6,
 	h=12,
 }
+function player:construct()
+	self.anim=sprite_anim()
+	self.anim.h=2
+	self.anim.base=4
+	self.anim.frames=4
+end
+function player:update()
+end
+function player:draw()
+	self.anim:draw(self.x,self.y)
+end
 actor(player)
+
+state{
+	name="newgame",
+	enter=function(self)
+		actors={player()}
+		emit"finished"
+	end,
+	update=function(self)end,
+	draw=function(self)end,
+	transitions={finished="playing"},
+}
+
+state{
+	name="playing",
+	enter=function(self)end,
+	update=function(self)
+		for actor in all(actors) do
+			actor:update()
+		end
+	end,
+	draw=function(self)
+		draw_world()
+	end,
+	transitions={}
+}
+
+function draw_world()
+	cls()
+	map()
+	for actor in all(actors) do
+		actor:draw()
+	end
+end
+
