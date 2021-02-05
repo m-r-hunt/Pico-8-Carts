@@ -80,12 +80,13 @@ actor=interface{
 
 function simulate_actor(a)
 	actor(a)
-	struck=false
+	local on_ground=false
 	if (a.dy>0) then
 		local target_y=a.y+a.h+a.dy
 		if fget(mget(a.x,target_y),0) or fget(mget(a.x+a.w,target_y),0) then
 			a.y=flr(target_y)-a.h-1/8
 			a.dy=0
+			on_ground=true
 		else
 			a.y+=a.dy
 		end
@@ -117,6 +118,7 @@ function simulate_actor(a)
 			a.x+=a.dx
 		end
 	end
+	return on_ground
 end
 
 sprite_anim=class{
@@ -138,7 +140,10 @@ player=class{
 	h=12/8,
 	oy=-2/8,
 	ox=-1/8,
-	flipx=false
+	flipx=false,
+
+	energy=15,
+	max_energy=15,
 }
 function player:construct()
 	self.anim=sprite_anim()
@@ -148,12 +153,15 @@ function player:construct()
 end
 function player:update()
 	self.dy+=1/8
+	local energy_used=0.01
 	if btn(0) then
 		self.dx+=-0.1
 		self.flipx=true
+		energy_used=0.1
 	elseif btn(1) then
 		self.dx+=0.1
 		self.flipx=false
+		energy_used=0.1
 	else
 		if abs(self.dx)<=0.05 then
 			self.dx=0
@@ -161,10 +169,20 @@ function player:update()
 			self.dx+=-0.05*sgn(self.dx)
 		end
 	end
-	if (btnp(2)) self.dy=-1
+	if btnp(2) then
+		self.dy=-1
+		energy_used=0.5
+	end
 	self.dx=mid(-3/8,self.dx,3/8)
 	self.dy=mid(-1,self.dy,1)
-	simulate_actor(self)
+	local on_ground=simulate_actor(self)
+	local below_tile=mget(self.x+self.w/2,flr(self.y+self.h)+1)
+	if on_ground and fget(below_tile,1) then
+		self.energy+=0.2
+		self.energy=min(self.energy,self.max_energy)
+	else
+		self.energy-=energy_used
+	end
 end
 function player:draw()
 	self.anim:draw(self.x+self.ox,self.y+self.oy,self.flipx)
@@ -174,10 +192,24 @@ function player:draw()
 end
 actor(player)
 
+function draw_power_bar()
+	rectfill(8,121,8+the_player.energy,126,4)
+	middle_segments=(the_player.max_energy-16)/8
+	local x=8
+	spr(16,x,120)
+	x+=8
+	for i=1,middle_segments do
+		spr(17,x,120)
+		x+=8
+	end
+	spr(18,x,120)
+end
+
 state{
 	name="newgame",
 	enter=function(self)
-		actors={player()}
+		the_player=player()
+		actors={the_player}
 		emit"finished"
 	end,
 	update=function(self)end,
@@ -195,6 +227,7 @@ state{
 	end,
 	draw=function(self)
 		draw_world()
+		draw_power_bar()
 	end,
 	transitions={}
 }
