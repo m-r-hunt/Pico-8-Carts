@@ -78,23 +78,67 @@ actor=interface{
 	draw="function",
 }
 
+function simulate_actor(a)
+	actor(a)
+	struck=false
+	if (a.dy>0) then
+		local target_y=a.y+a.h+a.dy
+		if fget(mget(a.x,target_y),0) or fget(mget(a.x+a.w,target_y),0) then
+			a.y=flr(target_y)-a.h-1/8
+			a.dy=0
+		else
+			a.y+=a.dy
+		end
+	end
+	if (a.dy<0) then
+		local target_y=a.y+a.dy
+		if fget(mget(a.x,target_y),0) or fget(mget(a.x+a.w,target_y),0) then
+			a.y=ceil(target_y)+1/8
+			a.dy=0
+		else
+			a.y+=a.dy
+		end
+	end
+	if (a.dx>0) then
+		local target_x=a.x+a.w+a.dx
+		if fget(mget(target_x,a.y),0) or fget(mget(target_x,a.y+a.h),0) then
+			a.x=flr(target_x)-a.w-1/8
+			a.dx=0
+		else
+			a.x+=a.dx
+		end
+	end
+	if (a.dx<0) then
+		local target_x=a.x+a.dx
+		if fget(mget(target_x,a.y),0) or fget(mget(target_x,a.y+a.h),0) then
+			a.x=ceil(target_x)
+			a.dx=0
+		else
+			a.x+=a.dx
+		end
+	end
+end
+
 sprite_anim=class{
 	base=0,
 	frames=0,
 	w=1,
 	h=1,
 }
-function sprite_anim:draw(x,y)
-	spr(self.base,x*8,y*8,self.w,self.h)
+function sprite_anim:draw(x,y,flipx)
+	spr(self.base,flr(x*8),flr(y*8),self.w,self.h,flipx)
 end
 
 player=class{
-	x=0,
+	x=1,
 	y=0,
 	dx=0,
 	dy=0,
-	w=6,
-	h=12,
+	w=5/8,
+	h=12/8,
+	oy=-2/8,
+	ox=-1/8,
+	flipx=false
 }
 function player:construct()
 	self.anim=sprite_anim()
@@ -103,9 +147,30 @@ function player:construct()
 	self.anim.frames=4
 end
 function player:update()
+	self.dy+=1/8
+	if btn(0) then
+		self.dx+=-0.1
+		self.flipx=true
+	elseif btn(1) then
+		self.dx+=0.1
+		self.flipx=false
+	else
+		if abs(self.dx)<=0.05 then
+			self.dx=0
+		else
+			self.dx+=-0.05*sgn(self.dx)
+		end
+	end
+	if (btnp(2)) self.dy=-1
+	self.dx=mid(-3/8,self.dx,3/8)
+	self.dy=mid(-1,self.dy,1)
+	simulate_actor(self)
 end
 function player:draw()
-	self.anim:draw(self.x,self.y)
+	self.anim:draw(self.x+self.ox,self.y+self.oy,self.flipx)
+	--rectfill((self.x)*8,(self.y)*8,(self.x+self.w)*8,(self.y+self.h)*8,8)
+	--print(self.x)
+	--print(self.y)
 end
 actor(player)
 
