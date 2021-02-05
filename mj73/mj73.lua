@@ -265,7 +265,7 @@ state{
 	name="dying",
 	enter=function(self)
 		self.t=0
-		pal(4,0)
+		pal(4,8)
 		sfx(1)
 	end,
 	update=function(self)
