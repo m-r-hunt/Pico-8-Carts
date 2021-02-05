@@ -234,7 +234,7 @@ state{
 
 function draw_world()
 	cls()
-	map()
+	map(0,0,0,0,128,64)
 	for actor in all(actors) do
 		actor:draw()
 	end
