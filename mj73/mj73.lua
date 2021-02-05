@@ -56,14 +56,17 @@ function _draw()
 	states[current_state]:draw()
 end
 
-function _init()
-	--palette setup (persistence enabled)
+function setup_palette()
+	pal()
 	poke(0x5f2e,1)
 	pal(1,140,1)
 	pal(2,12,1)
 	pal(3,7,1)
 	pal(4,10,1)
+end
 
+function _init()
+	setup_palette()
 	states[current_state]:enter()
 end
 
@@ -141,6 +144,10 @@ player=class{
 	oy=-2/8,
 	ox=-1/8,
 	flipx=false,
+	on_ground=false,
+
+	reset_point_x=1,
+	reset_point_y=0,
 
 	energy=15,
 	max_energy=15,
@@ -153,7 +160,7 @@ function player:construct()
 end
 function player:update()
 	self.dy+=1/8
-	local energy_used=0.01
+	local energy_used=0.05
 	if btn(0) then
 		self.dx+=-0.1
 		self.flipx=true
@@ -169,21 +176,36 @@ function player:update()
 			self.dx+=-0.05*sgn(self.dx)
 		end
 	end
-	if btnp(2) then
+	if self.on_ground and btnp(2) then
 		self.dy=-1
 		energy_used=0.5
 	end
 	self.dx=mid(-3/8,self.dx,3/8)
 	self.dy=mid(-1,self.dy,1)
-	local on_ground=simulate_actor(self)
+	self.on_ground=simulate_actor(self)
 	local below_tile=mget(self.x+self.w/2,flr(self.y+self.h)+1)
-	if on_ground and fget(below_tile,1) then
+	if self.on_ground and fget(below_tile,1) then
 		self.energy+=0.2
 		self.energy=min(self.energy,self.max_energy)
+		self.reset_point_x=flr(self.x+self.w/2)
+		self.reset_point_y=flr(self.y)
+		if stat(19)~=2 then
+			sfx(2,3)
+		end
 	else
 		self.energy-=energy_used
+		sfx(2,-2)
 	end
 end
+
+function player:reset()
+	self.x=self.reset_point_x
+	self.y=self.reset_point_y
+	self.dx=0
+	self.dy=0
+	self.energy=self.max_energy
+end
+
 function player:draw()
 	self.anim:draw(self.x+self.ox,self.y+self.oy,self.flipx)
 	--rectfill((self.x)*8,(self.y)*8,(self.x+self.w)*8,(self.y+self.h)*8,8)
@@ -224,12 +246,41 @@ state{
 		for actor in all(actors) do
 			actor:update()
 		end
+		if the_player.energy<0 then
+			the_player.energy=0
+			emit("died")
+		end
 	end,
 	draw=function(self)
 		draw_world()
 		draw_power_bar()
 	end,
-	transitions={}
+	transitions={
+		died="dying",
+		gamewon="gamewon",
+	}
+}
+
+state{
+	name="dying",
+	enter=function(self)
+		self.t=0
+		pal(4,0)
+		sfx(1)
+	end,
+	update=function(self)
+		self.t+=1
+		if self.t>=60 then
+			the_player:reset()
+			setup_palette()
+			emit("finished")
+		end
+	end,
+	draw=function(self)
+		draw_world()
+		draw_power_bar()
+	end,
+	transitions={finished="playing"}
 }
 
 function draw_world()
