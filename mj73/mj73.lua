@@ -193,8 +193,11 @@ function player:update()
 			sfx(2,3)
 		end
 	else
-		self.energy-=energy_used
 		sfx(2,-2)
+		self.energy-=energy_used
+		if stat(19)~=3 and self.energy<4 then
+			sfx(3,3)
+		end
 	end
 end
 
@@ -266,6 +269,7 @@ state{
 	enter=function(self)
 		self.t=0
 		pal(4,8)
+		sfx(3,-2)
 		sfx(1)
 	end,
 	update=function(self)
