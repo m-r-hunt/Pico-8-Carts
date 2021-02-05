@@ -223,7 +223,7 @@ function draw_power_bar()
 	local x=8
 	spr(16,x,120)
 	x+=8
-	for i=1,middle_segments do
+	for i=0,middle_segments do
 		spr(17,x,120)
 		x+=8
 	end
@@ -236,6 +236,14 @@ state{
 		the_player=player()
 		actors={the_player}
 		emit"finished"
+		batteries={}
+		for x=0,127 do
+			for y=0,63 do
+				if fget(mget(x,y),2) then
+					add(batteries,{x=x,y=y})
+				end
+			end
+		end
 	end,
 	update=function(self)end,
 	draw=function(self)end,
@@ -248,6 +256,15 @@ state{
 	update=function(self)
 		for actor in all(actors) do
 			actor:update()
+		end
+		for b in all(batteries) do
+			if abs(b.x-the_player.x)+abs(b.y-the_player.y-4/8)<1 then
+				the_player.max_energy+=8
+				mset(b.x,b.y,0)
+				mset(b.x,b.y-1,0)
+				del(batteries,b)
+				break
+			end
 		end
 		if the_player.energy<0 then
 			the_player.energy=0
