@@ -2,7 +2,7 @@ function class(tab)
 	var new=function(tab,...)
 		var n={}
 		setmetatable(n,{__index=tab})
-		if tab.construct then
+		if tab.construct
 			tab.construct(n,...)
 		end
 		return n
@@ -13,8 +13,8 @@ end
 
 function interface(tab)
 	var check=function(tab,check)
-		for k,v in pairs(tab) do
-			if type(check[k])~=v then
+		for k,v in pairs(tab)
+			if type(check[k])!=v
 				cls()
 				print("interface err: "..tostr(check))
 				print("expected "..k.." type "..v)
@@ -85,9 +85,9 @@ global actor=interface{
 function simulate_actor(a)
 	actor(a)
 	var on_ground=false
-	if (a.dy>0) then
+	if (a.dy>0)
 		var target_y=a.y+a.h+a.dy
-		if fget(mget(a.x,target_y),0) or fget(mget(a.x+a.w,target_y),0) then
+		if fget(mget(a.x,target_y),0) or fget(mget(a.x+a.w,target_y),0)
 			a.y=flr(target_y)-a.h-1/8
 			a.dy=0
 			on_ground=true
@@ -95,27 +95,27 @@ function simulate_actor(a)
 			a.y+=a.dy
 		end
 	end
-	if (a.dy<0) then
+	if (a.dy<0)
 		var target_y=a.y+a.dy
-		if fget(mget(a.x,target_y),0) or fget(mget(a.x+a.w,target_y),0) then
+		if fget(mget(a.x,target_y),0) or fget(mget(a.x+a.w,target_y),0)
 			a.y=ceil(target_y)+1/8
 			a.dy=0
 		else
 			a.y+=a.dy
 		end
 	end
-	if (a.dx>0) then
+	if (a.dx>0)
 		var target_x=a.x+a.w+a.dx
-		if fget(mget(target_x,a.y),0) or fget(mget(target_x,a.y+a.h),0) then
+		if fget(mget(target_x,a.y),0) or fget(mget(target_x,a.y+a.h),0)
 			a.x=flr(target_x)-a.w-1/8
 			a.dx=0
 		else
 			a.x+=a.dx
 		end
 	end
-	if (a.dx<0) then
+	if (a.dx<0)
 		var target_x=a.x+a.dx
-		if fget(mget(target_x,a.y),0) or fget(mget(target_x,a.y+a.h),0) then
+		if fget(mget(target_x,a.y),0) or fget(mget(target_x,a.y+a.h),0)
 			a.x=ceil(target_x)
 			a.dx=0
 		else
@@ -163,22 +163,22 @@ global player=class{
 	method update()
 		self.dy+=1/8
 		var energy_used=0.05
-		if btn(0) then
+		if btn(0)
 			self.dx+=-0.1
 			self.flipx=true
 			energy_used=0.1
-		elseif btn(1) then
+		elseif btn(1)
 			self.dx+=0.1
 			self.flipx=false
 			energy_used=0.1
 		else
-			if abs(self.dx)<=0.05 then
+			if abs(self.dx)<=0.05
 				self.dx=0
 			else
 				self.dx+=-0.05*sgn(self.dx)
 			end
 		end
-		if self.on_ground and btnp(2) then
+		if self.on_ground and btnp(2)
 			self.dy=-1
 			energy_used=0.5
 		end
@@ -186,18 +186,18 @@ global player=class{
 		self.dy=mid(-1,self.dy,1)
 		self.on_ground=simulate_actor(self)
 		var below_tile=mget(self.x+self.w/2,flr(self.y+self.h)+1)
-		if self.on_ground and fget(below_tile,1) then
+		if self.on_ground and fget(below_tile,1)
 			self.energy+=0.2
 			self.energy=min(self.energy,self.max_energy)
 			self.reset_point_x=flr(self.x+self.w/2)
 			self.reset_point_y=flr(self.y)
-			if stat(19)~=2 then
+			if stat(19)!=2
 				sfx(2,3)
 			end
 		else
 			sfx(2,-2)
 			self.energy-=energy_used
-			if stat(19)~=3 and self.energy<4 then
+			if stat(19)!=3 and self.energy<4
 				sfx(3,3)
 			end
 		end
@@ -231,7 +231,7 @@ function draw_power_bar()
 	var x=8
 	spr(16,x,120)
 	x+=8
-	for i=0,middle_segments do
+	for i=0,middle_segments
 		spr(17,x,120)
 		x+=8
 	end
@@ -241,7 +241,7 @@ end
 function draw_world()
 	cls()
 	map(0,0,0,0,128,64)
-	for actor in all(actors) do
+	for actor in all(actors)
 		actor:draw()
 	end
 end
@@ -255,11 +255,11 @@ state{
 		emit"finished"
 		batteries={}
 		game_enders={}
-		for x=0,127 do
-			for y=0,63 do
-				if fget(mget(x,y),2) then
+		for x=0,127
+			for y=0,63
+				if fget(mget(x,y),2)
 					add(batteries,{x=x,y=y})
-				elseif fget(mget(x,y),3) then
+				elseif fget(mget(x,y),3)
 					add(game_enders,{x=x,y=y})
 				end
 			end
@@ -274,11 +274,11 @@ state{
 	name="playing",
 	method enter() end,
 	method update()
-		for actor in all(actors) do
+		for actor in all(actors)
 			actor:update()
 		end
-		for b in all(batteries) do
-			if abs(b.x-the_player.x)+abs(b.y-the_player.y-4/8)<1 then
+		for b in all(batteries)
+			if abs(b.x-the_player.x)+abs(b.y-the_player.y-4/8)<1
 				the_player.max_energy+=8
 				the_player.energy+=8
 				mset(b.x,b.y,0)
@@ -287,13 +287,13 @@ state{
 				break
 			end
 		end
-		for e in all(game_enders) do
-			if abs(e.x-the_player.x)+abs(e.y-the_player.y-4/8)<1 then
+		for e in all(game_enders)
+			if abs(e.x-the_player.x)+abs(e.y-the_player.y-4/8)<1
 				emit"gamewon"
 				return
 			end
 		end
-		if the_player.energy<0 then
+		if the_player.energy<0
 			the_player.energy=0
 			emit"died"
 		end
@@ -317,7 +317,7 @@ state{
 	end,
 	method update()
 		self.t+=1
-		if self.t>=60 then
+		if self.t>=60
 			the_player:reset()
 			emit"finished"
 		end
@@ -335,14 +335,14 @@ state{
 	method enter()
 		self.t=0
 		sfx(4)
-		for e in all(game_enders) do
+		for e in all(game_enders)
 			mset(e.x,e.y,mget(e.x,e.y)+2)
 		end
 		the_player.dx=0
 	end,
 	method update()
 		self.t+=1
-		if self.t>60 then
+		if self.t>60
 			emit"finished"
 		end
 		simulate_actor(the_player)
@@ -358,7 +358,7 @@ state{
 	name="gamewon",
 	method enter() end,
 	method update()
-		if btnp(4) or btnp(5) then
+		if btnp(4) or btnp(5)
 			emit"finished"
 		end
 	end,
@@ -373,7 +373,7 @@ state{
 	name="mainmenu",
 	method enter() end,
 	method update()
-		if btnp(4) or btnp(5) then
+		if btnp(4) or btnp(5)
 			emit"newgame"
 		end
 	end,

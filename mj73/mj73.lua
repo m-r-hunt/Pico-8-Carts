@@ -14,7 +14,7 @@ end
 local function interface(tab)
 	local check=function(tab,check)
 		for k,v in pairs(tab) do
-			if type(check[k])~=v then
+			if type(check[k])!=v then
 				cls()
 				print("interface err: "..tostr(check))
 				print("expected "..k.." type "..v)
@@ -191,13 +191,13 @@ player=class{
 			self.energy=min(self.energy,self.max_energy)
 			self.reset_point_x=flr(self.x+self.w/2)
 			self.reset_point_y=flr(self.y)
-			if stat(19)~=2 then
+			if stat(19)!=2 then
 				sfx(2,3)
 			end
 		else
 			sfx(2,-2)
 			self.energy-=energy_used
-			if stat(19)~=3 and self.energy<4 then
+			if stat(19)!=3 and self.energy<4 then
 				sfx(3,3)
 			end
 		end
