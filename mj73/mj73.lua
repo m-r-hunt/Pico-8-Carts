@@ -136,8 +136,8 @@ sprite_anim=class{
 }
 
 player=class{
-	x=1,
-	y=0,
+	x=11,
+	y=56,
 	dx=0,
 	dy=0,
 	w=5/8,
