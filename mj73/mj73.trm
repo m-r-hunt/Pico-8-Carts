@@ -1,4 +1,4 @@
-local function class(tab)
+function class(tab)
 	local new=function(tab,...)
 		local n={}
 		setmetatable(n,{__index=tab})
@@ -11,7 +11,7 @@ local function class(tab)
 	return tab
 end
 
-local function interface(tab)
+function interface(tab)
 	local check=function(tab,check)
 		for k,v in pairs(tab) do
 			if type(check[k])~=v then
@@ -27,32 +27,32 @@ local function interface(tab)
 	return tab
 end
 
-current_state="mainmenu"
-states={}
+global current_state="mainmenu"
+global states={}
 
-state_interface=interface{
+global state_interface=interface{
 	name="string",
 	enter="function",
 	update="function",
 	draw="function",
-	transitions="table"
+	transitions="table",
 }
 
-local function state(tab)
+function state(tab)
 	state_interface(tab)
 	states[tab.name]=tab
 end
 
-local function emit(signal)
+function emit(signal)
 	current_state=states[current_state].transitions[signal]
 	states[current_state]:enter()
 end
 
-function _update()
+global function _update()
 	states[current_state]:update()
 end
 
-local function setup_palette()
+function setup_palette()
 	pal()
 	poke(0x5f2e,1)
 	pal(1,140,1)
@@ -61,17 +61,17 @@ local function setup_palette()
 	pal(4,10,1)
 end
 
-function _draw()
+global function _draw()
 	setup_palette()
 	states[current_state]:draw()
 end
 
-function _init()
+global function _init()
 	setup_palette()
 	states[current_state]:enter()
 end
 
-actor=interface{
+global actor=interface{
 	x="number",
 	y="number",
 	dx="number",
@@ -79,10 +79,10 @@ actor=interface{
 	w="number",
 	h="number",
 	update="function",
-	draw="function"
+	draw="function",
 }
 
-local function simulate_actor(a)
+function simulate_actor(a)
 	actor(a)
 	local on_ground=false
 	if (a.dy>0) then
@@ -125,17 +125,17 @@ local function simulate_actor(a)
 	return on_ground
 end
 
-sprite_anim=class{
+global sprite_anim=class{
 	base=0,
 	frames=0,
 	w=1,
-	h=1
+	h=1,
 }
 function sprite_anim:draw(x,y,flipx)
 	spr(self.base,flr(x*8),flr(y*8),self.w,self.h,flipx)
 end
 
-player=class{
+global player=class{
 	x=1,
 	y=0,
 	dx=0,
@@ -151,7 +151,7 @@ player=class{
 	reset_point_y=0,
 
 	energy=15,
-	max_energy=15
+	max_energy=15,
 }
 function player:construct()
 	self.anim=sprite_anim()
@@ -212,19 +212,19 @@ end
 
 function player:draw()
 	self.anim:draw(self.x+self.ox,self.y+self.oy,self.flipx)
+	--rectfill((self.x)*8,(self.y)*8,(self.x+self.w)*8,(self.y+self.h)*8,8)
+	--print(self.x)
+	--print(self.y)
 end
-
-
-
 actor(player)
+global the_player
+global actors
+global batteries
+global game_enders
 
-
-
-
-
-local function draw_power_bar()
+function draw_power_bar()
 	rectfill(8,121,8+the_player.energy,126,4)
-	local middle_segments=(the_player.max_energy-16)/8
+	var middle_segments=(the_player.max_energy-16)/8
 	local x=8
 	spr(16,x,120)
 	x+=8
@@ -235,7 +235,7 @@ local function draw_power_bar()
 	spr(18,x,120)
 end
 
-local function draw_world()
+function draw_world()
 	cls()
 	map(0,0,0,0,128,64)
 	for actor in all(actors) do
@@ -246,7 +246,7 @@ end
 
 state{
 	name="newgame",
-	enter=function(self)
+	method enter()
 		the_player=player()
 		actors={the_player}
 		emit"finished"
@@ -262,16 +262,15 @@ state{
 			end
 		end
 	end,
-	update=function(self)
-		
-	end,draw=function(self)
-		
-	end,transitions={finished="playing"}}
+	update=function(self)end,
+	draw=function(self)end,
+	transitions={finished="playing"},
+}
+
 state{
 	name="playing",
-	enter=function(self)
-		
-	end,update=function(self)
+	enter=function(self)end,
+	update=function(self)
 		for actor in all(actors) do
 			actor:update()
 		end
@@ -295,13 +294,14 @@ state{
 			the_player.energy=0
 			emit"died"
 		end
-	end,draw=function(self)
+	end,
+	draw=function(self)
 		draw_world()
 		draw_power_bar()
 	end,
 	transitions={
 		died="dying",
-		gamewon="outro"
+		gamewon="outro",
 	}
 }
 
@@ -348,36 +348,36 @@ state{
 		draw_world()
 		draw_power_bar()
 	end,
-	transitions={finished="gamewon"}
+	transitions={finished="gamewon"},
 }
 
 state{
 	name="gamewon",
-	enter=function(self)
-		
-	end,update=function(self)
+	enter=function(self)end,
+	update=function(self)
 		if btnp(4) or btnp(5) then
 			emit"finished"
 		end
-	end,draw=function(self)
+	end,
+	draw=function(self)
 		cls()
 		print("game complete!",20,64,4)
 	end,
-	transitions={finished="mainmenu"}
+	transitions={finished="mainmenu"},
 }
 
 state{
 	name="mainmenu",
-	enter=function(self)
-		
-	end,update=function(self)
+	enter=function(self)end,
+	update=function(self)
 		if btnp(4) or btnp(5) then
 			emit"newgame"
 		end
-	end,draw=function(self)
+	end,
+	draw=function(self)
 		cls()
 		print("chargin' chuck",20,64,4)
 		print("press key to start",20,74,4)
 	end,
-	transitions={newgame="newgame"}
+	transitions={newgame="newgame"},
 }
