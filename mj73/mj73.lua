@@ -240,10 +240,12 @@ end
 
 local function draw_world()
 	cls()
+	camera(the_player.x*8-64,the_player.y*8-64)
 	map(0,0,0,0,128,64)
 	for actor in all(actors) do
 		actor:draw()
 	end
+	camera()
 end
 
 
