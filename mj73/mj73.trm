@@ -1,6 +1,6 @@
 function class(tab)
-	local new=function(tab,...)
-		local n={}
+	var new=function(tab,...)
+		var n={}
 		setmetatable(n,{__index=tab})
 		if tab.construct then
 			tab.construct(n,...)
@@ -12,7 +12,7 @@ function class(tab)
 end
 
 function interface(tab)
-	local check=function(tab,check)
+	var check=function(tab,check)
 		for k,v in pairs(tab) do
 			if type(check[k])~=v then
 				cls()
@@ -84,9 +84,9 @@ global actor=interface{
 
 function simulate_actor(a)
 	actor(a)
-	local on_ground=false
+	var on_ground=false
 	if (a.dy>0) then
-		local target_y=a.y+a.h+a.dy
+		var target_y=a.y+a.h+a.dy
 		if fget(mget(a.x,target_y),0) or fget(mget(a.x+a.w,target_y),0) then
 			a.y=flr(target_y)-a.h-1/8
 			a.dy=0
@@ -96,7 +96,7 @@ function simulate_actor(a)
 		end
 	end
 	if (a.dy<0) then
-		local target_y=a.y+a.dy
+		var target_y=a.y+a.dy
 		if fget(mget(a.x,target_y),0) or fget(mget(a.x+a.w,target_y),0) then
 			a.y=ceil(target_y)+1/8
 			a.dy=0
@@ -105,7 +105,7 @@ function simulate_actor(a)
 		end
 	end
 	if (a.dx>0) then
-		local target_x=a.x+a.w+a.dx
+		var target_x=a.x+a.w+a.dx
 		if fget(mget(target_x,a.y),0) or fget(mget(target_x,a.y+a.h),0) then
 			a.x=flr(target_x)-a.w-1/8
 			a.dx=0
@@ -114,7 +114,7 @@ function simulate_actor(a)
 		end
 	end
 	if (a.dx<0) then
-		local target_x=a.x+a.dx
+		var target_x=a.x+a.dx
 		if fget(mget(target_x,a.y),0) or fget(mget(target_x,a.y+a.h),0) then
 			a.x=ceil(target_x)
 			a.dx=0
@@ -130,10 +130,10 @@ global sprite_anim=class{
 	frames=0,
 	w=1,
 	h=1,
+	method draw(x,y,flipx)
+		spr(self.base,flr(x*8),flr(y*8),self.w,self.h,flipx)
+	end,
 }
-function sprite_anim:draw(x,y,flipx)
-	spr(self.base,flr(x*8),flr(y*8),self.w,self.h,flipx)
-end
 
 global player=class{
 	x=1,
@@ -152,71 +152,74 @@ global player=class{
 
 	energy=15,
 	max_energy=15,
-}
-function player:construct()
-	self.anim=sprite_anim()
-	self.anim.h=2
-	self.anim.base=4
-	self.anim.frames=4
-end
-function player:update()
-	self.dy+=1/8
-	local energy_used=0.05
-	if btn(0) then
-		self.dx+=-0.1
-		self.flipx=true
-		energy_used=0.1
-	elseif btn(1) then
-		self.dx+=0.1
-		self.flipx=false
-		energy_used=0.1
-	else
-		if abs(self.dx)<=0.05 then
-			self.dx=0
+
+	method construct()
+		self.anim=sprite_anim()
+		self.anim.h=2
+		self.anim.base=4
+		self.anim.frames=4
+	end,
+
+	method update()
+		self.dy+=1/8
+		var energy_used=0.05
+		if btn(0) then
+			self.dx+=-0.1
+			self.flipx=true
+			energy_used=0.1
+		elseif btn(1) then
+			self.dx+=0.1
+			self.flipx=false
+			energy_used=0.1
 		else
-			self.dx+=-0.05*sgn(self.dx)
+			if abs(self.dx)<=0.05 then
+				self.dx=0
+			else
+				self.dx+=-0.05*sgn(self.dx)
+			end
 		end
-	end
-	if self.on_ground and btnp(2) then
-		self.dy=-1
-		energy_used=0.5
-	end
-	self.dx=mid(-3/8,self.dx,3/8)
-	self.dy=mid(-1,self.dy,1)
-	self.on_ground=simulate_actor(self)
-	local below_tile=mget(self.x+self.w/2,flr(self.y+self.h)+1)
-	if self.on_ground and fget(below_tile,1) then
-		self.energy+=0.2
-		self.energy=min(self.energy,self.max_energy)
-		self.reset_point_x=flr(self.x+self.w/2)
-		self.reset_point_y=flr(self.y)
-		if stat(19)~=2 then
-			sfx(2,3)
+		if self.on_ground and btnp(2) then
+			self.dy=-1
+			energy_used=0.5
 		end
-	else
-		sfx(2,-2)
-		self.energy-=energy_used
-		if stat(19)~=3 and self.energy<4 then
-			sfx(3,3)
+		self.dx=mid(-3/8,self.dx,3/8)
+		self.dy=mid(-1,self.dy,1)
+		self.on_ground=simulate_actor(self)
+		var below_tile=mget(self.x+self.w/2,flr(self.y+self.h)+1)
+		if self.on_ground and fget(below_tile,1) then
+			self.energy+=0.2
+			self.energy=min(self.energy,self.max_energy)
+			self.reset_point_x=flr(self.x+self.w/2)
+			self.reset_point_y=flr(self.y)
+			if stat(19)~=2 then
+				sfx(2,3)
+			end
+		else
+			sfx(2,-2)
+			self.energy-=energy_used
+			if stat(19)~=3 and self.energy<4 then
+				sfx(3,3)
+			end
 		end
-	end
-end
+	end,
 
-function player:reset()
-	self.x=self.reset_point_x
-	self.y=self.reset_point_y
-	self.dx=0
-	self.dy=0
-	self.energy=self.max_energy
-end
+	method reset()
+		self.x=self.reset_point_x
+		self.y=self.reset_point_y
+		self.dx=0
+		self.dy=0
+		self.energy=self.max_energy
+	end,
 
-function player:draw()
-	self.anim:draw(self.x+self.ox,self.y+self.oy,self.flipx)
-	--rectfill((self.x)*8,(self.y)*8,(self.x+self.w)*8,(self.y+self.h)*8,8)
-	--print(self.x)
-	--print(self.y)
-end
+	method draw()
+		self.anim:draw(self.x+self.ox,self.y+self.oy,self.flipx)
+		--rectfill((self.x)*8,(self.y)*8,(self.x+self.w)*8,(self.y+self.h)*8,8)
+		--print(self.x)
+		--print(self.y)
+	end
+}
 actor(player)
+
 global the_player
 global actors
 global batteries
@@ -225,7 +228,7 @@ global game_enders
 function draw_power_bar()
 	rectfill(8,121,8+the_player.energy,126,4)
 	var middle_segments=(the_player.max_energy-16)/8
-	local x=8
+	var x=8
 	spr(16,x,120)
 	x+=8
 	for i=0,middle_segments do
@@ -262,15 +265,15 @@ state{
 			end
 		end
 	end,
-	update=function(self)end,
-	draw=function(self)end,
+	method update() end,
+	method draw() end,
 	transitions={finished="playing"},
 }
 
 state{
 	name="playing",
-	enter=function(self)end,
-	update=function(self)
+	method enter() end,
+	method update()
 		for actor in all(actors) do
 			actor:update()
 		end
@@ -295,7 +298,7 @@ state{
 			emit"died"
 		end
 	end,
-	draw=function(self)
+	method draw()
 		draw_world()
 		draw_power_bar()
 	end,
@@ -307,19 +310,19 @@ state{
 
 state{
 	name="dying",
-	enter=function(self)
+	method enter()
 		self.t=0
 		sfx(3,-2)
 		sfx(1)
 	end,
-	update=function(self)
+	method update()
 		self.t+=1
 		if self.t>=60 then
 			the_player:reset()
 			emit"finished"
 		end
 	end,
-	draw=function(self)
+	method draw()
 		pal(4,8)
 		draw_world()
 		draw_power_bar()
@@ -329,7 +332,7 @@ state{
 
 state{
 	name="outro",
-	enter=function(self)
+	method enter()
 		self.t=0
 		sfx(4)
 		for e in all(game_enders) do
@@ -337,14 +340,14 @@ state{
 		end
 		the_player.dx=0
 	end,
-	update=function(self)
+	method update()
 		self.t+=1
 		if self.t>60 then
 			emit"finished"
 		end
 		simulate_actor(the_player)
 	end,
-	draw=function(self)
+	method draw()
 		draw_world()
 		draw_power_bar()
 	end,
@@ -353,13 +356,13 @@ state{
 
 state{
 	name="gamewon",
-	enter=function(self)end,
-	update=function(self)
+	method enter() end,
+	method update()
 		if btnp(4) or btnp(5) then
 			emit"finished"
 		end
 	end,
-	draw=function(self)
+	method draw()
 		cls()
 		print("game complete!",20,64,4)
 	end,
@@ -368,13 +371,13 @@ state{
 
 state{
 	name="mainmenu",
-	enter=function(self)end,
-	update=function(self)
+	method enter() end,
+	method update()
 		if btnp(4) or btnp(5) then
 			emit"newgame"
 		end
 	end,
-	draw=function(self)
+	method draw()
 		cls()
 		print("chargin' chuck",20,64,4)
 		print("press key to start",20,74,4)

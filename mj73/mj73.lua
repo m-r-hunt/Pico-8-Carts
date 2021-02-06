@@ -129,11 +129,11 @@ sprite_anim=class{
 	base=0,
 	frames=0,
 	w=1,
-	h=1
+	h=1,
+	draw=function(self,x,y,flipx)
+		spr(self.base,flr(x*8),flr(y*8),self.w,self.h,flipx)
+	end
 }
-function sprite_anim:draw(x,y,flipx)
-	spr(self.base,flr(x*8),flr(y*8),self.w,self.h,flipx)
-end
 
 player=class{
 	x=1,
@@ -151,72 +151,75 @@ player=class{
 	reset_point_y=0,
 
 	energy=15,
-	max_energy=15
-}
-function player:construct()
-	self.anim=sprite_anim()
-	self.anim.h=2
-	self.anim.base=4
-	self.anim.frames=4
-end
-function player:update()
-	self.dy+=1/8
-	local energy_used=0.05
-	if btn(0) then
-		self.dx+=-0.1
-		self.flipx=true
-		energy_used=0.1
-	elseif btn(1) then
-		self.dx+=0.1
-		self.flipx=false
-		energy_used=0.1
-	else
-		if abs(self.dx)<=0.05 then
-			self.dx=0
+	max_energy=15,
+
+	construct=function(self)
+		self.anim=sprite_anim()
+		self.anim.h=2
+		self.anim.base=4
+		self.anim.frames=4
+	end,
+
+	update=function(self)
+		self.dy+=1/8
+		local energy_used=0.05
+		if btn(0) then
+			self.dx+=-0.1
+			self.flipx=true
+			energy_used=0.1
+		elseif btn(1) then
+			self.dx+=0.1
+			self.flipx=false
+			energy_used=0.1
 		else
-			self.dx+=-0.05*sgn(self.dx)
+			if abs(self.dx)<=0.05 then
+				self.dx=0
+			else
+				self.dx+=-0.05*sgn(self.dx)
+			end
 		end
-	end
-	if self.on_ground and btnp(2) then
-		self.dy=-1
-		energy_used=0.5
-	end
-	self.dx=mid(-3/8,self.dx,3/8)
-	self.dy=mid(-1,self.dy,1)
-	self.on_ground=simulate_actor(self)
-	local below_tile=mget(self.x+self.w/2,flr(self.y+self.h)+1)
-	if self.on_ground and fget(below_tile,1) then
-		self.energy+=0.2
-		self.energy=min(self.energy,self.max_energy)
-		self.reset_point_x=flr(self.x+self.w/2)
-		self.reset_point_y=flr(self.y)
-		if stat(19)~=2 then
-			sfx(2,3)
+		if self.on_ground and btnp(2) then
+			self.dy=-1
+			energy_used=0.5
 		end
-	else
-		sfx(2,-2)
-		self.energy-=energy_used
-		if stat(19)~=3 and self.energy<4 then
-			sfx(3,3)
+		self.dx=mid(-3/8,self.dx,3/8)
+		self.dy=mid(-1,self.dy,1)
+		self.on_ground=simulate_actor(self)
+		local below_tile=mget(self.x+self.w/2,flr(self.y+self.h)+1)
+		if self.on_ground and fget(below_tile,1) then
+			self.energy+=0.2
+			self.energy=min(self.energy,self.max_energy)
+			self.reset_point_x=flr(self.x+self.w/2)
+			self.reset_point_y=flr(self.y)
+			if stat(19)~=2 then
+				sfx(2,3)
+			end
+		else
+			sfx(2,-2)
+			self.energy-=energy_used
+			if stat(19)~=3 and self.energy<4 then
+				sfx(3,3)
+			end
 		end
+	end,
+
+	reset=function(self)
+		self.x=self.reset_point_x
+		self.y=self.reset_point_y
+		self.dx=0
+		self.dy=0
+		self.energy=self.max_energy
+	end,
+
+	draw=function(self)
+		self.anim:draw(self.x+self.ox,self.y+self.oy,self.flipx)
 	end
-end
-
-function player:reset()
-	self.x=self.reset_point_x
-	self.y=self.reset_point_y
-	self.dx=0
-	self.dy=0
-	self.energy=self.max_energy
-end
-
-function player:draw()
-	self.anim:draw(self.x+self.ox,self.y+self.oy,self.flipx)
-end
 
 
 
+}
 actor(player)
+
 
 
 
