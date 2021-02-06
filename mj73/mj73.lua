@@ -286,7 +286,7 @@ state{
 	end,
 	transitions={
 		died="dying",
-		gamewon="gamewon",
+		gamewon="outro",
 	}
 }
 
@@ -311,6 +311,30 @@ state{
 		draw_power_bar()
 	end,
 	transitions={finished="playing"}
+}
+
+state{
+	name="outro",
+	enter=function(self)
+		self.t=0
+		sfx(4)
+		for e in all(game_enders) do
+			mset(e.x,e.y,mget(e.x,e.y)+2)
+		end
+		the_player.dx=0
+	end,
+	update=function(self)
+		self.t+=1
+		if self.t>60 then
+			emit"finished"
+		end
+		simulate_actor(the_player)
+	end,
+	draw=function(self)
+		draw_world()
+		draw_power_bar()
+	end,
+	transitions={finished="gamewon"},
 }
 
 state{
