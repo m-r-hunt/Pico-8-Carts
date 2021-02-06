@@ -1,7 +1,14 @@
 * Particle fx for charging (and others)
-* Game win condition (big switch to flip)
-* Title screen w/credit on
-* Game win screen w/stats(?)
+* Title screen visuals
+* Game win screen visuals
+* Game win screen stats
+* Battery pick up animation
+* Redo player as a state machine
+* Player animation
+
+* Battery area
+* Battery area
+* Battery area
 
 
 Gameplay development ideas
