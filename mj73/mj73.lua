@@ -53,6 +53,7 @@ function _update()
 end
 
 function _draw()
+	setup_palette()
 	states[current_state]:draw()
 end
 
@@ -263,6 +264,7 @@ state{
 		for b in all(batteries) do
 			if abs(b.x-the_player.x)+abs(b.y-the_player.y-4/8)<1 then
 				the_player.max_energy+=8
+				the_player.energy+=8
 				mset(b.x,b.y,0)
 				mset(b.x,b.y-1,0)
 				del(batteries,b)
@@ -294,7 +296,6 @@ state{
 	name="dying",
 	enter=function(self)
 		self.t=0
-		pal(4,8)
 		sfx(3,-2)
 		sfx(1)
 	end,
@@ -302,11 +303,11 @@ state{
 		self.t+=1
 		if self.t>=60 then
 			the_player:reset()
-			setup_palette()
 			emit"finished"
 		end
 	end,
 	draw=function(self)
+		pal(4,8)
 		draw_world()
 		draw_power_bar()
 	end,
