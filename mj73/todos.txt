@@ -1,0 +1,9 @@
+* Particle fx for charging (and others)
+* Game win condition (big switch to flip)
+* Title screen w/credit on
+* Game win screen w/stats(?)
+
+
+Gameplay development ideas
+* Floor switches that drain power
+* Coins to pick up just for 100%ing

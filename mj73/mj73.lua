@@ -27,7 +27,7 @@ function interface(tab)
 	return tab
 end
 
-current_state="newgame"
+current_state="mainmenu"
 states={}
 
 state_interface=interface{
@@ -237,10 +237,13 @@ state{
 		actors={the_player}
 		emit"finished"
 		batteries={}
+		game_enders={}
 		for x=0,127 do
 			for y=0,63 do
 				if fget(mget(x,y),2) then
 					add(batteries,{x=x,y=y})
+				elseif fget(mget(x,y),3) then
+					add(game_enders,{x=x,y=y})
 				end
 			end
 		end
@@ -266,9 +269,15 @@ state{
 				break
 			end
 		end
+		for e in all(game_enders) do
+			if abs(e.x-the_player.x)+abs(e.y-the_player.y-4/8)<1 then
+				emit"gamewon"
+				return
+			end
+		end
 		if the_player.energy<0 then
 			the_player.energy=0
-			emit("died")
+			emit"died"
 		end
 	end,
 	draw=function(self)
@@ -294,7 +303,7 @@ state{
 		if self.t>=60 then
 			the_player:reset()
 			setup_palette()
-			emit("finished")
+			emit"finished"
 		end
 	end,
 	draw=function(self)
@@ -302,6 +311,37 @@ state{
 		draw_power_bar()
 	end,
 	transitions={finished="playing"}
+}
+
+state{
+	name="gamewon",
+	enter=function(self)end,
+	update=function(self)
+		if btnp(4) or btnp(5) then
+			emit"finished"
+		end
+	end,
+	draw=function(self)
+		cls()
+		print("game complete!",20,64,4)
+	end,
+	transitions={finished="mainmenu"},
+}
+
+state{
+	name="mainmenu",
+	enter=function(self)end,
+	update=function(self)
+		if btnp(4) or btnp(5) then
+			emit"newgame"
+		end
+	end,
+	draw=function(self)
+		cls()
+		print("chargin' chuck",20,64,4)
+		print("press key to start",20,74,4)
+	end,
+	transitions={newgame="newgame"},
 }
 
 function draw_world()
