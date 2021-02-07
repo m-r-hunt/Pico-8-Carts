@@ -128,10 +128,14 @@ end
 global sprite_anim=class{
 	base=0,
 	frames=0,
+	acc=0,
 	w=1,
 	h=1,
+	method tick(dx)
+		self.acc+=dx
+	end,
 	method draw(x,y,flipx)
-		spr(self.base,flr(x*8),flr(y*8),self.w,self.h,flipx)
+		spr(self.base+self.acc%self.frames,flr(x*8),flr(y*8),self.w,self.h,flipx)
 	end,
 }
 
@@ -201,6 +205,7 @@ global player=class{
 			self.dy=-1
 			energy_used=0.5
 		end
+		self.anim:tick(self.dx)
 		self.dx=mid(-3/8,self.dx,3/8)
 		self.dy=mid(-1,self.dy,1)
 		self.on_ground=simulate_actor(self)
@@ -221,7 +226,7 @@ global player=class{
 			mset(self.x+self.w/2,flr(self.y+self.h)+1,86)
 			add(to_reset,{self.x+self.w/2,flr(self.y+self.h)+1})
 			for dx=-2,2,1
-				for dy=-2,2,1
+				for dy=-3,3,1
 					var t=mget(self.x+self.w/2+dx,flr(self.y+self.h)+1+dy)
 					if t==87 or t==103 then
 						mset(self.x+self.w/2+dx,flr(self.y+self.h)+1+dy,t+1)
