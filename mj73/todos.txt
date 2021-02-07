@@ -1,6 +1,4 @@
 * Particle fx for charging (and others)
-* Title screen visuals
-* Game win screen visuals
 * Game win screen stats
 
 * Title music
@@ -18,6 +16,8 @@ DONE
 * Battery area
 * Battery pick up animation
 * Player animation
+* Title screen visuals
+* Game win screen visuals
 
 
 WONTFIX

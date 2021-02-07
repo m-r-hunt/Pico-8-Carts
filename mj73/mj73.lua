@@ -48,8 +48,42 @@ local function emit(signal)
 	states[current_state]:enter()
 end
 
+particles={}
+local function tick_particles()
+	for p in all(particles) do
+		p.x+=p.dx
+		p.dy+=1
+		p.y+=p.dy
+		if p.y>64*8 then
+			del(particles,p)
+		end
+	end
+end
+local function draw_particles()
+	for p in all(particles) do
+		pset(p.x,p.y,p.c)
+	end
+end
+local function add_particle(x,y,dx,dy,c)
+	add(particles,{x=x,y=y,dx=dx,dy=dy,c=c})
+end
+
+tf=0
+ts=0
+tm=0
+
 function _update()
+	tf+=1
+	if tf>=30 then
+		tf=0
+		ts+=1
+		if ts>=60 then
+			ts=0
+			tm+=1
+		end
+	end
 	states[current_state]:update()
+	tick_particles()
 end
 
 local function setup_palette()
@@ -153,6 +187,9 @@ local function collect_coin(x,y)
 	mset(x,y,0)
 	sfx(5)
 	coin_count+=1
+	for n=1,16 do
+		add_particle(x*8,y*8,rnd(2)-1,rnd(5)-10,4)
+	end
 end
 
 player=class{
@@ -308,14 +345,19 @@ local function draw_world()
 	for actor in all(actors) do
 		actor:draw()
 	end
+	draw_particles()
 	camera()
 end
 
+max_coins=0
 
 state{
 	name="newgame",
 	enter=function(self)
 		reload()
+		tf=0
+		ts=0
+		tm=0
 		coin_count=0
 		to_reset={}
 		the_player=player()
@@ -323,6 +365,7 @@ state{
 		emit"finished"
 		batteries={}
 		game_enders={}
+		max_coins=0
 		for x=0,127 do
 			for y=0,63 do
 				if fget(mget(x,y),2) then
@@ -334,6 +377,8 @@ state{
 					the_player.y=y
 					the_player.reset_point_x=x
 					the_player.reset_point_y=y
+				elseif (fget(mget(x,y),5)) then
+					max_coins+=1
 				end
 			end
 		end
@@ -387,9 +432,11 @@ state{
 	name="batteryget",
 	enter=function(self)
 		sfx(7)
+		sfx(3,-2)
 		self.t=0
 	end,
 	update=function(self)
+		add_particle(the_player.x*8,the_player.y*8,rnd(2)-1,rnd(5)-5,4)
 		self.t+=1
 		if self.t>30 then
 			emit"finished"
@@ -455,14 +502,20 @@ state{
 state{
 	name="gamewon",
 	enter=function(self)
-		
-	end,update=function(self)
+		self.s=ts
+		self.m=tm
+	end,
+	update=function(self)
 		if btnp(4) or btnp(5) then
 			emit"finished"
 		end
-	end,draw=function(self)
-		cls()
-		print("game complete!",20,64,4)
+	end,
+	draw=function(self)
+		cls(1)
+		print("game complete!",35,40,3)
+		print("time: "..self.m.."m"..self.s.."s",30,64,3)
+		print("coins found: "..coin_count.."/"..max_coins,30,72,3)
+		print("press key to exit",30,80,3)
 	end,
 	transitions={finished="mainmenu"}
 }
@@ -476,9 +529,10 @@ state{
 			emit"newgame"
 		end
 	end,draw=function(self)
-		cls()
-		print("chargin' chuck",20,64,4)
-		print("press key to start",20,74,4)
+		cls(1)
+		print("chargin' chuck",35,34,3)
+		print("by maximilian hunt",25,42,3)
+		print("press key to start",25,74,3)
 	end,
 	transitions={newgame="newgame"}
 }
