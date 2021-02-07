@@ -188,7 +188,7 @@ local function collect_coin(x,y)
 	sfx(5)
 	coin_count+=1
 	for n=1,16 do
-		add_particle(x*8,y*8,rnd(2)-1,rnd(5)-10,4)
+		add_particle(x*8,y*8,rnd(2)-1,rnd(5)-10,2)
 	end
 end
 
@@ -357,6 +357,7 @@ state{
 	name="newgame",
 	enter=function(self)
 		reload()
+		music(0)
 		tf=0
 		ts=0
 		tm=0
@@ -456,6 +457,7 @@ state{
 state{
 	name="dying",
 	enter=function(self)
+		music(-1)
 		self.t=0
 		sfx(3,-2)
 		sfx(1)
@@ -466,6 +468,7 @@ state{
 			the_player:reset()
 			reset_doors()
 			emit"finished"
+			music(0)
 		end
 	end,
 	draw=function(self)
@@ -504,6 +507,7 @@ state{
 state{
 	name="gamewon",
 	enter=function(self)
+		music(-1)
 		self.s=ts
 		self.m=tm
 	end,
@@ -525,12 +529,14 @@ state{
 state{
 	name="mainmenu",
 	enter=function(self)
-		
-	end,update=function(self)
+		music(16)
+	end,
+	update=function(self)
 		if btnp(4) or btnp(5) then
 			emit"newgame"
 		end
-	end,draw=function(self)
+	end,
+	draw=function(self)
 		cls(1)
 		print("chargin' chuck",35,34,3)
 		print("by maximilian hunt",25,42,3)

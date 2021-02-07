@@ -188,7 +188,7 @@ function collect_coin(x,y)
 	sfx(5)
 	coin_count+=1
 	for n=1,16
-		add_particle(x*8,y*8,rnd(2)-1,rnd(5)-10,4)
+		add_particle(x*8,y*8,rnd(2)-1,rnd(5)-10,2)
 	end
 end
 
@@ -357,6 +357,7 @@ state{
 	name="newgame",
 	method enter()
 		reload()
+		music(0)
 		tf=0
 		ts=0
 		tm=0
@@ -456,6 +457,7 @@ state{
 state{
 	name="dying",
 	method enter()
+		music(-1)
 		self.t=0
 		sfx(3,-2)
 		sfx(1)
@@ -466,6 +468,7 @@ state{
 			the_player:reset()
 			reset_doors()
 			emit"finished"
+			music(0)
 		end
 	end,
 	method draw()
@@ -504,6 +507,7 @@ state{
 state{
 	name="gamewon",
 	method enter() 
+		music(-1)
 		self.s=ts
 		self.m=tm
 	end,
@@ -524,7 +528,9 @@ state{
 
 state{
 	name="mainmenu",
-	method enter() end,
+	method enter()
+		music(16)
+	end,
 	method update()
 		if btnp(4) or btnp(5)
 			emit"newgame"
