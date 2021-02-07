@@ -257,9 +257,11 @@ player=class{
 				sfx(2,3)
 			end
 			reset_doors()
+			add_particle((self.x+self.w/2)*8,(self.y+self.h)*8,rnd(2)-1,rnd(2)-1,4)
 		elseif self.on_ground and fget(below_tile,4) then
 			emit"died"
 		elseif self.on_ground and below_tile==85 then
+			sfx(8)
 			self.energy-=4
 			mset(self.x+self.w/2,flr(self.y+self.h)+1,86)
 			add(to_reset,{self.x+self.w/2,flr(self.y+self.h)+1})

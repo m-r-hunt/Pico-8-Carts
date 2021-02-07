@@ -1,14 +1,10 @@
-* Particle fx for charging (and others)
-* Game win screen stats
+
 
 * Title music
 * Gameplay music
 
-* Think about other sfx to add (jump?)
-
 
 Gameplay development ideas
-* Floor switches that drain power
 
 DONE
 * Battery area
@@ -18,6 +14,10 @@ DONE
 * Player animation
 * Title screen visuals
 * Game win screen visuals
+* Particle fx for charging (and others)
+* Game win screen stats
+* Floor switches that drain power
+* Think about other sfx to add (jump?)
 
 
 WONTFIX
