@@ -3,14 +3,23 @@
 * Game win screen visuals
 * Game win screen stats
 * Battery pick up animation
-* Redo player as a state machine
 * Player animation
 
-* Battery area
+* Title music
+* Gameplay music
+
+* Think about other sfx to add (jump?)
+
 * Battery area
 * Battery area
 
 
 Gameplay development ideas
 * Floor switches that drain power
+
+DONE
+* Battery area
 * Coins to pick up just for 100%ing
+
+WONTFIX
+* Redo player as a state machine

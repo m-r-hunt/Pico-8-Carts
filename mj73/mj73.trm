@@ -136,6 +136,14 @@ global sprite_anim=class{
 }
 
 global coin_count=0
+global to_reset={}
+
+function reset_doors()
+	for pos in all(to_reset)
+		mset(pos[1],pos[2],mget(pos[1],pos[2])-1)
+	end
+	to_reset={}
+end
 
 function collect_coin(x,y)
 	mset(x,y,0)
@@ -205,8 +213,22 @@ global player=class{
 			if stat(19)!=2
 				sfx(2,3)
 			end
+			reset_doors()
 		elseif self.on_ground and fget(below_tile,4)
 			emit"died"
+		elseif self.on_ground and below_tile==85
+			self.energy-=4
+			mset(self.x+self.w/2,flr(self.y+self.h)+1,86)
+			add(to_reset,{self.x+self.w/2,flr(self.y+self.h)+1})
+			for dx=-2,2,1
+				for dy=-2,2,1
+					var t=mget(self.x+self.w/2+dx,flr(self.y+self.h)+1+dy)
+					if t==87 or t==103 then
+						mset(self.x+self.w/2+dx,flr(self.y+self.h)+1+dy,t+1)
+						add(to_reset,{self.x+self.w/2+dx,flr(self.y+self.h)+1+dy})
+					end
+				end
+			end
 		else
 			sfx(2,-2)
 			self.energy-=energy_used
@@ -289,6 +311,7 @@ state{
 	method enter()
 		reload()
 		coin_count=0
+		to_reset={}
 		the_player=player()
 		actors={the_player}
 		emit"finished"
@@ -363,6 +386,7 @@ state{
 		self.t+=1
 		if self.t>=60
 			the_player:reset()
+			reset_doors()
 			emit"finished"
 		end
 	end,
@@ -378,6 +402,7 @@ state{
 	name="outro",
 	method enter()
 		self.t=0
+		sfx(3,-2)
 		sfx(4)
 		for e in all(game_enders)
 			mset(e.x,e.y,mget(e.x,e.y)+2)
