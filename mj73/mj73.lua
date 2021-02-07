@@ -197,6 +197,8 @@ player=class{
 			if stat(19)!=2 then
 				sfx(2,3)
 			end
+		elseif self.on_ground and fget(below_tile,4) then
+			emit"died"
 		else
 			sfx(2,-2)
 			self.energy-=energy_used
@@ -267,6 +269,11 @@ state{
 					add(batteries,{x=x,y=y})
 				elseif fget(mget(x,y),3) then
 					add(game_enders,{x=x,y=y})
+				elseif fget(mget(x,y),7) then
+					the_player.x=x
+					the_player.y=y
+					the_player.reset_point_x=x
+					the_player.reset_point_y=y
 				end
 			end
 		end
