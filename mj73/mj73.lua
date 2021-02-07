@@ -135,6 +135,14 @@ sprite_anim=class{
 	end
 }
 
+coin_count=0
+
+local function collect_coin(x,y)
+	mset(x,y,0)
+	sfx(5)
+	coin_count+=1
+end
+
 player=class{
 	x=11,
 	y=56,
@@ -206,6 +214,15 @@ player=class{
 				sfx(3,3)
 			end
 		end
+
+		local t1=mget(self.x,self.y)
+		if (fget(t1,5)) collect_coin(self.x,self.y)
+		local t2=mget(self.x+self.w,self.y)
+		if (fget(t2,5)) collect_coin(self.x+self.w,self.y)
+		local t3=mget(self.x,self.y+self.h)
+		if (fget(t3,5)) collect_coin(self.x,self.y+self.h)
+		local t4=mget(self.x+self.w,self.y+self.h)
+		if (fget(t4,5)) collect_coin(self.x+self.w,self.y+self.h)
 	end,
 
 	reset=function(self)
@@ -243,6 +260,19 @@ local function draw_power_bar()
 	spr(18,x,120)
 end
 
+local function draw_coin_count()
+	spr(37,120,120)
+	local s=tostr(coin_count)
+	if (#s==1) s="0"..s
+	print(s,112,121,3)
+end
+
+local function draw_ui()
+	rectfill(0,119,128,128,0)
+	draw_power_bar()
+	draw_coin_count()
+end
+
 local function draw_world()
 	cls()
 	camera(the_player.x*8-64,the_player.y*8-64)
@@ -258,6 +288,7 @@ state{
 	name="newgame",
 	enter=function(self)
 		reload()
+		coin_count=0
 		the_player=player()
 		actors={the_player}
 		emit"finished"
@@ -313,7 +344,7 @@ state{
 		end
 	end,draw=function(self)
 		draw_world()
-		draw_power_bar()
+		draw_ui()
 	end,
 	transitions={
 		died="dying",
@@ -338,7 +369,7 @@ state{
 	draw=function(self)
 		pal(4,8)
 		draw_world()
-		draw_power_bar()
+		draw_ui()
 	end,
 	transitions={finished="playing"}
 }
@@ -362,7 +393,7 @@ state{
 	end,
 	draw=function(self)
 		draw_world()
-		draw_power_bar()
+		draw_ui()
 	end,
 	transitions={finished="gamewon"}
 }
