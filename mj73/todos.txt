@@ -2,16 +2,11 @@
 * Title screen visuals
 * Game win screen visuals
 * Game win screen stats
-* Battery pick up animation
-* Player animation
 
 * Title music
 * Gameplay music
 
 * Think about other sfx to add (jump?)
-
-* Battery area
-* Battery area
 
 
 Gameplay development ideas
@@ -20,6 +15,11 @@ Gameplay development ideas
 DONE
 * Battery area
 * Coins to pick up just for 100%ing
+* Battery area
+* Battery pick up animation
+* Player animation
+
 
 WONTFIX
 * Redo player as a state machine
+* Battery area

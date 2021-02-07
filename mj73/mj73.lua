@@ -204,6 +204,7 @@ player=class{
 		if self.on_ground and btnp(2) then
 			self.dy=-1
 			energy_used=0.5
+			sfx(6)
 		end
 		self.anim:tick(self.dx)
 		self.dx=mid(-3/8,self.dx,3/8)
@@ -357,6 +358,7 @@ state{
 				mset(b.x,b.y,0)
 				mset(b.x,b.y-1,0)
 				del(batteries,b)
+				emit"batteryget"
 				break
 			end
 		end
@@ -375,9 +377,31 @@ state{
 		draw_ui()
 	end,
 	transitions={
+		batteryget="batteryget",
 		died="dying",
 		gamewon="outro"
 	}
+}
+
+state{
+	name="batteryget",
+	enter=function(self)
+		sfx(7)
+		self.t=0
+	end,
+	update=function(self)
+		self.t+=1
+		if self.t>30 then
+			emit"finished"
+		end
+	end,
+	draw=function(self)
+		pal(4,self.t%16)
+		draw_world()
+		draw_ui()
+	end,
+
+	transitions={finished="playing"}
 }
 
 state{
