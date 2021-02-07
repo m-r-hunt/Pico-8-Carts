@@ -158,6 +158,9 @@ player=class{
 		self.anim.h=2
 		self.anim.base=4
 		self.anim.frames=4
+
+		self.reset_point_x=self.x
+		self.reset_point_y=self.y
 	end,
 
 	update=function(self)
@@ -252,6 +255,7 @@ end
 state{
 	name="newgame",
 	enter=function(self)
+		reload()
 		the_player=player()
 		actors={the_player}
 		emit"finished"
