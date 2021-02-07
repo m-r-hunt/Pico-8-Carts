@@ -1,4 +1,7 @@
 local function class(tab)
+
+
+
 	local new=function(tab,...)
 		local n={}
 		setmetatable(n,{__index=tab})
@@ -238,7 +241,7 @@ player=class{
 				self.dx+=-0.05*sgn(self.dx)
 			end
 		end
-		if self.on_ground and btnp(2) then
+		if self.on_ground and (btnp(2) or btnp(4)) then
 			self.dy=-1
 			energy_used=0.5
 			sfx(6)

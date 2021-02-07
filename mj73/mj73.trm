@@ -238,7 +238,7 @@ global player=class{
 				self.dx+=-0.05*sgn(self.dx)
 			end
 		end
-		if self.on_ground and btnp(2)
+		if self.on_ground and (btnp(2) or btnp(4))
 			self.dy=-1
 			energy_used=0.5
 			sfx(6)
