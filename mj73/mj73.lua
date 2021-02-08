@@ -1,7 +1,4 @@
 local function class(tab)
-
-
-
 	local new=function(tab,...)
 		local n={}
 		setmetatable(n,{__index=tab})
