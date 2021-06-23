@@ -1,0 +1,10 @@
+fn new(class, ...) {
+	var n = setmetatable({}, {__index = class})
+	if (class.construct) {
+		n:construct(...)
+	}
+	return n
+}
+fn Class(table) {
+	return setmetatable(table, {__call = new})
+}

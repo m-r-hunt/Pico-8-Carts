@@ -1,0 +1,44 @@
+global game_map, makeMap
+global entities, player
+
+fn handleKeys() {
+	if (btnp(0)) return {move = {-1, 0}}
+	if (btnp(1)) return {move = {1, 0}}
+	if (btnp(2)) return {move = {0, -1}}
+	if (btnp(3)) return {move = {0, 1}}
+
+	return {}
+}
+
+fn main() {
+	while (true) {
+		var dt = yield()
+		var action = handleKeys()
+		if (action.move) {
+			var dx, dy = unpack(action.move)
+			if (!game_map:isBlocked(player.x + dx, player.y + dy)) player:move(dx, dy)
+		}
+	}
+}
+
+var main_thread = null
+fn _init() {
+	main_thread = cocreate(main)
+	player.x, player.y = makeMap()
+}
+
+fn _update(dt) {
+	assert(coresume(main_thread, dt))
+}
+
+fn _draw() {
+	cls()
+
+	camera(player.x*8 - 64, player.y*8 - 64)
+
+	game_map:draw()
+
+	for (e in all(entities)) {
+		e:draw()
+	}
+}

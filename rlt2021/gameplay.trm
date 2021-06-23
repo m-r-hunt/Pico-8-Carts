@@ -1,0 +1,22 @@
+global Class
+
+var Entity = Class{
+	method construct(x, y, sprite) {
+		self.x = x
+		self.y = y
+		self.sprite = sprite
+	},
+
+	method move(dx, dy) {
+		self.x += dx
+		self.y += dy
+	},
+
+	method draw() {
+		spr(self.sprite, self.x * 8, self.y * 8)
+	},
+}
+
+var player = Entity(8, 8, 1)
+var npc = Entity(6, 8, 2)
+var entities = {npc, player}

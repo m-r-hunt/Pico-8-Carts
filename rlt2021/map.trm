@@ -1,30 +1,4 @@
-fn new(class, ...) {
-	var n = setmetatable({}, {__index = class})
-	if (class.construct) {
-		n:construct(...)
-	}
-	return n
-}
-fn Class(table) {
-	return setmetatable(table, {__call = new})
-}
-
-var Entity = Class{
-	method construct(x, y, sprite) {
-		self.x = x
-		self.y = y
-		self.sprite = sprite
-	},
-
-	method move(dx, dy) {
-		self.x += dx
-		self.y += dy
-	},
-
-	method draw() {
-		spr(self.sprite, self.x * 8, self.y * 8)
-	},
-}
+global Class
 
 var Tile = Class{
 	method construct(blocked, block_sight) {
@@ -47,9 +21,6 @@ var GameMap = Class{
 }
 
 var game_map = GameMap()
-var player = Entity(8, 8, 1)
-var npc = Entity(6, 8, 2)
-var entities = {npc, player}
 
 var Rect = Class{
 	method construct(x, y, w, h) {
@@ -96,6 +67,8 @@ var max_rooms = 30
 var map_width = 128
 var map_height = 64
 fn makeMap() {
+	var start_x = 0
+	var start_y = 0
 	var rooms = {}
 	for (r = 1, max_rooms) {
 		var w = room_min_size + flr(rnd(room_max_size))
@@ -114,8 +87,8 @@ fn makeMap() {
 			new_room:create()
 			var nx, ny = new_room:center()
 			if (#rooms == 0) {
-				player.x = nx
-				player.y = ny
+				start_x = nx
+				start_y = ny
 			} else {
 				var px, py = rooms[#rooms]:center()
 				if (rnd(1) < 0.5) {
@@ -130,46 +103,5 @@ fn makeMap() {
 		}
 	}
 	foreach(rooms, Rect.create)
-}
-
-fn handleKeys() {
-	if (btnp(0)) return {move = {-1, 0}}
-	if (btnp(1)) return {move = {1, 0}}
-	if (btnp(2)) return {move = {0, -1}}
-	if (btnp(3)) return {move = {0, 1}}
-
-	return {}
-}
-
-fn main() {
-	while (true) {
-		var dt = yield()
-		var action = handleKeys()
-		if (action.move) {
-			var dx, dy = unpack(action.move)
-			if (!game_map:isBlocked(player.x + dx, player.y + dy)) player:move(dx, dy)
-		}
-	}
-}
-
-var main_thread = null
-fn _init() {
-	main_thread = cocreate(main)
-	makeMap()
-}
-
-fn _update(dt) {
-	assert(coresume(main_thread, dt))
-}
-
-fn _draw() {
-	cls()
-
-	camera(player.x*8 - 64, player.y*8 - 64)
-
-	game_map:draw()
-
-	for (e in all(entities)) {
-		e:draw()
-	}
+	return start_x, start_y
 }

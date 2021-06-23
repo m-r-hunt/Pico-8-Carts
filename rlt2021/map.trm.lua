@@ -1,30 +1,4 @@
-local function new(class,...)
-	local n=setmetatable({},{__index=class})
-	if class.construct then
-		n:construct(...)
-	end
-	return n
-end
-local function Class(table)
-	return setmetatable(table,{__call=new})
-end
 
-local Entity=Class{
-	construct=function(self,x,y,sprite)
-		self.x=x
-		self.y=y
-		self.sprite=sprite
-	end,
-
-	move=function(self,dx,dy)
-		self.x+=dx
-		self.y+=dy
-	end,
-
-	draw=function(self)
-		spr(self.sprite,self.x*8,self.y*8)
-	end
-}
 
 local Tile=Class{
 	construct=function(self,blocked,block_sight)
@@ -47,9 +21,6 @@ local GameMap=Class{
 }
 
 local game_map=GameMap()
-local player=Entity(8,8,1)
-local npc=Entity(6,8,2)
-local entities={npc,player}
 
 local Rect=Class{
 	construct=function(self,x,y,w,h)
@@ -96,6 +67,8 @@ local max_rooms=30
 local map_width=128
 local map_height=64
 local function makeMap()
+	local start_x=0
+	local start_y=0
 	local rooms={}
 	for r=1,max_rooms do
 		local w=room_min_size+flr(rnd(room_max_size))
@@ -114,8 +87,8 @@ local function makeMap()
 			new_room:create()
 			local nx,ny=new_room:center()
 			if #rooms==0 then
-				player.x=nx
-				player.y=ny
+				start_x=nx
+				start_y=ny
 			else
 				local px,py=rooms[#rooms]:center()
 				if rnd(1)<0.5 then
@@ -130,46 +103,5 @@ local function makeMap()
 		end
 	end
 	foreach(rooms,Rect.create)
-end
-
-local function handleKeys()
-	if (btnp(0)) return {move={-1,0}}
-	if (btnp(1)) return {move={1,0}}
-	if (btnp(2)) return {move={0,-1}}
-	if (btnp(3)) return {move={0,1}}
-
-	return {}
-end
-
-local function main()
-	while true do
-		local dt=yield()
-		local action=handleKeys()
-		if action.move then
-			local dx,dy=unpack(action.move)
-			if (not game_map:isBlocked(player.x+dx,player.y+dy)) player:move(dx,dy)
-		end
-	end
-end
-
-local main_thread=nil
-local function _init()
-	main_thread=cocreate(main)
-	makeMap()
-end
-
-local function _update(dt)
-	assert(coresume(main_thread,dt))
-end
-
-local function _draw()
-	cls()
-
-	camera(player.x*8-64,player.y*8-64)
-
-	game_map:draw()
-
-	for e in all(entities) do
-		e:draw()
-	end
+	return start_x,start_y
 end
