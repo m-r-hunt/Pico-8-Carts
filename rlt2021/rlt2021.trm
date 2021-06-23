@@ -36,53 +36,19 @@ var Tile = Class{
 	},
 }
 
-fn initializeTiles(width, height) {
-	var tiles = {}
-	for (x = 0, width-1) {
-		tiles[x] = {}
-		for (y = 0, height-1) {
-			tiles[x][y] = Tile(false)
-		}
-	}
-
-	tiles[4][2].blocked = true
-	tiles[4][2].block_sight = true
-	tiles[5][2].blocked = true
-	tiles[5][2].block_sight = true
-	tiles[6][2].blocked = true
-	tiles[6][2].block_sight = true
-
-	return tiles
-}
-
 var GameMap = Class{
-	method construct(width, height) {
-		self.width = width
-		self.height = height
-		self.tiles = initializeTiles(width, height)
-	},
 
 	method isBlocked(x, y) {
-		return self.tiles[x][y].blocked
+		return fget(mget(x, y), 0)
 	},
 
 	method draw() {
-		for (x, row in pairs(self.tiles)) {
-			for (y, t in pairs(row)) {
-				var wall = t.block_sight
-
-				if (wall) {
-					spr(64, x * 8, y * 8)
-				} else {
-					spr(65, x * 8, y * 8)
-				}
-			}
-		}
+		map()
 	},
 }
 
 var main_thread = null
-global game_map = GameMap(16, 16)
+var game_map = GameMap()
 var player = Entity(8, 8, 1)
 var npc = Entity(6, 8, 2)
 var entities = {npc, player}

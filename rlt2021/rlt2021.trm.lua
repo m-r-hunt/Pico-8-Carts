@@ -36,53 +36,19 @@ local Tile=Class{
 	end
 }
 
-local function initializeTiles(width,height)
-	local tiles={}
-	for x=0,width-1 do
-		tiles[x]={}
-		for y=0,height-1 do
-			tiles[x][y]=Tile(false)
-		end
-	end
-
-	tiles[4][2].blocked=true
-	tiles[4][2].block_sight=true
-	tiles[5][2].blocked=true
-	tiles[5][2].block_sight=true
-	tiles[6][2].blocked=true
-	tiles[6][2].block_sight=true
-
-	return tiles
-end
-
 local GameMap=Class{
-	construct=function(self,width,height)
-		self.width=width
-		self.height=height
-		self.tiles=initializeTiles(width,height)
-	end,
 
 	isBlocked=function(self,x,y)
-		return self.tiles[x][y].blocked
+		return fget(mget(x,y),0)
 	end,
 
 	draw=function(self)
-		for x,row in pairs(self.tiles) do
-			for y,t in pairs(row) do
-				local wall=t.block_sight
-
-				if wall then
-					spr(64,x*8,y*8)
-				else
-					spr(65,x*8,y*8)
-				end
-			end
-		end
+		map()
 	end
 }
 
 local main_thread=nil
-game_map=GameMap(16,16)
+local game_map=GameMap()
 local player=Entity(8,8,1)
 local npc=Entity(6,8,2)
 local entities={npc,player}
