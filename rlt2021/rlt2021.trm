@@ -37,21 +37,100 @@ var Tile = Class{
 }
 
 var GameMap = Class{
-
 	method isBlocked(x, y) {
 		return fget(mget(x, y), 0)
 	},
 
 	method draw() {
-		map()
+		map(0, 0, 0, 0, 128, 64)
 	},
 }
 
-var main_thread = null
 var game_map = GameMap()
 var player = Entity(8, 8, 1)
 var npc = Entity(6, 8, 2)
 var entities = {npc, player}
+
+var Rect = Class{
+	method construct(x, y, w, h) {
+		self.x1 = x
+		self.y1 = y
+		self.x2 = x + w
+		self.y2 = y + h
+	},
+
+	method create() {
+		for (x = self.x1+1, self.x2-1) {
+			for (y = self.y1+1, self.y2-1) {
+				mset(x, y, 65)
+			}
+		}
+	},
+
+	method center() {
+		var cx = flr((self.x1 + self.x2) / 2)
+		var cy = flr((self.y1 + self.y2) / 2)
+		return cx, cy
+	},
+
+	method intersects(other) {
+		return self.x1 <= other.x2 && self.x2 >= other.x1 && self.y1 <= other.y2 && self.y2 >= other.y1
+	},
+}
+
+fn createHTunnel(x1, x2, y) {
+	for (x = min(x1, x2), max(x1, x2)) {
+		mset(x, y, 65)
+	}
+}
+
+fn createVTunnel(y1, y2, x) {
+	for (y = min(y1, y2), max(y1, y2)) {
+		mset(x, y, 65)
+	}
+}
+
+var room_max_size = 10
+var room_min_size = 6
+var max_rooms = 30
+var map_width = 128
+var map_height = 64
+fn makeMap() {
+	var rooms = {}
+	for (r = 1, max_rooms) {
+		var w = room_min_size + flr(rnd(room_max_size))
+		var h = room_min_size + flr(rnd(room_max_size))
+		var x = rnd(map_width - w)
+		var y = rnd(map_height - h)
+		var new_room = Rect(x, y, w, h)
+		var any_clash = false
+		for (other in all(rooms)) {
+			if (new_room:intersects(other)) {
+				any_clash = true
+				break
+			}
+		}
+		if (!any_clash) {
+			new_room:create()
+			var nx, ny = new_room:center()
+			if (#rooms == 0) {
+				player.x = nx
+				player.y = ny
+			} else {
+				var px, py = rooms[#rooms]:center()
+				if (rnd(1) < 0.5) {
+					createHTunnel(px, nx, py)
+					createVTunnel(py, ny, nx)
+				} else {
+					createVTunnel(py, ny, px)
+					createHTunnel(px, nx, ny)
+				}
+			}
+			add(rooms, new_room)
+		}
+	}
+	foreach(rooms, Rect.create)
+}
 
 fn handleKeys() {
 	if (btnp(0)) return {move = {-1, 0}}
@@ -73,8 +152,10 @@ fn main() {
 	}
 }
 
+var main_thread = null
 fn _init() {
 	main_thread = cocreate(main)
+	makeMap()
 }
 
 fn _update(dt) {
@@ -83,6 +164,8 @@ fn _update(dt) {
 
 fn _draw() {
 	cls()
+
+	camera(player.x*8 - 64, player.y*8 - 64)
 
 	game_map:draw()
 
