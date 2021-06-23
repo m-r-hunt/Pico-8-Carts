@@ -1,0 +1,210 @@
+global Class
+
+global deli // TODO
+
+var PosSet = Class{
+	method construct() {
+		self.set = {}
+	},
+
+	method add(x, y) {
+		self.set[x] = self.set[x] || {}
+		self.set[x][y] = true
+	},
+
+	method contains(x, y) {
+		return self.set[x] && self.set[x][y]
+	},
+}
+
+var Line = Class{
+	method construct(xi, yi, xf, yf) {
+		self.i = {xi, yi}
+		self.f = {xf, yf}
+	},
+
+	method relativeSlope(p) {
+		return (self.f[2] - self.i[2]) * (self.f[1] - p[1]) - (self.f[1] - self.i[1]) * (self.f[2] - p[2])
+	},
+
+	method pointBelow(p) {
+		return self:relativeSlope(p) > 0
+	},
+
+	method pointBelowOrCollinear(p) {
+		return self:relativeSlope(p) >= 0
+	},
+
+	method pointAbove(p) {
+		return self:relativeSlope(p) < 0
+	},
+
+	method pointAboveOrCollinear(p) {
+		return self:relativeSlope(p) <= 0
+	},
+
+	method pointCollinear(p) {
+		return self:relativeSlope(p) == 0
+	},
+
+	method lineCollinear(line) {
+		return self:pointCollinear(line.i) && self:pointCollinear(line.f)
+	},
+}
+
+fn Line:clone() {
+	return Line(self.i[1], self.i[2], self.f[1], self.f[2])
+}
+
+var ViewBump = Class{
+	method construct(pos, parent) {
+		self.pos = pos
+		self.parent = parent
+	},
+}
+
+var View = Class{
+	method construct(shallow, steep) {
+		if (steep) {
+			self.shallow_line = shallow
+			self.steep_line = steep
+		} else {
+			var other = shallow
+			self.shallow_line = other.shallow_line:clone()
+			self.steep_line = other.steep_line:clone()
+			self.shallow_bump = other.shallow_bump
+			self.steep_bump = other.steep_bump
+		}
+	},
+}
+
+fn addShallowBump(bump_pos, active_view) {
+	active_view.shallow_line.f = bump_pos
+
+	active_view.shallow_bump = ViewBump(bump_pos, active_view.shallow_bump)
+
+	var cur_bump = active_view.steep_bump
+
+	while (cur_bump != null) {
+		if (active_view.shallow_line:pointAbove(cur_bump.pos)) {
+			active_view.shallow_line.i = cur_bump.pos
+		}
+
+		cur_bump = cur_bump.parent
+	}
+}
+
+fn addSteepBump(bump_pos, active_view) {
+	active_view.steep_line.f = bump_pos
+
+	active_view.steep_bump = ViewBump(bump_pos, active_view.steep_bump)
+
+	var cur_bump = active_view.shallow_bump
+
+	while (cur_bump != null) {
+		if (active_view.steep_line:pointBelow(cur_bump.pos)) {
+			active_view.steep_line.i = cur_bump.pos
+		}
+
+		cur_bump = cur_bump.parent
+	}
+}
+
+fn checkView(active_views, view_index) {
+	var shallow_line = active_views[view_index].shallow_line
+	var steep_line = active_views[view_index].steep_line
+
+	if (shallow_line:lineCollinear(steep_line) && (shallow_line:pointCollinear({0, 1}) || shallow_line:pointCollinear({1, 0}))) {
+		deli(active_views, view_index)
+		return false
+	} else {
+		return true
+	}
+}
+
+fn visitCoord(pos, x, y, dx, dy, active_views, fov, blocksFOV) {
+	var view_index = 1
+
+	var top_left = {x, y + 1}
+	var bottom_right = {x + 1, y}
+
+	while (view_index <= #active_views && active_views[view_index].steep_line:pointBelowOrCollinear(bottom_right)) {
+		view_index += 1
+	}
+
+	if (view_index > #active_views || active_views[view_index].shallow_line:pointAboveOrCollinear(top_left)) {
+		return
+	}
+
+	var real_x = x * dx
+	var real_y = y * dy
+	var real_pos = {pos[1] + real_x, pos[2] + real_y}
+
+	fov:add(unpack(real_pos))
+
+	var is_blocked = blocksFOV(real_pos)
+
+	if (!is_blocked) {return}
+	
+	var active_view = active_views[view_index]
+	if (active_view.shallow_line:pointAbove(bottom_right) && active_view.steep_line:pointBelow(top_left)) {
+		deli(active_views, view_index)
+	} else if (active_view.shallow_line:pointAbove(bottom_right)) {
+		addShallowBump(top_left, active_view)
+		checkView(active_views, view_index)
+	} else if (active_view.steep_line:pointBelow(top_left)) {
+		addSteepBump(bottom_right, active_view)
+		checkView(active_views, view_index)
+	} else {
+		var shallow_view_index = view_index
+		var steep_view_index = view_index + 1
+
+		add(active_views, View(active_views[shallow_view_index]), shallow_view_index)
+
+		addSteepBump(bottom_right, active_views[shallow_view_index])
+
+		if (!checkView(active_views, shallow_view_index)) {
+			steep_view_index -= 1
+		}
+
+		addShallowBump(top_left, active_views[steep_view_index])
+		checkView(active_views, steep_view_index)
+	}
+}
+
+fn checkQuadrant(pos, dx, dy, radius, fov, blocksFOV) {
+	var active_views = {}
+	var shallow_line = Line(0, 1, radius, 0)
+	var steep_line = Line(1, 0, 0, radius)
+
+	add(active_views, View(shallow_line, steep_line))
+
+	var max_i = radius + radius
+	var i = 1
+	while (i <= max_i && #active_views >= 1) {
+		var start_j = max(0, i - radius)
+		var max_j = min(i, radius)
+		var j = start_j
+		while (j <= max_j && #active_views >= 1) {
+			var x = i - j
+			var y = j
+			visitCoord(pos, x, y, dx, dy, active_views, fov, blocksFOV)
+
+			j += 1
+		}
+
+		i += 1
+	}
+}
+
+fn calculateFOV(blocksFOV, pos, radius) {
+	var fov = PosSet()
+	fov:add(unpack(pos))
+
+	checkQuadrant(pos, 1, 1, radius, fov, blocksFOV)
+	checkQuadrant(pos, 1, -1, radius, fov, blocksFOV)
+	checkQuadrant(pos, -1, -1, radius, fov, blocksFOV)
+	checkQuadrant(pos, -1, 1, radius, fov, blocksFOV)
+
+	return fov
+}

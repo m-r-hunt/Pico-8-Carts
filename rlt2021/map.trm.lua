@@ -15,8 +15,13 @@ local GameMap=Class{
 		return fget(mget(x,y),0)
 	end,
 
-	draw=function(self)
-		map(0,0,0,0,128,64)
+	draw=function(self,fov)
+
+		for x,row in pairs(fov.set) do
+			for y,t in pairs(row) do
+				spr(mget(x,y),x*8,y*8)
+			end
+		end
 	end
 }
 
