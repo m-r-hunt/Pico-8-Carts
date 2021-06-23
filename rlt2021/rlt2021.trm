@@ -1,6 +1,91 @@
+fn new(class, ...) {
+	var n = setmetatable({}, {__index = class})
+	if (class.construct) {
+		n:construct(...)
+	}
+	return n
+}
+fn Class(table) {
+	return setmetatable(table, {__call = new})
+}
+
+var Entity = Class{
+	method construct(x, y, sprite) {
+		self.x = x
+		self.y = y
+		self.sprite = sprite
+	},
+
+	method move(dx, dy) {
+		self.x += dx
+		self.y += dy
+	},
+
+	method draw() {
+		spr(self.sprite, self.x * 8, self.y * 8)
+	},
+}
+
+var Tile = Class{
+	method construct(blocked, block_sight) {
+		self.blocked = blocked
+		if (block_sight == null) {
+			block_sight = blocked
+		}
+		self.block_sight = block_sight
+	},
+}
+
+fn initializeTiles(width, height) {
+	var tiles = {}
+	for (x = 0, width-1) {
+		tiles[x] = {}
+		for (y = 0, height-1) {
+			tiles[x][y] = Tile(false)
+		}
+	}
+
+	tiles[4][2].blocked = true
+	tiles[4][2].block_sight = true
+	tiles[5][2].blocked = true
+	tiles[5][2].block_sight = true
+	tiles[6][2].blocked = true
+	tiles[6][2].block_sight = true
+
+	return tiles
+}
+
+var GameMap = Class{
+	method construct(width, height) {
+		self.width = width
+		self.height = height
+		self.tiles = initializeTiles(width, height)
+	},
+
+	method isBlocked(x, y) {
+		return self.tiles[x][y].blocked
+	},
+
+	method draw() {
+		for (x, row in pairs(self.tiles)) {
+			for (y, t in pairs(row)) {
+				var wall = t.block_sight
+
+				if (wall) {
+					spr(64, x * 8, y * 8)
+				} else {
+					spr(65, x * 8, y * 8)
+				}
+			}
+		}
+	},
+}
+
 var main_thread = null
-var player_x = 1
-var player_y = 1
+global game_map = GameMap(16, 16)
+var player = Entity(8, 8, 1)
+var npc = Entity(6, 8, 2)
+var entities = {npc, player}
 
 fn handleKeys() {
 	if (btnp(0)) return {move = {-1, 0}}
@@ -16,8 +101,8 @@ fn main() {
 		var dt = yield()
 		var action = handleKeys()
 		if (action.move) {
-			player_x += action.move[1]
-			player_y += action.move[2]
+			var dx, dy = unpack(action.move)
+			if (!game_map:isBlocked(player.x + dx, player.y + dy)) player:move(dx, dy)
 		}
 	}
 }
@@ -32,5 +117,10 @@ fn _update(dt) {
 
 fn _draw() {
 	cls()
-	spr(1, player_x * 8, player_y * 8)
+
+	game_map:draw()
+
+	for (e in all(entities)) {
+		e:draw()
+	}
 }
