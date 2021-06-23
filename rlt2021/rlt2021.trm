@@ -1,0 +1,36 @@
+var main_thread = null
+var player_x = 1
+var player_y = 1
+
+fn handleKeys() {
+	if (btnp(0)) return {move = {-1, 0}}
+	if (btnp(1)) return {move = {1, 0}}
+	if (btnp(2)) return {move = {0, -1}}
+	if (btnp(3)) return {move = {0, 1}}
+
+	return {}
+}
+
+fn main() {
+	while (true) {
+		var dt = yield()
+		var action = handleKeys()
+		if (action.move) {
+			player_x += action.move[1]
+			player_y += action.move[2]
+		}
+	}
+}
+
+fn _init() {
+	main_thread = cocreate(main)
+}
+
+fn _update(dt) {
+	assert(coresume(main_thread, dt))
+}
+
+fn _draw() {
+	cls()
+	spr(1, player_x * 8, player_y * 8)
+}
