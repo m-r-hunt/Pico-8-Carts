@@ -17,10 +17,8 @@ local GameMap=Class{
 
 	draw=function(self,fov)
 
-		for x,row in pairs(fov.set) do
-			for y,t in pairs(row) do
-				spr(mget(x,y),x*8,y*8)
-			end
+		for x,y in fov:iter() do
+			spr(mget(x,y),x*8,y*8)
 		end
 	end
 }

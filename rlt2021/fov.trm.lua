@@ -14,6 +14,28 @@ local PosSet=Class{
 
 	contains=function(self,x,y)
 		return self.set[x] and self.set[x][y]
+	end,
+
+	iter=function(self)
+
+
+
+		local i1,s1,x,row=pairs(self.set)
+		x,row=i1(s1,x)
+		local i2,s2,y=pairs(row)
+		return function()
+			y=i2(s2,y)
+			if y then
+				return x,y
+			else
+				x,row=i1(s1,x)
+				i2,s2,y=pairs(row)
+				if i2 then
+					y=i2(s2,y)
+					return x,y
+				end
+			end
+		end
 	end
 }
 
@@ -144,9 +166,8 @@ local function visitCoord(pos,x,y,dx,dy,active_views,fov,blocksFOV)
 
 	local is_blocked=blocksFOV(real_pos)
 
-	if not is_blocked then
-		return
-	end
+	if (not is_blocked) return nil
+
 	local active_view=active_views[view_index]
 	if active_view.shallow_line:pointAbove(bottom_right) and active_view.steep_line:pointBelow(top_left) then
 		deli(active_views,view_index)
@@ -159,6 +180,7 @@ local function visitCoord(pos,x,y,dx,dy,active_views,fov,blocksFOV)
 	else
 		local shallow_view_index=view_index
 		local steep_view_index=view_index+1
+
 		add(active_views,View(active_views[shallow_view_index]),shallow_view_index)
 
 		addSteepBump(bottom_right,active_views[shallow_view_index])
