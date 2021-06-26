@@ -36,7 +36,7 @@ fn main() {
 var main_thread = null
 fn _init() {
 	main_thread = cocreate(main)
-	player.x, player.y = makeMap()
+	player.x, player.y = makeMap(entities)
 	fov_map = calculateFOV(blocks_fov, {player.x, player.y}, 10)
 	memory = PosSet()
 	memory:unionWith(fov_map)

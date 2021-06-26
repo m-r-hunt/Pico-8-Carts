@@ -1,6 +1,6 @@
 
 
-local Entity=Class{
+Entity=Class{
 	construct=function(self,x,y,sprite)
 		self.x=x
 		self.y=y
@@ -19,4 +19,4 @@ local Entity=Class{
 
 local player=Entity(8,8,1)
 local npc=Entity(6,8,2)
-local entities={npc,player}
+entities={player,npc}

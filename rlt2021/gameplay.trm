@@ -1,6 +1,6 @@
 global Class
 
-var Entity = Class{
+global Entity = Class{
 	method construct(x, y, sprite) {
 		self.x = x
 		self.y = y
@@ -19,4 +19,4 @@ var Entity = Class{
 
 var player = Entity(8, 8, 1)
 var npc = Entity(6, 8, 2)
-var entities = {npc, player}
+global entities = {player, npc}

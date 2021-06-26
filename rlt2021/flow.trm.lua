@@ -36,7 +36,7 @@ end
 local main_thread=nil
 local function _init()
 	main_thread=cocreate(main)
-	player.x,player.y=makeMap()
+	player.x,player.y=makeMap(entities)
 	fov_map=calculateFOV(blocks_fov,{player.x,player.y},10)
 	memory=PosSet()
 	memory:unionWith(fov_map)

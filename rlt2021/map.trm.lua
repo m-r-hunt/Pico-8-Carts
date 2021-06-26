@@ -1,5 +1,6 @@
 
 
+
 local Tile=Class{
 	construct=function(self,blocked,block_sight)
 		self.blocked=blocked
@@ -78,14 +79,41 @@ local function createVTunnel(y1,y2,x)
 	end
 end
 
+local function anyEntitiesAt(entities,x,y)
+	for e in all(entities) do
+		if (e.x==x and e.y==y) return true
+	end
+	return false
+end
+
+local function placeEntities(room,entities,max_monsters_per_room)
+	local n=flr(rnd(max_monsters_per_room))
+
+	for i=1,n do
+		local x=room.x1+1+flr(rnd(room.x2-room.x1-2))
+		local y=room.y1+1+flr(rnd(room.y2-room.y1-2))
+
+		if not anyEntitiesAt(entities,x,y) then
+			local monster=nil
+			if rnd(1)<0.8 then
+				monster=Entity(x,y,16)
+			else
+				monster=Entity(x,y,17)
+			end
+			add(entities,monster)
+		end
+	end
+end
+
 local room_max_size=10
 local room_min_size=6
 local max_rooms=30
 local map_width=128
 local map_height=64
 local wall_sprite=64
+local max_monsters_per_room=3
 local save_map=false
-local function makeMap()
+local function makeMap(entities)
 	for x=0,map_width do
 		for y=0,map_height do
 			mset(x,y,wall_sprite)
@@ -97,8 +125,8 @@ local function makeMap()
 	for r=1,max_rooms do
 		local w=room_min_size+flr(rnd(room_max_size))
 		local h=room_min_size+flr(rnd(room_max_size))
-		local x=rnd(map_width-w)
-		local y=rnd(map_height-h)
+		local x=flr(rnd(map_width-w))
+		local y=flr(rnd(map_height-h))
 		local new_room=Rect(x,y,w,h)
 		local any_clash=false
 		for other in all(rooms) do
@@ -123,6 +151,7 @@ local function makeMap()
 					createHTunnel(px,nx,ny)
 				end
 			end
+			placeEntities(new_room,entities,max_monsters_per_room)
 			add(rooms,new_room)
 		end
 	end
