@@ -26,21 +26,34 @@ local function blocks_fov(pos)
 	return fget(mget(pos[1],pos[2]),1)
 end
 
+local message=""
 local function main()
 	while true do
 		local dt=yield()
 		local action=handleKeys()
 		if action.move then
-			local dx,dy=unpack(action.move)
-			if not game_map:isBlocked(player.x+dx,player.y+dy) then
-				player:move(dx,dy)
-				fov_map=calculateFOV(blocks_fov,{player.x,player.y},10)
-				memory:unionWith(fov_map)
+			local dx=player.x+action.move[1]
+			local dy=player.y+action.move[2]
+			if not game_map:isBlocked(dx,dy) then
+				local target=getBlockingEntitiesAt(dx,dy)
+
+				if target then
+					message="you kick the "..target.name.." in the nuts"
+				else
+					message=""
+					player:move(dx,dy)
+					fov_map=calculateFOV(blocks_fov,{player.x,player.y},10)
+					memory:unionWith(fov_map)
+				end
+
+				for e in all(entities) do
+
+					
+				end
 			end
 		end
 	end
 end
-
 local main_thread=nil
 local function _init()
 	main_thread=cocreate(main)
@@ -66,4 +79,7 @@ local function _draw()
 			e:draw()
 		end
 	end
+
+	camera()
+	print(message,0,0,7)
 end

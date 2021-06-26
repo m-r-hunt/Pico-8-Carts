@@ -1,5 +1,5 @@
 global game_map, makeMap
-global entities, player
+global entities, player, getBlockingEntitiesAt
 global calculateFOV
 global PosSet
 
@@ -26,16 +26,29 @@ fn blocks_fov(pos) {
 	return fget(mget(pos[1], pos[2]), 1)
 }
 
+var message = ""
 fn main() {
 	while (true) {
 		var dt = yield()
 		var action = handleKeys()
 		if (action.move) {
-			var dx, dy = unpack(action.move)
-			if (!game_map:isBlocked(player.x + dx, player.y + dy)) {
-				player:move(dx, dy)
-				fov_map = calculateFOV(blocks_fov, {player.x, player.y}, 10)
-				memory:unionWith(fov_map)
+			var dx = player.x + action.move[1]
+			var dy = player.y + action.move[2]
+			if (!game_map:isBlocked(dx, dy)) {
+				var target = getBlockingEntitiesAt(dx, dy)
+
+				if (target) {
+					message = "you kick the "..target.name.." in the nuts"
+				} else {
+					message = ""
+					player:move(dx, dy)
+					fov_map = calculateFOV(blocks_fov, {player.x, player.y}, 10)
+					memory:unionWith(fov_map)
+				}
+
+				for (e in all(entities)) {
+					// TODO Enemy turns
+				}
 			}
 		}
 	}
@@ -66,4 +79,7 @@ fn _draw() {
 			e:draw()
 		}
 	}
+
+	camera()
+	print(message, 0, 0, 7)
 }

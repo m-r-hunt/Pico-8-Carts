@@ -98,9 +98,9 @@ fn placeEntities(room, entities, max_monsters_per_room) {
 		if (!anyEntitiesAt(entities, x, y)) {
 			var monster = null
 			if (rnd(1) < 0.8) {
-				monster = Entity(x, y, 16)
+				monster = Entity(x, y, 16, "orc", true)
 			} else {
-				monster = Entity(x, y, 17)
+				monster = Entity(x, y, 17, "troll", true)
 			}
 			add(entities, monster)
 		}
