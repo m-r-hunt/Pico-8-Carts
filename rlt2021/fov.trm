@@ -16,24 +16,10 @@ var PosSet = Class{
 		return self.set[x] && self.set[x][y]
 	},
 
-	method iter() {
-		// An elegant lua way to do this would be to use a coroutine, possibly via coroutine.wrap()
-		// Unluckily for us, in PICO-8 yield()ing doesn't return values to the calling coresume()
-		// May want to replace this with an explicit loop in end users late in development.
-		var i1, s1, x, row = pairs(self.set)
-		x, row = i1(s1, x)
-		var i2, s2, y = pairs(row)
-		return fn() {
-			y = i2(s2, y)
-			if (y) {
-				return x, y
-			} else {
-				x, row = i1(s1, x)
-				i2, s2, y = pairs(row)
-				if (i2) {
-					y = i2(s2, y)
-					return x, y
-				}
+	method unionWith(other) {
+		for (x, row in pairs(other.set)) {
+			for (y in pairs(row)) {
+				self:add(x, y)
 			}
 		}
 	},

@@ -10,16 +10,30 @@ var Tile = Class{
 	},
 }
 
+fn setShadowPal() {
+	for (c = 4, 15) {
+		pal(c, band(c, 3))
+	}
+}
+
 var GameMap = Class{
 	method isBlocked(x, y) {
 		return fget(mget(x, y), 0)
 	},
 
-	method draw(fov) {
-		//map(0, 0, 0, 0, 128, 64)
-		for (x, y in fov:iter()) {
-			spr(mget(x, y), x * 8, y * 8)
+	method draw(cx, cy, memory, fov) {
+		for (x = cx-9, cx+9) {
+			for (y = cy-9, cy + 9) {
+				if (fov:contains(x, y)) {
+					pal()
+					spr(mget(x, y), x * 8, y * 8)
+				} else if (memory:contains(x, y)) {
+					setShadowPal()
+					spr(mget(x, y), x * 8, y * 8)
+				}
+			}
 		}
+		pal()
 	},
 }
 

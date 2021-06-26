@@ -16,24 +16,10 @@ local PosSet=Class{
 		return self.set[x] and self.set[x][y]
 	end,
 
-	iter=function(self)
-
-
-
-		local i1,s1,x,row=pairs(self.set)
-		x,row=i1(s1,x)
-		local i2,s2,y=pairs(row)
-		return function()
-			y=i2(s2,y)
-			if y then
-				return x,y
-			else
-				x,row=i1(s1,x)
-				i2,s2,y=pairs(row)
-				if i2 then
-					y=i2(s2,y)
-					return x,y
-				end
+	unionWith=function(self,other)
+		for x,row in pairs(other.set) do
+			for y in pairs(row) do
+				self:add(x,y)
 			end
 		end
 	end

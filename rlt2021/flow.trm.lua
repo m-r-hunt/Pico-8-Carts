@@ -2,7 +2,8 @@
 
 
 
-fov_map=nil
+
+
 
 local function handleKeys()
 	if (btnp(0)) return {move={-1,0}}
@@ -26,17 +27,19 @@ local function main()
 			if not game_map:isBlocked(player.x+dx,player.y+dy) then
 				player:move(dx,dy)
 				fov_map=calculateFOV(blocks_fov,{player.x,player.y},10)
+				memory:unionWith(fov_map)
 			end
 		end
 	end
 end
-
 
 local main_thread=nil
 local function _init()
 	main_thread=cocreate(main)
 	player.x,player.y=makeMap()
 	fov_map=calculateFOV(blocks_fov,{player.x,player.y},10)
+	memory=PosSet()
+	memory:unionWith(fov_map)
 end
 
 local function _update(dt)
@@ -48,9 +51,11 @@ local function _draw()
 
 	camera(player.x*8-64,player.y*8-64)
 
-	game_map:draw(fov_map)
+	game_map:draw(player.x,player.y,memory,fov_map)
 
 	for e in all(entities) do
-		e:draw()
+		if fov_map:contains(e.x,e.y) then
+			e:draw()
+		end
 	end
 end

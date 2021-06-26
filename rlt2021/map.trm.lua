@@ -10,16 +10,30 @@ local Tile=Class{
 	end
 }
 
+local function setShadowPal()
+	for c=4,15 do
+		pal(c,band(c,3))
+	end
+end
+
 local GameMap=Class{
 	isBlocked=function(self,x,y)
 		return fget(mget(x,y),0)
 	end,
 
-	draw=function(self,fov)
-
-		for x,y in fov:iter() do
-			spr(mget(x,y),x*8,y*8)
+	draw=function(self,cx,cy,memory,fov)
+		for x=cx-9,cx+9 do
+			for y=cy-9,cy+9 do
+				if fov:contains(x,y) then
+					pal()
+					spr(mget(x,y),x*8,y*8)
+				elseif memory:contains(x,y) then
+					setShadowPal()
+					spr(mget(x,y),x*8,y*8)
+				end
+			end
 		end
+		pal()
 	end
 }
 

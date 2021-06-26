@@ -1,8 +1,9 @@
 global game_map, makeMap
 global entities, player
 global calculateFOV
+global PosSet
 
-global fov_map = null
+global fov_map, memory
 
 fn handleKeys() {
 	if (btnp(0)) return {move = {-1, 0}}
@@ -26,8 +27,8 @@ fn main() {
 			if (!game_map:isBlocked(player.x + dx, player.y + dy)) {
 				player:move(dx, dy)
 				fov_map = calculateFOV(blocks_fov, {player.x, player.y}, 10)
+				memory:unionWith(fov_map)
 			}
-
 		}
 	}
 }
@@ -37,6 +38,8 @@ fn _init() {
 	main_thread = cocreate(main)
 	player.x, player.y = makeMap()
 	fov_map = calculateFOV(blocks_fov, {player.x, player.y}, 10)
+	memory = PosSet()
+	memory:unionWith(fov_map)
 }
 
 fn _update(dt) {
@@ -48,9 +51,11 @@ fn _draw() {
 
 	camera(player.x*8 - 64, player.y*8 - 64)
 
-	game_map:draw(fov_map)
+	game_map:draw(player.x, player.y, memory, fov_map)
 
 	for (e in all(entities)) {
-		e:draw()
+		if (fov_map:contains(e.x, e.y)) {
+			e:draw()
+		}
 	}
 }
