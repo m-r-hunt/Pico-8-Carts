@@ -107,7 +107,7 @@ local function addShallowBump(bump_pos,active_view)
 
 	local cur_bump=active_view.steep_bump
 
-	while cur_bump!=nil do
+	while cur_bump do
 		if active_view.shallow_line:pointAbove(cur_bump.pos) then
 			active_view.shallow_line.i=cur_bump.pos
 		end

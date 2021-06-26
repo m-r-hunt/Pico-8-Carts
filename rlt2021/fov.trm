@@ -107,7 +107,7 @@ fn addShallowBump(bump_pos, active_view) {
 
 	var cur_bump = active_view.steep_bump
 
-	while (cur_bump != null) {
+	while (cur_bump) {
 		if (active_view.shallow_line:pointAbove(cur_bump.pos)) {
 			active_view.shallow_line.i = cur_bump.pos
 		}
