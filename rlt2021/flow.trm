@@ -6,10 +6,18 @@ global PosSet
 global fov_map, memory
 
 fn handleKeys() {
-	if (btnp(0)) return {move = {-1, 0}}
-	if (btnp(1)) return {move = {1, 0}}
-	if (btnp(2)) return {move = {0, -1}}
-	if (btnp(3)) return {move = {0, 1}}
+	if (btnp(0)) {
+		return {move = {-1, 0}}
+	}
+	if (btnp(1)) {
+		return {move = {1, 0}}
+	}
+	if (btnp(2)) {
+		return {move = {0, -1}}
+	}
+	if (btnp(3)) {
+		return {move = {0, 1}}
+	}
 
 	return {}
 }

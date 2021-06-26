@@ -81,7 +81,9 @@ fn createVTunnel(y1, y2, x) {
 
 fn anyEntitiesAt(entities, x, y) {
 	for (e in all(entities)) {
-		if (e.x == x && e.y == y) return true
+		if (e.x == x && e.y == y) {
+			return true
+		}
 	}
 	return false
 }
@@ -156,6 +158,8 @@ fn makeMap(entities) {
 		}
 	}
 	foreach(rooms, Rect.create)
-	if (save_map) cstore(0x1000, 0x1000, 0x2000)
+	if (save_map) {
+		cstore(0x1000, 0x1000, 0x2000)
+	}
 	return start_x, start_y
 }

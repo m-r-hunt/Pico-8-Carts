@@ -152,7 +152,9 @@ fn visitCoord(pos, x, y, dx, dy, active_views, fov, blocksFOV) {
 
 	var is_blocked = blocksFOV(real_pos)
 
-	if (!is_blocked) return null
+	if (!is_blocked) {
+		return null
+	}
 	
 	var active_view = active_views[view_index]
 	if (active_view.shallow_line:pointAbove(bottom_right) && active_view.steep_line:pointBelow(top_left)) {

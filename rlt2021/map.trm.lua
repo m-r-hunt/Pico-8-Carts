@@ -81,7 +81,9 @@ end
 
 local function anyEntitiesAt(entities,x,y)
 	for e in all(entities) do
-		if (e.x==x and e.y==y) return true
+		if e.x==x and e.y==y then
+			return true
+		end
 	end
 	return false
 end
@@ -156,6 +158,8 @@ local function makeMap(entities)
 		end
 	end
 	foreach(rooms,Rect.create)
-	if (save_map) cstore(0x1000,0x1000,0x2000)
+	if save_map then
+		cstore(0x1000,0x1000,0x2000)
+	end
 	return start_x,start_y
 end

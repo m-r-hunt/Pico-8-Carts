@@ -152,7 +152,9 @@ local function visitCoord(pos,x,y,dx,dy,active_views,fov,blocksFOV)
 
 	local is_blocked=blocksFOV(real_pos)
 
-	if (not is_blocked) return nil
+	if not is_blocked then
+		return nil
+	end
 
 	local active_view=active_views[view_index]
 	if active_view.shallow_line:pointAbove(bottom_right) and active_view.steep_line:pointBelow(top_left) then

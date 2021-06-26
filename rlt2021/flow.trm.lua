@@ -6,10 +6,18 @@
 
 
 local function handleKeys()
-	if (btnp(0)) return {move={-1,0}}
-	if (btnp(1)) return {move={1,0}}
-	if (btnp(2)) return {move={0,-1}}
-	if (btnp(3)) return {move={0,1}}
+	if btnp(0) then
+		return {move={-1,0}}
+	end
+	if btnp(1) then
+		return {move={1,0}}
+	end
+	if btnp(2) then
+		return {move={0,-1}}
+	end
+	if btnp(3) then
+		return {move={0,1}}
+	end
 
 	return {}
 end
