@@ -83,7 +83,14 @@ var room_min_size = 6
 var max_rooms = 30
 var map_width = 128
 var map_height = 64
+var wall_sprite = 64
+var save_map = false
 fn makeMap() {
+	for (x = 0, map_width) {
+		for (y = 0, map_height) {
+			mset(x, y, wall_sprite)
+		}
+	}
 	var start_x = 0
 	var start_y = 0
 	var rooms = {}
@@ -120,5 +127,6 @@ fn makeMap() {
 		}
 	}
 	foreach(rooms, Rect.create)
+	if (save_map) cstore(0x1000, 0x1000, 0x2000)
 	return start_x, start_y
 }

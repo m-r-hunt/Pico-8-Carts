@@ -83,7 +83,14 @@ local room_min_size=6
 local max_rooms=30
 local map_width=128
 local map_height=64
+local wall_sprite=64
+local save_map=false
 local function makeMap()
+	for x=0,map_width do
+		for y=0,map_height do
+			mset(x,y,wall_sprite)
+		end
+	end
 	local start_x=0
 	local start_y=0
 	local rooms={}
@@ -120,5 +127,6 @@ local function makeMap()
 		end
 	end
 	foreach(rooms,Rect.create)
+	if (save_map) cstore(0x1000,0x1000,0x2000)
 	return start_x,start_y
 end
