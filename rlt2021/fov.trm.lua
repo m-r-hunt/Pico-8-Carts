@@ -121,7 +121,7 @@ local function visitCoord(pos,x,y,dx,dy,active_views,fov,blocksFOV)
 
 	local real_x=x*dx
 	local real_y=y*dy
-	local real_pos={pos[1]+real_x,pos[2]+real_y}
+	local real_pos=V2(pos[1]+real_x,pos[2]+real_y)
 
 	fov:add(real_pos,true)
 

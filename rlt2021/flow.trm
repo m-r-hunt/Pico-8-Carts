@@ -22,7 +22,7 @@ fn handleKeys() {
 }
 
 fn blocks_fov(pos) {
-	return fget(mget(unpack(pos)), 1)
+	return fget(mget(pos:unpack()), 1)
 }
 
 fn main() {
@@ -73,7 +73,7 @@ fn _update(dt) {
 fn _draw() {
 	cls()
 
-	camera(unpack(player.pos*8 - {64, 64}))
+	camera((player.pos*8 - {64, 64}):unpack())
 
 	game_map:draw(player.pos, memory, fov_map)
 

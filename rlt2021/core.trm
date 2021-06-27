@@ -28,8 +28,12 @@ V2 = {
 	},
 	method __eq(other) {
 		return self[1] == other[1] && self[2] == other[2]
+	},
+	method unpack() {
+		return self[1], self[2]
 	}
 }
+V2.__index = V2
 fn makeV2(t, x, y) {
 	return setmetatable({x, y}, t)
 }

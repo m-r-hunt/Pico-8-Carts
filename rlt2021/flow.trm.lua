@@ -22,7 +22,7 @@ local function handleKeys()
 end
 
 local function blocks_fov(pos)
-	return fget(mget(unpack(pos)),1)
+	return fget(mget(pos:unpack()),1)
 end
 
 local function main()
@@ -73,7 +73,7 @@ end
 local function _draw()
 	cls()
 
-	camera(unpack(player.pos*8-{64,64}))
+	camera((player.pos*8-{64,64}):unpack())
 
 	game_map:draw(player.pos,memory,fov_map)
 
@@ -85,4 +85,5 @@ local function _draw()
 
 	camera()
 	print(message,0,0,7)
+	print(player.pos[1].." "..player.pos[2],0,10,8)
 end

@@ -28,8 +28,12 @@ V2={
 	end,
 	__eq=function(self,other)
 		return self[1]==other[1] and self[2]==other[2]
+	end,
+	unpack=function(self)
+		return self[1],self[2]
 	end
 }
+V2.__index=V2
 local function makeV2(t,x,y)
 	return setmetatable({x,y},t)
 end

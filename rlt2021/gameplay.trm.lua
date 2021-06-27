@@ -59,7 +59,7 @@ Entity=Class{
 
 	moveTowards=function(self,tpos,entities)
 		local path=pathfind(self.pos,tpos,blocks)
-		if path and #path>=3 and not getBlockingEntitiesAt(unpack(path[2])) then
+		if path and #path>=3 and not getBlockingEntitiesAt(path[2]:unpack()) then
 			self:move(path[2])
 		end
 	end,

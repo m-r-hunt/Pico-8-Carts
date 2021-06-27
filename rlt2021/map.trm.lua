@@ -9,7 +9,7 @@ end
 
 GameMap=Class{
 	isBlocked=function(self,pos)
-		return fget(mget(unpack(pos)),0)
+		return fget(mget(pos:unpack()),0)
 	end,
 
 	draw=function(self,c,memory,fov)

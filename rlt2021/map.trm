@@ -9,7 +9,7 @@ fn setShadowPal() {
 
 global GameMap = Class{
 	method isBlocked(pos) {
-		return fget(mget(unpack(pos)), 0)
+		return fget(mget(pos:unpack()), 0)
 	},
 
 	method draw(c, memory, fov) {
