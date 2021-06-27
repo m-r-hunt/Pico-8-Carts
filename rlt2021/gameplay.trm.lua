@@ -3,8 +3,6 @@
 
 
 
-entities={}
-
 function getBlockingEntitiesAt(dx,dy)
 	for e in all(entities) do
 		if e.blocks and e.x==dx and e.y==dy then

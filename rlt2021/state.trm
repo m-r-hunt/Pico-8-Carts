@@ -1,0 +1,7 @@
+global message
+
+global fov_map
+global memory
+
+global player
+global entities

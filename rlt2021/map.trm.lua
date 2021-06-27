@@ -105,6 +105,7 @@ local map_height=64
 local wall_sprite=64
 local max_monsters_per_room=3
 local save_map=false
+
 function makeMap(entities)
 	for x=0,map_width do
 		for y=0,map_height do

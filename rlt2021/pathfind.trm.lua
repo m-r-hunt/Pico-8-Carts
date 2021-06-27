@@ -11,7 +11,6 @@ local Grid=Class{
 	end,
 
 	get=function(self,x,y)
-		printh("get")
 		return self.set[x] and self.set[x][y]
 	end
 }
@@ -23,7 +22,6 @@ function pathfind(sx,sy,tx,ty,blocks)
 	while #frontier>0 do
 		local current=frontier[1]
 		deli(frontier,1)
-		printh(current[1].." "..current[2])
 
 		if current[1]==tx and current[2]==ty then
 			break
@@ -55,6 +53,5 @@ function pathfind(sx,sy,tx,ty,blocks)
 	while path[1][1]!=sx or path[1][2]!=sy do
 		add(path,came_from:get(path[1][1],path[1][2]),1)
 	end
-	printh(#path)
 	return path
 end

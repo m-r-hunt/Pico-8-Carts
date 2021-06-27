@@ -1,9 +1,7 @@
-global Class
-global GameMap
-global fov_map, message, player
-global pathfind
-
-global entities = {}
+global Class // core.trm
+global GameMap // map.trm
+global fov_map, message, player, entities // state.trm
+global pathfind // pathfind.trm
 
 global fn getBlockingEntitiesAt(dx, dy) {
 	for (e in all(entities)) {

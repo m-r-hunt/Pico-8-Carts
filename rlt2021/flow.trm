@@ -1,8 +1,7 @@
-global game_map, makeMap
-global entities, getBlockingEntitiesAt, Entity, Fighter
-global calculateFOV, FOVMap
-
-global fov_map, memory, player
+global game_map, makeMap // map.trm
+global entities, getBlockingEntitiesAt, Entity, Fighter // gameplay.trm
+global calculateFOV, FOVMap // fov.trm
+global fov_map, memory, player, message // state.trm
 
 fn handleKeys() {
 	if (btnp(0)) {
@@ -25,7 +24,6 @@ fn blocks_fov(pos) {
 	return fget(mget(pos[1], pos[2]), 1)
 }
 
-global message = ""
 fn main() {
 	while (true) {
 		var dt = yield()
@@ -60,11 +58,12 @@ fn _init() {
 	main_thread = cocreate(main)
 
 	player = Entity(8, 8, 1, "player", true, Fighter(30, 2, 5))
-	add(entities, player)
+	entities = {player}
 	player.x, player.y = makeMap(entities)
 	fov_map = calculateFOV(blocks_fov, {player.x, player.y}, 10)
 	memory = FOVMap()
 	memory:unionWith(fov_map)
+	message = ""
 }
 
 fn _update(dt) {

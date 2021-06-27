@@ -1,4 +1,4 @@
-global Class
+global Class // core.trm
 
 var Grid = Class{
 	method construct() {
@@ -11,7 +11,6 @@ var Grid = Class{
 	},
 
 	method get(x, y) {
-			printh("get")
 		return self.set[x] && self.set[x][y]
 	},
 }
@@ -23,7 +22,6 @@ global fn pathfind(sx, sy, tx, ty, blocks) {
 	while (#frontier > 0) {
 		var current = frontier[1]
 		deli(frontier, 1)
-		printh(current[1].." "..current[2])
 
 		if (current[1] == tx && current[2] == ty) {
 			break
@@ -55,6 +53,5 @@ global fn pathfind(sx, sy, tx, ty, blocks) {
 	while (path[1][1] != sx || path[1][2] != sy) {
 		add(path, came_from:get(path[1][1], path[1][2]), 1)
 	}
-	printh(#path)
 	return path
 }

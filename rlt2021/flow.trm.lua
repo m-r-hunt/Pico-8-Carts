@@ -3,7 +3,6 @@
 
 
 
-
 local function handleKeys()
 	if btnp(0) then
 		return {move={-1,0}}
@@ -25,7 +24,6 @@ local function blocks_fov(pos)
 	return fget(mget(pos[1],pos[2]),1)
 end
 
-message=""
 local function main()
 	while true do
 		local dt=yield()
@@ -60,11 +58,12 @@ local function _init()
 	main_thread=cocreate(main)
 
 	player=Entity(8,8,1,"player",true,Fighter(30,2,5))
-	add(entities,player)
+	entities={player}
 	player.x,player.y=makeMap(entities)
 	fov_map=calculateFOV(blocks_fov,{player.x,player.y},10)
 	memory=FOVMap()
 	memory:unionWith(fov_map)
+	message=""
 end
 
 local function _update(dt)

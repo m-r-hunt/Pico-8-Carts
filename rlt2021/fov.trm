@@ -1,4 +1,4 @@
-global Class
+global Class // core.trm
 
 global FOVMap = Class{
 	method construct() {

@@ -1,5 +1,5 @@
-global Class
-global Entity, Fighter, BasicMonster
+global Class // core.trm
+global Entity, Fighter, BasicMonster // gameplay.trm
 
 fn setShadowPal() {
 	for (c = 4, 15) {
@@ -105,6 +105,7 @@ var map_height = 64
 var wall_sprite = 64
 var max_monsters_per_room = 3
 var save_map = false
+
 global fn makeMap(entities) {
 	for (x = 0, map_width) {
 		for (y = 0, map_height) {
