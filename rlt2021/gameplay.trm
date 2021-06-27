@@ -36,6 +36,8 @@ fn blocks(pos) {
 	return GameMap:isBlocked(pos)
 }
 
+var animation_time = 6
+
 global Entity = Class{
 	method construct(pos, sprite, name, blocks, fighter, ai) {
 		self.pos = pos
@@ -56,13 +58,13 @@ global Entity = Class{
 	method move(dx) {
 		var init = self.pos
 		var t = 0
-		while (t < 7) {
+		while (t < animation_time) {
 			yield()
 			if (btnp() != 0) {
 				break
 			}
 			t += 1
-			self.pos = init + (dx - init) * (t/7)
+			self.pos = init + (dx - init) * (t/animation_time)
 		}
 		self.pos = dx
 	},

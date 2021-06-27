@@ -66,7 +66,7 @@ local function _init()
 	message=""
 end
 
-local function _update()
+local function _update60()
 	assert(coresume(main_thread))
 end
 

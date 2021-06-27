@@ -36,6 +36,8 @@ local function blocks(pos)
 	return GameMap:isBlocked(pos)
 end
 
+local animation_time=6
+
 Entity=Class{
 	construct=function(self,pos,sprite,name,blocks,fighter,ai)
 		self.pos=pos
@@ -56,13 +58,13 @@ Entity=Class{
 	move=function(self,dx)
 		local init=self.pos
 		local t=0
-		while t<7 do
+		while t<animation_time do
 			yield()
 			if btnp()!=0 then
 				break
 			end
 			t+=1
-			self.pos=init+(dx-init)*(t/7)
+			self.pos=init+(dx-init)*(t/animation_time)
 		end
 		self.pos=dx
 	end,
