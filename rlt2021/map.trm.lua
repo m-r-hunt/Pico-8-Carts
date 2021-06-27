@@ -1,24 +1,13 @@
 
 
 
-
-local Tile=Class{
-	construct=function(self,blocked,block_sight)
-		self.blocked=blocked
-		if block_sight==nil then
-			block_sight=blocked
-		end
-		self.block_sight=block_sight
-	end
-}
-
 local function setShadowPal()
 	for c=4,15 do
 		pal(c,band(c,3))
 	end
 end
 
-local GameMap=Class{
+GameMap=Class{
 	isBlocked=function(self,x,y)
 		return fget(mget(x,y),0)
 	end,
@@ -39,7 +28,7 @@ local GameMap=Class{
 	end
 }
 
-local game_map=GameMap()
+game_map=GameMap()
 
 local Rect=Class{
 	construct=function(self,x,y,w,h)
@@ -116,7 +105,7 @@ local map_height=64
 local wall_sprite=64
 local max_monsters_per_room=3
 local save_map=false
-local function makeMap(entities)
+function makeMap(entities)
 	for x=0,map_width do
 		for y=0,map_height do
 			mset(x,y,wall_sprite)

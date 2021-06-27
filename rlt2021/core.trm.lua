@@ -5,6 +5,6 @@ local function new(class,...)
 	end
 	return n
 end
-local function Class(table)
+function Class(table)
 	return setmetatable(table,{__call=new})
 end

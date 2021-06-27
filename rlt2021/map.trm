@@ -1,16 +1,5 @@
 global Class
-global Entity
-global Fighter, BasicMonster
-
-var Tile = Class{
-	method construct(blocked, block_sight) {
-		self.blocked = blocked
-		if (block_sight == null) {
-			block_sight = blocked
-		}
-		self.block_sight = block_sight
-	},
-}
+global Entity, Fighter, BasicMonster
 
 fn setShadowPal() {
 	for (c = 4, 15) {
@@ -18,7 +7,7 @@ fn setShadowPal() {
 	}
 }
 
-var GameMap = Class{
+global GameMap = Class{
 	method isBlocked(x, y) {
 		return fget(mget(x, y), 0)
 	},
@@ -39,7 +28,7 @@ var GameMap = Class{
 	},
 }
 
-var game_map = GameMap()
+global game_map = GameMap()
 
 var Rect = Class{
 	method construct(x, y, w, h) {
@@ -116,7 +105,7 @@ var map_height = 64
 var wall_sprite = 64
 var max_monsters_per_room = 3
 var save_map = false
-fn makeMap(entities) {
+global fn makeMap(entities) {
 	for (x = 0, map_width) {
 		for (y = 0, map_height) {
 			mset(x, y, wall_sprite)

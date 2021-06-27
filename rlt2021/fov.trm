@@ -1,8 +1,6 @@
 global Class
 
-global deli // TODO
-
-var PosSet = Class{
+global FOVMap = Class{
 	method construct() {
 		self.set = {}
 	},
@@ -207,8 +205,8 @@ fn checkQuadrant(pos, dx, dy, radius, fov, blocksFOV) {
 	}
 }
 
-fn calculateFOV(blocksFOV, pos, radius) {
-	var fov = PosSet()
+global fn calculateFOV(blocksFOV, pos, radius) {
+	var fov = FOVMap()
 	fov:add(unpack(pos))
 
 	checkQuadrant(pos, 1, 1, radius, fov, blocksFOV)

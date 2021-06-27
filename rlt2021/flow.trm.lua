@@ -4,7 +4,6 @@
 
 
 
-
 local function handleKeys()
 	if btnp(0) then
 		return {move={-1,0}}
@@ -59,9 +58,12 @@ end
 local main_thread=nil
 local function _init()
 	main_thread=cocreate(main)
+
+	player=Entity(8,8,1,"player",true,Fighter(30,2,5))
+	add(entities,player)
 	player.x,player.y=makeMap(entities)
 	fov_map=calculateFOV(blocks_fov,{player.x,player.y},10)
-	memory=PosSet()
+	memory=FOVMap()
 	memory:unionWith(fov_map)
 end
 

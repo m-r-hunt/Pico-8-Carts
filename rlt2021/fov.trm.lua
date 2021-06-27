@@ -1,8 +1,6 @@
 
 
-
-
-local PosSet=Class{
+FOVMap=Class{
 	construct=function(self)
 		self.set={}
 	end,
@@ -207,8 +205,8 @@ local function checkQuadrant(pos,dx,dy,radius,fov,blocksFOV)
 	end
 end
 
-local function calculateFOV(blocksFOV,pos,radius)
-	local fov=PosSet()
+function calculateFOV(blocksFOV,pos,radius)
+	local fov=FOVMap()
 	fov:add(unpack(pos))
 
 	checkQuadrant(pos,1,1,radius,fov,blocksFOV)

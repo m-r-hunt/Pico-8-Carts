@@ -1,7 +1,17 @@
 global Class
-global GameMap, getBlockingEntitiesAt
-global fov_map, player, message
+global GameMap
+global fov_map, message, player
 global pathfind
+
+global entities = {}
+
+global fn getBlockingEntitiesAt(dx, dy) {
+	for (e in all(entities)) {
+		if (e.blocks && e.x == dx && e.y == dy) {
+			return e
+		}
+	}
+}
 
 global Fighter = Class{
 	method construct(hp, defence, power) {
@@ -67,15 +77,4 @@ global Entity = Class{
 	method draw() {
 		spr(self.sprite, self.x * 8, self.y * 8)
 	},
-}
-
-global player = Entity(8, 8, 1, "player", true, Fighter(30, 2, 5))
-global entities = {player}
-
-global fn getBlockingEntitiesAt(dx, dy) {
-	for (e in all(entities)) {
-		if (e.blocks && e.x == dx && e.y == dy) {
-			return e
-		}
-	}
 }

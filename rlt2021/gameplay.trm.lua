@@ -3,6 +3,16 @@
 
 
 
+entities={}
+
+function getBlockingEntitiesAt(dx,dy)
+	for e in all(entities) do
+		if e.blocks and e.x==dx and e.y==dy then
+			return e
+		end
+	end
+end
+
 Fighter=Class{
 	construct=function(self,hp,defence,power)
 		self.max_hp=hp
@@ -68,14 +78,3 @@ Entity=Class{
 		spr(self.sprite,self.x*8,self.y*8)
 	end
 }
-
-player=Entity(8,8,1,"player",true,Fighter(30,2,5))
-entities={player}
-
-function getBlockingEntitiesAt(dx,dy)
-	for e in all(entities) do
-		if e.blocks and e.x==dx and e.y==dy then
-			return e
-		end
-	end
-end

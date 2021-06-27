@@ -5,6 +5,6 @@ fn new(class, ...) {
 	}
 	return n
 }
-fn Class(table) {
+global fn Class(table) {
 	return setmetatable(table, {__call = new})
 }
