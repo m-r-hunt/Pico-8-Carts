@@ -1,4 +1,4 @@
-global Class // core.trm
+global Class, V2 // core.trm
 global Entity, Fighter, BasicMonster // gameplay.trm
 
 fn setShadowPal() {
@@ -8,17 +8,19 @@ fn setShadowPal() {
 }
 
 global GameMap = Class{
-	method isBlocked(x, y) {
-		return fget(mget(x, y), 0)
+	method isBlocked(pos) {
+		return fget(mget(unpack(pos)), 0)
 	},
 
-	method draw(cx, cy, memory, fov) {
+	method draw(c, memory, fov) {
+		var cx = c[1]
+		var cy = c[2]
 		for (x = cx-9, cx+9) {
 			for (y = cy-9, cy + 9) {
-				if (fov:contains(x, y)) {
+				if (fov:contains{x, y}) {
 					pal()
 					spr(mget(x, y), x * 8, y * 8)
-				} else if (memory:contains(x, y)) {
+				} else if (memory:contains{x, y}) {
 					setShadowPal()
 					spr(mget(x, y), x * 8, y * 8)
 				}
@@ -69,9 +71,9 @@ fn createVTunnel(y1, y2, x) {
 	}
 }
 
-fn anyEntitiesAt(entities, x, y) {
+fn anyEntitiesAt(entities, pos) {
 	for (e in all(entities)) {
-		if (e.x == x && e.y == y) {
+		if (e.pos == pos) {
 			return true
 		}
 	}
@@ -85,12 +87,12 @@ fn placeEntities(room, entities, max_monsters_per_room) {
 		var x = room.x1 + 1 + flr(rnd(room.x2 - room.x1 - 2))
 		var y = room.y1 + 1 + flr(rnd(room.y2 - room.y1 - 2))
 
-		if (!anyEntitiesAt(entities, x, y)) {
+		if (!anyEntitiesAt(entities, V2(x, y))) {
 			var monster = null
 			if (rnd(1) < 0.8) {
-				monster = Entity(x, y, 16, "orc", true, Fighter(10, 0, 3), BasicMonster())
+				monster = Entity(V2(x, y), 16, "orc", true, Fighter(10, 0, 3), BasicMonster())
 			} else {
-				monster = Entity(x, y, 17, "troll", true, Fighter(16, 1, 4), BasicMonster())
+				monster = Entity(V2(x, y), 17, "troll", true, Fighter(16, 1, 4), BasicMonster())
 			}
 			add(entities, monster)
 		}
@@ -152,5 +154,5 @@ global fn makeMap(entities) {
 	if (save_map) {
 		cstore(0x1000, 0x1000, 0x2000)
 	}
-	return start_x, start_y
+	return V2(start_x, start_y)
 }

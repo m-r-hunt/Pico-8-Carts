@@ -5,53 +5,62 @@ local Grid=Class{
 		self.set={}
 	end,
 
-	add=function(self,x,y,val)
-		self.set[x]=self.set[x] or {}
-		self.set[x][y]=val
+	add=function(self,pos,val)
+		self.set[pos[1]]=self.set[pos[1]] or {}
+		self.set[pos[1]][pos[2]]=val
 	end,
 
-	get=function(self,x,y)
-		return self.set[x] and self.set[x][y]
+	get=function(self,pos)
+		return self.set[pos[1]] and self.set[pos[1]][pos[2]]
 	end
 }
 
-function pathfind(sx,sy,tx,ty,blocks)
-	local frontier={{sx,sy}}
+function pathfind(s,t,blocks)
+	local frontier={s}
 	local came_from=Grid()
 
+	local i=0
 	while #frontier>0 do
+		i+=1
+		printh(i)
 		local current=frontier[1]
 		deli(frontier,1)
 
-		if current[1]==tx and current[2]==ty then
+		if current==t then
 			break
 		end
 
-		if not came_from:get(current[1]-1,current[2]) and not blocks(current[1]-1,current[2]) then
-			add(frontier,{current[1]-1,current[2]})
-			came_from:add(current[1]-1,current[2],current)
+		local n=current-V2(1,0)
+		if not came_from:get(n) and not blocks(n) then
+			add(frontier,n)
+			came_from:add(n,current)
 		end
-		if not came_from:get(current[1]+1,current[2]) and not blocks(current[1]+1,current[2]) then
-			add(frontier,{current[1]+1,current[2]})
-			came_from:add(current[1]+1,current[2],current)
+		n=current+V2(1,0)
+		if not came_from:get(n) and not blocks(n) then
+			add(frontier,n)
+			came_from:add(n,current)
 		end
-		if not came_from:get(current[1],current[2]-1) and not blocks(current[1],current[2]-1) then
-			add(frontier,{current[1],current[2]-1})
-			came_from:add(current[1],current[2]-1,current)
+		n=current-V2(0,1)
+		if not came_from:get(n) and not blocks(n) then
+			add(frontier,n)
+			came_from:add(n,current)
 		end
-		if not came_from:get(current[1],current[2]+1) and not blocks(current[1],current[2]+1) then
-			add(frontier,{current[1],current[2]+1})
-			came_from:add(current[1],current[2]+1,current)
+		n=current+V2(0,1)
+		if not came_from:get(n) and not blocks(n) then
+			add(frontier,n)
+			came_from:add(n,current)
 		end
 	end
 
-	if not came_from:get(tx,ty) then
+	if not came_from:get(t) then
+		printh("Failed pathfinding")
 		return nil
 	end
 
-	local path={{tx,ty}}
-	while path[1][1]!=sx or path[1][2]!=sy do
-		add(path,came_from:get(path[1][1],path[1][2]),1)
+	printh("Found path")
+	local path={t}
+	while path[1]!=s do
+		add(path,came_from:get(path[1]),1)
 	end
 	return path
 end

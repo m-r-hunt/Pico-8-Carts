@@ -3,9 +3,9 @@ global GameMap // map.trm
 global fov_map, message, player, entities // state.trm
 global pathfind // pathfind.trm
 
-global fn getBlockingEntitiesAt(dx, dy) {
+global fn getBlockingEntitiesAt(dx) {
 	for (e in all(entities)) {
-		if (e.blocks && e.x == dx && e.y == dy) {
+		if (e.blocks && e.pos == dx) {
 			return e
 		}
 	}
@@ -22,9 +22,9 @@ global Fighter = Class{
 
 global BasicMonster = Class{
 	method takeTurn() {
-		if (fov_map:contains(self.owner.x, self.owner.y)) {
+		if (fov_map:contains(self.owner.pos)) {
 			if (self.owner:distanceTo(player) > 1) {
-				self.owner:moveTowards(player.x, player.y)
+				self.owner:moveTowards(player.pos)
 			} else if (player.fighter.hp > 0) {
 				message = "The "..self.owner.name.." hits you."
 			}
@@ -32,14 +32,13 @@ global BasicMonster = Class{
 	},
 }
 
-fn blocks(x, y) {
-	return GameMap:isBlocked(x, y)
+fn blocks(pos) {
+	return GameMap:isBlocked(pos)
 }
 
 global Entity = Class{
-	method construct(x, y, sprite, name, blocks, fighter, ai) {
-		self.x = x
-		self.y = y
+	method construct(pos, sprite, name, blocks, fighter, ai) {
+		self.pos = pos
 		self.sprite = sprite
 		self.name = name
 		self.blocks = blocks
@@ -54,25 +53,22 @@ global Entity = Class{
 		}
 	},
 
-	method move(dx, dy) {
-		self.x = dx
-		self.y = dy
+	method move(dx) {
+		self.pos = dx
 	},
 
-	method moveTowards(tx, ty, entities) {
-		var path = pathfind(self.x, self.y, tx, ty, blocks)
+	method moveTowards(tpos, entities) {
+		var path = pathfind(self.pos, tpos, blocks)
 		if (path && #path >= 3 && !getBlockingEntitiesAt(unpack(path[2]))) {
-			self:move(unpack(path[2]))
+			self:move(path[2])
 		}
 	},
 
 	method distanceTo(other) {
-		var dx = other.x - self.x
-		var dy = other.y - self.y
-		return sqrt(dx^2 + dy^2)
+		return #(other.pos - self.pos)
 	},
 
 	method draw() {
-		spr(self.sprite, self.x * 8, self.y * 8)
+		spr(self.sprite, self.pos[1] * 8, self.pos[2] * 8)
 	},
 }

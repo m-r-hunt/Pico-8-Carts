@@ -3,9 +3,9 @@
 
 
 
-function getBlockingEntitiesAt(dx,dy)
+function getBlockingEntitiesAt(dx)
 	for e in all(entities) do
-		if e.blocks and e.x==dx and e.y==dy then
+		if e.blocks and e.pos==dx then
 			return e
 		end
 	end
@@ -22,9 +22,9 @@ Fighter=Class{
 
 BasicMonster=Class{
 	takeTurn=function(self)
-		if fov_map:contains(self.owner.x,self.owner.y) then
+		if fov_map:contains(self.owner.pos) then
 			if self.owner:distanceTo(player)>1 then
-				self.owner:moveTowards(player.x,player.y)
+				self.owner:moveTowards(player.pos)
 			elseif player.fighter.hp>0 then
 				message="The "..self.owner.name.." hits you."
 			end
@@ -32,14 +32,13 @@ BasicMonster=Class{
 	end
 }
 
-local function blocks(x,y)
-	return GameMap:isBlocked(x,y)
+local function blocks(pos)
+	return GameMap:isBlocked(pos)
 end
 
 Entity=Class{
-	construct=function(self,x,y,sprite,name,blocks,fighter,ai)
-		self.x=x
-		self.y=y
+	construct=function(self,pos,sprite,name,blocks,fighter,ai)
+		self.pos=pos
 		self.sprite=sprite
 		self.name=name
 		self.blocks=blocks
@@ -54,25 +53,22 @@ Entity=Class{
 		end
 	end,
 
-	move=function(self,dx,dy)
-		self.x=dx
-		self.y=dy
+	move=function(self,dx)
+		self.pos=dx
 	end,
 
-	moveTowards=function(self,tx,ty,entities)
-		local path=pathfind(self.x,self.y,tx,ty,blocks)
+	moveTowards=function(self,tpos,entities)
+		local path=pathfind(self.pos,tpos,blocks)
 		if path and #path>=3 and not getBlockingEntitiesAt(unpack(path[2])) then
-			self:move(unpack(path[2]))
+			self:move(path[2])
 		end
 	end,
 
 	distanceTo=function(self,other)
-		local dx=other.x-self.x
-		local dy=other.y-self.y
-		return sqrt(dx^2+dy^2)
+		return #(other.pos-self.pos)
 	end,
 
 	draw=function(self)
-		spr(self.sprite,self.x*8,self.y*8)
+		spr(self.sprite,self.pos[1]*8,self.pos[2]*8)
 	end
 }

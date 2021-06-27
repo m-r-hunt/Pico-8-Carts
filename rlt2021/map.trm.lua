@@ -8,17 +8,19 @@ local function setShadowPal()
 end
 
 GameMap=Class{
-	isBlocked=function(self,x,y)
-		return fget(mget(x,y),0)
+	isBlocked=function(self,pos)
+		return fget(mget(unpack(pos)),0)
 	end,
 
-	draw=function(self,cx,cy,memory,fov)
+	draw=function(self,c,memory,fov)
+		local cx=c[1]
+		local cy=c[2]
 		for x=cx-9,cx+9 do
 			for y=cy-9,cy+9 do
-				if fov:contains(x,y) then
+				if fov:contains{x,y} then
 					pal()
 					spr(mget(x,y),x*8,y*8)
-				elseif memory:contains(x,y) then
+				elseif memory:contains{x,y} then
 					setShadowPal()
 					spr(mget(x,y),x*8,y*8)
 				end
@@ -69,9 +71,9 @@ local function createVTunnel(y1,y2,x)
 	end
 end
 
-local function anyEntitiesAt(entities,x,y)
+local function anyEntitiesAt(entities,pos)
 	for e in all(entities) do
-		if e.x==x and e.y==y then
+		if e.pos==pos then
 			return true
 		end
 	end
@@ -85,12 +87,12 @@ local function placeEntities(room,entities,max_monsters_per_room)
 		local x=room.x1+1+flr(rnd(room.x2-room.x1-2))
 		local y=room.y1+1+flr(rnd(room.y2-room.y1-2))
 
-		if not anyEntitiesAt(entities,x,y) then
+		if not anyEntitiesAt(entities,V2(x,y)) then
 			local monster=nil
 			if rnd(1)<0.8 then
-				monster=Entity(x,y,16,"orc",true,Fighter(10,0,3),BasicMonster())
+				monster=Entity(V2(x,y),16,"orc",true,Fighter(10,0,3),BasicMonster())
 			else
-				monster=Entity(x,y,17,"troll",true,Fighter(16,1,4),BasicMonster())
+				monster=Entity(V2(x,y),17,"troll",true,Fighter(16,1,4),BasicMonster())
 			end
 			add(entities,monster)
 		end
@@ -152,5 +154,5 @@ function makeMap(entities)
 	if save_map then
 		cstore(0x1000,0x1000,0x2000)
 	end
-	return start_x,start_y
+	return V2(start_x,start_y)
 end

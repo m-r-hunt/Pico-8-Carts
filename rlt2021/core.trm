@@ -8,3 +8,26 @@ fn new(class, ...) {
 global fn Class(table) {
 	return setmetatable(table, {__call = new})
 }
+
+global V2
+V2 = {
+	method __add(other) {
+		return V2(self[1] + other[1], self[2] + other[2])
+	},
+	method __sub(other) {
+		return V2(self[1] - other[1], self[2] - other[2])
+	},
+	method _unm() {
+		return V2(-self[1], -self[2])
+	},
+	method __len() {
+		return sqrt(self[1]^2 + self[2]^2)
+	},
+	method __eq(other) {
+		return self[1] == other[1] && self[2] == other[2]
+	}
+}
+fn makeV2(t, x, y) {
+	return setmetatable({x, y}, t)
+}
+setmetatable(V2, {__call = makeV2})

@@ -1,57 +1,66 @@
-global Class // core.trm
+global Class, V2 // core.trm
 
 var Grid = Class{
 	method construct() {
 		self.set = {}
 	},
 
-	method add(x, y, val) {
-		self.set[x] = self.set[x] || {}
-		self.set[x][y] = val
+	method add(pos, val) {
+		self.set[pos[1]] = self.set[pos[1]] || {}
+		self.set[pos[1]][pos[2]] = val
 	},
 
-	method get(x, y) {
-		return self.set[x] && self.set[x][y]
+	method get(pos) {
+		return self.set[pos[1]] && self.set[pos[1]][pos[2]]
 	},
 }
 
-global fn pathfind(sx, sy, tx, ty, blocks) {
-	var frontier = {{sx, sy}}
+global fn pathfind(s, t, blocks) {
+	var frontier = {s}
 	var came_from = Grid()
 
+	var i = 0
 	while (#frontier > 0) {
+		i += 1
+		printh(i)
 		var current = frontier[1]
 		deli(frontier, 1)
 
-		if (current[1] == tx && current[2] == ty) {
+		if (current == t) {
 			break
 		}
 
-		if (!came_from:get(current[1]-1, current[2]) && !blocks(current[1]-1, current[2])) {
-			add(frontier, {current[1]-1, current[2]})
-			came_from:add(current[1]-1, current[2], current)
+		var n = current - V2(1, 0)
+		if (!came_from:get(n) && !blocks(n)) {
+			add(frontier, n)
+			came_from:add(n, current)
 		}
-		if (!came_from:get(current[1]+1, current[2]) && !blocks(current[1]+1, current[2])) {
-			add(frontier, {current[1]+1, current[2]})
-			came_from:add(current[1]+1, current[2], current)
+		n = current + V2(1, 0)
+		if (!came_from:get(n) && !blocks(n)) {
+			add(frontier, n)
+			came_from:add(n, current)
 		}
-		if (!came_from:get(current[1], current[2]-1) && !blocks(current[1], current[2]-1)) {
-			add(frontier, {current[1], current[2]-1})
-			came_from:add(current[1], current[2]-1, current)
+		n = current - V2(0, 1)
+		if (!came_from:get(n) && !blocks(n)) {
+			add(frontier, n)
+			came_from:add(n, current)
 		}
-		if (!came_from:get(current[1], current[2]+1) && !blocks(current[1], current[2]+1)) {
-			add(frontier, {current[1], current[2]+1})
-			came_from:add(current[1], current[2]+1, current)
+		n = current + V2(0, 1)
+		if (!came_from:get(n) && !blocks(n)) {
+			add(frontier, n)
+			came_from:add(n, current)
 		}
 	}
 
-	if (!came_from:get(tx, ty)) {
+	if (!came_from:get(t)) {
+		printh("Failed pathfinding")
 		return null
 	}
 
-	var path = {{tx, ty}}
-	while (path[1][1] != sx || path[1][2] != sy) {
-		add(path, came_from:get(path[1][1], path[1][2]), 1)
+	printh("Found path")
+	var path = {t}
+	while (path[1] != s) {
+		add(path, came_from:get(path[1]), 1)
 	}
 	return path
 }

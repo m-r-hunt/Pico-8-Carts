@@ -5,19 +5,19 @@ global FOVMap = Class{
 		self.set = {}
 	},
 
-	method add(x, y) {
-		self.set[x] = self.set[x] || {}
-		self.set[x][y] = true
+	method add(pos) {
+		self.set[pos[1]] = self.set[pos[1]] || {}
+		self.set[pos[1]][pos[2]] = true
 	},
 
-	method contains(x, y) {
-		return self.set[x] && self.set[x][y]
+	method contains(pos) {
+		return self.set[pos[1]] && self.set[pos[1]][pos[2]]
 	},
 
 	method unionWith(other) {
 		for (x, row in pairs(other.set)) {
 			for (y in pairs(row)) {
-				self:add(x, y)
+				self:add{x, y}
 			}
 		}
 	},
@@ -146,7 +146,7 @@ fn visitCoord(pos, x, y, dx, dy, active_views, fov, blocksFOV) {
 	var real_y = y * dy
 	var real_pos = {pos[1] + real_x, pos[2] + real_y}
 
-	fov:add(unpack(real_pos))
+	fov:add(real_pos)
 
 	var is_blocked = blocksFOV(real_pos)
 
@@ -207,7 +207,7 @@ fn checkQuadrant(pos, dx, dy, radius, fov, blocksFOV) {
 
 global fn calculateFOV(blocksFOV, pos, radius) {
 	var fov = FOVMap()
-	fov:add(unpack(pos))
+	fov:add(pos)
 
 	checkQuadrant(pos, 1, 1, radius, fov, blocksFOV)
 	checkQuadrant(pos, 1, -1, radius, fov, blocksFOV)
