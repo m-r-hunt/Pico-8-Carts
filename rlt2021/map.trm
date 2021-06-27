@@ -1,5 +1,6 @@
 global Class
 global Entity
+global Fighter, BasicMonster
 
 var Tile = Class{
 	method construct(blocked, block_sight) {
@@ -98,9 +99,9 @@ fn placeEntities(room, entities, max_monsters_per_room) {
 		if (!anyEntitiesAt(entities, x, y)) {
 			var monster = null
 			if (rnd(1) < 0.8) {
-				monster = Entity(x, y, 16, "orc", true)
+				monster = Entity(x, y, 16, "orc", true, Fighter(10, 0, 3), BasicMonster())
 			} else {
-				monster = Entity(x, y, 17, "troll", true)
+				monster = Entity(x, y, 17, "troll", true, Fighter(16, 1, 4), BasicMonster())
 			}
 			add(entities, monster)
 		}

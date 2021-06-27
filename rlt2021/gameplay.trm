@@ -1,12 +1,44 @@
 global Class
+global GameMap, getBlockingEntitiesAt
+global fov_map, player, message
+
+global Fighter = Class{
+	method construct(hp, defence, power) {
+		self.max_hp = hp
+		self.hp = hp
+		self.defence = defence
+		self.power = power
+	},
+}
+
+global BasicMonster = Class{
+	method takeTurn() {
+		if (fov_map:contains(self.owner.x, self.owner.y)) {
+			if (self.owner:distanceTo(player) > 1) {
+				self.owner:moveTowards(player.x, player.y)
+			} else if (player.fighter.hp > 0) {
+				message = "The "..self.owner.name.." hits you."
+			}
+		}
+	},
+}
 
 global Entity = Class{
-	method construct(x, y, sprite, name, blocks) {
+	method construct(x, y, sprite, name, blocks, fighter, ai) {
 		self.x = x
 		self.y = y
 		self.sprite = sprite
 		self.name = name
 		self.blocks = blocks
+		self. fighter = fighter
+		self.ai = ai
+
+		if (self.fighter) {
+			self.fighter.owner = self
+		}
+		if (self.ai) {
+			self.ai.owner = self
+		}
 	},
 
 	method move(dx, dy) {
@@ -14,15 +46,39 @@ global Entity = Class{
 		self.y = dy
 	},
 
+	method moveTowards(tx, ty, entities) {
+		var dx = tx - self.x
+		var dy = ty - self.y
+		var distance = sqrt(dx^2 + dy^2)
+
+		if (abs(dx) > abs(dy)) {
+			dx = sgn(dx)
+			dy = 0
+		} else {
+			dx = 0
+			dy = sgn(dy)
+		}
+
+		if (!(GameMap:isBlocked(self.x + dx, self.y + dy) || getBlockingEntitiesAt(self.x + dx, self.y + dy))) {
+			self:move(self.x + dx, self.y + dy)
+		}
+	},
+
+	method distanceTo(other) {
+		var dx = other.x - self.x
+		var dy = other.y - self.y
+		return sqrt(dx^2 + dy^2)
+	},
+
 	method draw() {
 		spr(self.sprite, self.x * 8, self.y * 8)
 	},
 }
 
-var player = Entity(8, 8, 1, "player", true)
+global player = Entity(8, 8, 1, "player", true, Fighter(30, 2, 5))
 global entities = {player}
 
-fn getBlockingEntitiesAt(dx, dy) {
+global fn getBlockingEntitiesAt(dx, dy) {
 	for (e in all(entities)) {
 		if (e.blocks && e.x == dx && e.y == dy) {
 			return e

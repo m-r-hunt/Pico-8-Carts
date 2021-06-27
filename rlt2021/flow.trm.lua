@@ -26,7 +26,7 @@ local function blocks_fov(pos)
 	return fget(mget(pos[1],pos[2]),1)
 end
 
-local message=""
+message=""
 local function main()
 	while true do
 		local dt=yield()
@@ -47,13 +47,15 @@ local function main()
 				end
 
 				for e in all(entities) do
-
-					
+					if e.ai then
+						e.ai:takeTurn()
+					end
 				end
 			end
 		end
 	end
 end
+
 local main_thread=nil
 local function _init()
 	main_thread=cocreate(main)

@@ -1,6 +1,7 @@
 
 
 
+
 local Tile=Class{
 	construct=function(self,blocked,block_sight)
 		self.blocked=blocked
@@ -98,9 +99,9 @@ local function placeEntities(room,entities,max_monsters_per_room)
 		if not anyEntitiesAt(entities,x,y) then
 			local monster=nil
 			if rnd(1)<0.8 then
-				monster=Entity(x,y,16,"orc",true)
+				monster=Entity(x,y,16,"orc",true,Fighter(10,0,3),BasicMonster())
 			else
-				monster=Entity(x,y,17,"troll",true)
+				monster=Entity(x,y,17,"troll",true,Fighter(16,1,4),BasicMonster())
 			end
 			add(entities,monster)
 		end
