@@ -17,10 +17,10 @@ GameMap=Class{
 		local cy=c[2]
 		for x=cx-9,cx+9 do
 			for y=cy-9,cy+9 do
-				if fov:contains{x,y} then
+				if fov:get{x,y} then
 					pal()
 					spr(mget(x,y),x*8,y*8)
-				elseif memory:contains{x,y} then
+				elseif memory:get{x,y} then
 					setShadowPal()
 					spr(mget(x,y),x*8,y*8)
 				end

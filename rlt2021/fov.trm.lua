@@ -1,28 +1,5 @@
 
 
-FOVMap=Class{
-	construct=function(self)
-		self.set={}
-	end,
-
-	add=function(self,pos)
-		self.set[pos[1]]=self.set[pos[1]] or {}
-		self.set[pos[1]][pos[2]]=true
-	end,
-
-	contains=function(self,pos)
-		return self.set[pos[1]] and self.set[pos[1]][pos[2]]
-	end,
-
-	unionWith=function(self,other)
-		for x,row in pairs(other.set) do
-			for y in pairs(row) do
-				self:add{x,y}
-			end
-		end
-	end
-}
-
 local Line=Class{
 	construct=function(self,xi,yi,xf,yf)
 		self.i={xi,yi}
@@ -146,7 +123,7 @@ local function visitCoord(pos,x,y,dx,dy,active_views,fov,blocksFOV)
 	local real_y=y*dy
 	local real_pos={pos[1]+real_x,pos[2]+real_y}
 
-	fov:add(real_pos)
+	fov:add(real_pos,true)
 
 	local is_blocked=blocksFOV(real_pos)
 
@@ -206,8 +183,8 @@ local function checkQuadrant(pos,dx,dy,radius,fov,blocksFOV)
 end
 
 function calculateFOV(blocksFOV,pos,radius)
-	local fov=FOVMap()
-	fov:add(pos)
+	local fov=Grid()
+	fov:add(pos,true)
 
 	checkQuadrant(pos,1,1,radius,fov,blocksFOV)
 	checkQuadrant(pos,1,-1,radius,fov,blocksFOV)

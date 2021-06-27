@@ -17,6 +17,9 @@ V2 = {
 	method __sub(other) {
 		return V2(self[1] - other[1], self[2] - other[2])
 	},
+	method __mul(s) {
+		return V2(s*self[1], s*self[2])
+	},
 	method _unm() {
 		return V2(-self[1], -self[2])
 	},
@@ -31,3 +34,27 @@ fn makeV2(t, x, y) {
 	return setmetatable({x, y}, t)
 }
 setmetatable(V2, {__call = makeV2})
+
+global Grid = Class{
+	method construct() {
+		self.set = {}
+	},
+
+	method add(pos, val) {
+		var x = pos[1]
+		self.set[x] = self.set[x] || {}
+		self.set[x][pos[2]] = val
+	},
+
+	method get(pos) {
+		return self.set[pos[1]] && self.set[pos[1]][pos[2]]
+	},
+
+	method unionWith(other) {
+		for (x, row in pairs(other.set)) {
+			for (y, v in pairs(row)) {
+				self:add({x, y}, v)
+			}
+		}
+	},
+}

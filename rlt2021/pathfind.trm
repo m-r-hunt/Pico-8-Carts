@@ -1,19 +1,4 @@
-global Class, V2 // core.trm
-
-var Grid = Class{
-	method construct() {
-		self.set = {}
-	},
-
-	method add(pos, val) {
-		self.set[pos[1]] = self.set[pos[1]] || {}
-		self.set[pos[1]][pos[2]] = val
-	},
-
-	method get(pos) {
-		return self.set[pos[1]] && self.set[pos[1]][pos[2]]
-	},
-}
+global Class, V2, Grid // core.trm
 
 global fn pathfind(s, t, blocks) {
 	var frontier = {s}
@@ -22,7 +7,6 @@ global fn pathfind(s, t, blocks) {
 	var i = 0
 	while (#frontier > 0) {
 		i += 1
-		printh(i)
 		var current = frontier[1]
 		deli(frontier, 1)
 
@@ -53,11 +37,9 @@ global fn pathfind(s, t, blocks) {
 	}
 
 	if (!came_from:get(t)) {
-		printh("Failed pathfinding")
 		return null
 	}
 
-	printh("Found path")
 	var path = {t}
 	while (path[1] != s) {
 		add(path, came_from:get(path[1]), 1)

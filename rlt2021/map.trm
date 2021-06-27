@@ -17,10 +17,10 @@ global GameMap = Class{
 		var cy = c[2]
 		for (x = cx-9, cx+9) {
 			for (y = cy-9, cy + 9) {
-				if (fov:contains{x, y}) {
+				if (fov:get{x, y}) {
 					pal()
 					spr(mget(x, y), x * 8, y * 8)
-				} else if (memory:contains{x, y}) {
+				} else if (memory:get{x, y}) {
 					setShadowPal()
 					spr(mget(x, y), x * 8, y * 8)
 				}

@@ -1,27 +1,4 @@
-global Class // core.trm
-
-global FOVMap = Class{
-	method construct() {
-		self.set = {}
-	},
-
-	method add(pos) {
-		self.set[pos[1]] = self.set[pos[1]] || {}
-		self.set[pos[1]][pos[2]] = true
-	},
-
-	method contains(pos) {
-		return self.set[pos[1]] && self.set[pos[1]][pos[2]]
-	},
-
-	method unionWith(other) {
-		for (x, row in pairs(other.set)) {
-			for (y in pairs(row)) {
-				self:add{x, y}
-			}
-		}
-	},
-}
+global Class, Grid // core.trm
 
 var Line = Class{
 	method construct(xi, yi, xf, yf) {
@@ -146,7 +123,7 @@ fn visitCoord(pos, x, y, dx, dy, active_views, fov, blocksFOV) {
 	var real_y = y * dy
 	var real_pos = {pos[1] + real_x, pos[2] + real_y}
 
-	fov:add(real_pos)
+	fov:add(real_pos, true)
 
 	var is_blocked = blocksFOV(real_pos)
 
@@ -206,8 +183,8 @@ fn checkQuadrant(pos, dx, dy, radius, fov, blocksFOV) {
 }
 
 global fn calculateFOV(blocksFOV, pos, radius) {
-	var fov = FOVMap()
-	fov:add(pos)
+	var fov = Grid()
+	fov:add(pos, true)
 
 	checkQuadrant(pos, 1, 1, radius, fov, blocksFOV)
 	checkQuadrant(pos, 1, -1, radius, fov, blocksFOV)

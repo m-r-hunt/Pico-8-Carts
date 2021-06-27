@@ -22,7 +22,7 @@ Fighter=Class{
 
 BasicMonster=Class{
 	takeTurn=function(self)
-		if fov_map:contains(self.owner.pos) then
+		if fov_map:get(self.owner.pos) then
 			if self.owner:distanceTo(player)>1 then
 				self.owner:moveTowards(player.pos)
 			elseif player.fighter.hp>0 then

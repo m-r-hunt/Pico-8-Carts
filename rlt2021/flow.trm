@@ -1,28 +1,28 @@
-global V2 // core.trm
+global V2, Grid // core.trm
 global game_map, makeMap // map.trm
 global entities, getBlockingEntitiesAt, Entity, Fighter // gameplay.trm
-global calculateFOV, FOVMap // fov.trm
+global calculateFOV // fov.trm
 global fov_map, memory, player, message // state.trm
 
 fn handleKeys() {
 	if (btnp(0)) {
-		return {move = V2(-1, 0)}
+		return {move = {-1, 0}}
 	}
 	if (btnp(1)) {
-		return {move = V2(1, 0)}
+		return {move = {1, 0}}
 	}
 	if (btnp(2)) {
-		return {move = V2(0, -1)}
+		return {move = {0, -1}}
 	}
 	if (btnp(3)) {
-		return {move = V2(0, 1)}
+		return {move = {0, 1}}
 	}
 
 	return {}
 }
 
 fn blocks_fov(pos) {
-	return fget(mget(pos[1], pos[2]), 1)
+	return fget(mget(unpack(pos)), 1)
 }
 
 fn main() {
@@ -61,7 +61,7 @@ fn _init() {
 	entities = {player}
 	player.pos = makeMap(entities)
 	fov_map = calculateFOV(blocks_fov, player.pos, 10)
-	memory = FOVMap()
+	memory = Grid()
 	memory:unionWith(fov_map)
 	message = ""
 }
@@ -73,12 +73,12 @@ fn _update(dt) {
 fn _draw() {
 	cls()
 
-	camera(player.pos[1]*8 - 64, player.pos[2]*8 - 64)
+	camera(unpack(player.pos*8 - {64, 64}))
 
 	game_map:draw(player.pos, memory, fov_map)
 
 	for (e in all(entities)) {
-		if (fov_map:contains(e.pos)) {
+		if (fov_map:get(e.pos)) {
 			e:draw()
 		}
 	}

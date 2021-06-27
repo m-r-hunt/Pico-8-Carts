@@ -22,7 +22,7 @@ global Fighter = Class{
 
 global BasicMonster = Class{
 	method takeTurn() {
-		if (fov_map:contains(self.owner.pos)) {
+		if (fov_map:get(self.owner.pos)) {
 			if (self.owner:distanceTo(player) > 1) {
 				self.owner:moveTowards(player.pos)
 			} else if (player.fighter.hp > 0) {

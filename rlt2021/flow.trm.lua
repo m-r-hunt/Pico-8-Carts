@@ -6,23 +6,23 @@
 
 local function handleKeys()
 	if btnp(0) then
-		return {move=V2(-1,0)}
+		return {move={-1,0}}
 	end
 	if btnp(1) then
-		return {move=V2(1,0)}
+		return {move={1,0}}
 	end
 	if btnp(2) then
-		return {move=V2(0,-1)}
+		return {move={0,-1}}
 	end
 	if btnp(3) then
-		return {move=V2(0,1)}
+		return {move={0,1}}
 	end
 
 	return {}
 end
 
 local function blocks_fov(pos)
-	return fget(mget(pos[1],pos[2]),1)
+	return fget(mget(unpack(pos)),1)
 end
 
 local function main()
@@ -61,7 +61,7 @@ local function _init()
 	entities={player}
 	player.pos=makeMap(entities)
 	fov_map=calculateFOV(blocks_fov,player.pos,10)
-	memory=FOVMap()
+	memory=Grid()
 	memory:unionWith(fov_map)
 	message=""
 end
@@ -73,12 +73,12 @@ end
 local function _draw()
 	cls()
 
-	camera(player.pos[1]*8-64,player.pos[2]*8-64)
+	camera(unpack(player.pos*8-{64,64}))
 
 	game_map:draw(player.pos,memory,fov_map)
 
 	for e in all(entities) do
-		if fov_map:contains(e.pos) then
+		if fov_map:get(e.pos) then
 			e:draw()
 		end
 	end
