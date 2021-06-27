@@ -27,7 +27,7 @@ fn blocks_fov(pos) {
 
 fn main() {
 	while (true) {
-		var dt = yield()
+		yield()
 		var action = handleKeys()
 		if (action.move) {
 			var dx = player.pos + action.move
@@ -66,8 +66,8 @@ fn _init() {
 	message = ""
 }
 
-fn _update(dt) {
-	assert(coresume(main_thread, dt))
+fn _update() {
+	assert(coresume(main_thread))
 }
 
 fn _draw() {
@@ -78,7 +78,7 @@ fn _draw() {
 	game_map:draw(player.pos, memory, fov_map)
 
 	foreach(entities, fn(e) {
-		if (fov_map:get(e.pos)) {
+		if (fov_map:get(e.pos:floored())) {
 			e:draw()
 		}
 	})

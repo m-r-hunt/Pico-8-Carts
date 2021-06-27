@@ -27,7 +27,7 @@ end
 
 local function main()
 	while true do
-		local dt=yield()
+		yield()
 		local action=handleKeys()
 		if action.move then
 			local dx=player.pos+action.move
@@ -66,8 +66,8 @@ local function _init()
 	message=""
 end
 
-local function _update(dt)
-	assert(coresume(main_thread,dt))
+local function _update()
+	assert(coresume(main_thread))
 end
 
 local function _draw()
@@ -78,7 +78,7 @@ local function _draw()
 	game_map:draw(player.pos,memory,fov_map)
 
 	foreach(entities,function(e)
-		if fov_map:get(e.pos) then
+		if fov_map:get(e.pos:floored()) then
 			e:draw()
 		end
 	end)

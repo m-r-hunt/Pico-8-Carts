@@ -13,8 +13,8 @@ global GameMap = Class{
 	},
 
 	method draw(c, memory, fov) {
-		var cx = c.x
-		var cy = c.y
+		var cx = flr(c.x)
+		var cy = flr(c.y)
 		for (x = cx-9, cx+9) {
 			for (y = cy-9, cy + 9) {
 				if (fov:get(V2(x, y))) {

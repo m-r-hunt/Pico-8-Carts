@@ -13,8 +13,8 @@ GameMap=Class{
 	end,
 
 	draw=function(self,c,memory,fov)
-		local cx=c.x
-		local cy=c.y
+		local cx=flr(c.x)
+		local cy=flr(c.y)
 		for x=cx-9,cx+9 do
 			for y=cy-9,cy+9 do
 				if fov:get(V2(x,y)) then

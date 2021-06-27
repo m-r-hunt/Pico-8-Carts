@@ -31,6 +31,9 @@ V2={
 	end,
 	unpack=function(self)
 		return self.x,self.y
+	end,
+	floored=function(self)
+		return V2(flr(self.x),flr(self.y))
 	end
 }
 V2.__index=V2

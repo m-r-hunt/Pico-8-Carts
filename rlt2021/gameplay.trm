@@ -54,6 +54,16 @@ global Entity = Class{
 	},
 
 	method move(dx) {
+		var init = self.pos
+		var t = 0
+		while (t < 7) {
+			yield()
+			if (btnp() != 0) {
+				break
+			}
+			t += 1
+			self.pos = init + (dx - init) * (t/7)
+		}
 		self.pos = dx
 	},
 

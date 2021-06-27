@@ -31,7 +31,10 @@ V2 = {
 	},
 	method unpack() {
 		return self.x, self.y
-	}
+	},
+	method floored() {
+		return V2(flr(self.x), flr(self.y))
+	},
 }
 V2.__index = V2
 fn makeV2(t, x, y) {

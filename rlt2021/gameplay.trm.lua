@@ -54,6 +54,16 @@ Entity=Class{
 	end,
 
 	move=function(self,dx)
+		local init=self.pos
+		local t=0
+		while t<7 do
+			yield()
+			if btnp()!=0 then
+				break
+			end
+			t+=1
+			self.pos=init+(dx-init)*(t/7)
+		end
 		self.pos=dx
 	end,
 
