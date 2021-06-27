@@ -6,16 +6,16 @@
 
 local function handleKeys()
 	if btnp(0) then
-		return {move={-1,0}}
+		return {move=V2(-1,0)}
 	end
 	if btnp(1) then
-		return {move={1,0}}
+		return {move=V2(1,0)}
 	end
 	if btnp(2) then
-		return {move={0,-1}}
+		return {move=V2(0,-1)}
 	end
 	if btnp(3) then
-		return {move={0,1}}
+		return {move=V2(0,1)}
 	end
 
 	return {}
@@ -73,7 +73,7 @@ end
 local function _draw()
 	cls()
 
-	camera((player.pos*8-{64,64}):unpack())
+	camera((player.pos*8-V2(64,64)):unpack())
 
 	game_map:draw(player.pos,memory,fov_map)
 
@@ -85,5 +85,4 @@ local function _draw()
 
 	camera()
 	print(message,0,0,7)
-	print(player.pos[1].." "..player.pos[2],0,10,8)
 end

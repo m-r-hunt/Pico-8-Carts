@@ -13,14 +13,14 @@ global GameMap = Class{
 	},
 
 	method draw(c, memory, fov) {
-		var cx = c[1]
-		var cy = c[2]
+		var cx = c.x
+		var cy = c.y
 		for (x = cx-9, cx+9) {
 			for (y = cy-9, cy + 9) {
-				if (fov:get{x, y}) {
+				if (fov:get(V2(x, y))) {
 					pal()
 					spr(mget(x, y), x * 8, y * 8)
-				} else if (memory:get{x, y}) {
+				} else if (memory:get(V2(x, y))) {
 					setShadowPal()
 					spr(mget(x, y), x * 8, y * 8)
 				}

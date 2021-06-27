@@ -13,14 +13,14 @@ GameMap=Class{
 	end,
 
 	draw=function(self,c,memory,fov)
-		local cx=c[1]
-		local cy=c[2]
+		local cx=c.x
+		local cy=c.y
 		for x=cx-9,cx+9 do
 			for y=cy-9,cy+9 do
-				if fov:get{x,y} then
+				if fov:get(V2(x,y)) then
 					pal()
 					spr(mget(x,y),x*8,y*8)
-				elseif memory:get{x,y} then
+				elseif memory:get(V2(x,y)) then
 					setShadowPal()
 					spr(mget(x,y),x*8,y*8)
 				end

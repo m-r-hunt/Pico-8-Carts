@@ -69,6 +69,6 @@ Entity=Class{
 	end,
 
 	draw=function(self)
-		spr(self.sprite,self.pos[1]*8,self.pos[2]*8)
+		spr(self.sprite,(self.pos*8):unpack())
 	end
 }

@@ -12,30 +12,30 @@ global fn Class(table) {
 global V2
 V2 = {
 	method __add(other) {
-		return V2(self[1] + other[1], self[2] + other[2])
+		return V2(self.x + other.x, self.y + other.y)
 	},
 	method __sub(other) {
-		return V2(self[1] - other[1], self[2] - other[2])
+		return V2(self.x - other.x, self.y - other.y)
 	},
 	method __mul(s) {
-		return V2(s*self[1], s*self[2])
+		return V2(s*self.x, s*self.y)
 	},
 	method _unm() {
-		return V2(-self[1], -self[2])
+		return V2(-self.x, -self.y)
 	},
 	method __len() {
-		return sqrt(self[1]^2 + self[2]^2)
+		return sqrt(self.x^2 + self.y^2)
 	},
 	method __eq(other) {
-		return self[1] == other[1] && self[2] == other[2]
+		return self.x == other.x && self.y == other.y
 	},
 	method unpack() {
-		return self[1], self[2]
+		return self.x, self.y
 	}
 }
 V2.__index = V2
 fn makeV2(t, x, y) {
-	return setmetatable({x, y}, t)
+	return setmetatable({x = x, y = y}, t)
 }
 setmetatable(V2, {__call = makeV2})
 
@@ -45,19 +45,18 @@ global Grid = Class{
 	},
 
 	method add(pos, val) {
-		var x = pos[1]
-		self.set[x] = self.set[x] || {}
-		self.set[x][pos[2]] = val
+		self.set[pos.x] = self.set[pos.x] || {}
+		self.set[pos.x][pos.y] = val
 	},
 
 	method get(pos) {
-		return self.set[pos[1]] && self.set[pos[1]][pos[2]]
+		return self.set[pos.x] && self.set[pos.x][pos.y]
 	},
 
 	method unionWith(other) {
 		for (x, row in pairs(other.set)) {
 			for (y, v in pairs(row)) {
-				self:add({x, y}, v)
+				self:add(V2(x, y), v)
 			}
 		}
 	},

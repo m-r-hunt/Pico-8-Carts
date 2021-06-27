@@ -6,16 +6,16 @@ global fov_map, memory, player, message // state.trm
 
 fn handleKeys() {
 	if (btnp(0)) {
-		return {move = {-1, 0}}
+		return {move = V2(-1, 0)}
 	}
 	if (btnp(1)) {
-		return {move = {1, 0}}
+		return {move = V2(1, 0)}
 	}
 	if (btnp(2)) {
-		return {move = {0, -1}}
+		return {move = V2(0, -1)}
 	}
 	if (btnp(3)) {
-		return {move = {0, 1}}
+		return {move = V2(0, 1)}
 	}
 
 	return {}
@@ -73,7 +73,7 @@ fn _update(dt) {
 fn _draw() {
 	cls()
 
-	camera((player.pos*8 - {64, 64}):unpack())
+	camera((player.pos*8 - V2(64, 64)):unpack())
 
 	game_map:draw(player.pos, memory, fov_map)
 
