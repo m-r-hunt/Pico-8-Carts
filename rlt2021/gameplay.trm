@@ -1,6 +1,7 @@
 global Class
 global GameMap, getBlockingEntitiesAt
 global fov_map, player, message
+global pathfind
 
 global Fighter = Class{
 	method construct(hp, defence, power) {
@@ -21,6 +22,10 @@ global BasicMonster = Class{
 			}
 		}
 	},
+}
+
+fn blocks(x, y) {
+	return GameMap:isBlocked(x, y)
 }
 
 global Entity = Class{
@@ -47,20 +52,9 @@ global Entity = Class{
 	},
 
 	method moveTowards(tx, ty, entities) {
-		var dx = tx - self.x
-		var dy = ty - self.y
-		var distance = sqrt(dx^2 + dy^2)
-
-		if (abs(dx) > abs(dy)) {
-			dx = sgn(dx)
-			dy = 0
-		} else {
-			dx = 0
-			dy = sgn(dy)
-		}
-
-		if (!(GameMap:isBlocked(self.x + dx, self.y + dy) || getBlockingEntitiesAt(self.x + dx, self.y + dy))) {
-			self:move(self.x + dx, self.y + dy)
+		var path = pathfind(self.x, self.y, tx, ty, blocks)
+		if (path && #path >= 3) {
+			self:move(unpack(path[2]))
 		}
 	},
 

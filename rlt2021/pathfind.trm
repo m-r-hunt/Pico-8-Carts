@@ -1,0 +1,60 @@
+global Class
+
+var Grid = Class{
+	method construct() {
+		self.set = {}
+	},
+
+	method add(x, y, val) {
+		self.set[x] = self.set[x] || {}
+		self.set[x][y] = val
+	},
+
+	method get(x, y) {
+			printh("get")
+		return self.set[x] && self.set[x][y]
+	},
+}
+
+global fn pathfind(sx, sy, tx, ty, blocks) {
+	var frontier = {{sx, sy}}
+	var came_from = Grid()
+
+	while (#frontier > 0) {
+		var current = frontier[1]
+		deli(frontier, 1)
+		printh(current[1].." "..current[2])
+
+		if (current[1] == tx && current[2] == ty) {
+			break
+		}
+
+		if (!came_from:get(current[1]-1, current[2]) && !blocks(current[1]-1, current[2])) {
+			add(frontier, {current[1]-1, current[2]})
+			came_from:add(current[1]-1, current[2], current)
+		}
+		if (!came_from:get(current[1]+1, current[2]) && !blocks(current[1]+1, current[2])) {
+			add(frontier, {current[1]+1, current[2]})
+			came_from:add(current[1]+1, current[2], current)
+		}
+		if (!came_from:get(current[1], current[2]-1) && !blocks(current[1], current[2]-1)) {
+			add(frontier, {current[1], current[2]-1})
+			came_from:add(current[1], current[2]-1, current)
+		}
+		if (!came_from:get(current[1], current[2]+1) && !blocks(current[1], current[2]+1)) {
+			add(frontier, {current[1], current[2]+1})
+			came_from:add(current[1], current[2]+1, current)
+		}
+	}
+
+	if (!came_from:get(tx, ty)) {
+		return null
+	}
+
+	var path = {{tx, ty}}
+	while (path[1][1] != sx || path[1][2] != sy) {
+		add(path, came_from:get(path[1][1], path[1][2]), 1)
+	}
+	printh(#path)
+	return path
+}

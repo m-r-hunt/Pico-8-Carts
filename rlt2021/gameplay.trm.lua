@@ -2,6 +2,7 @@
 
 
 
+
 Fighter=Class{
 	construct=function(self,hp,defence,power)
 		self.max_hp=hp
@@ -22,6 +23,10 @@ BasicMonster=Class{
 		end
 	end
 }
+
+local function blocks(x,y)
+	return GameMap:isBlocked(x,y)
+end
 
 Entity=Class{
 	construct=function(self,x,y,sprite,name,blocks,fighter,ai)
@@ -47,20 +52,9 @@ Entity=Class{
 	end,
 
 	moveTowards=function(self,tx,ty,entities)
-		local dx=tx-self.x
-		local dy=ty-self.y
-		local distance=sqrt(dx^2+dy^2)
-
-		if abs(dx)>abs(dy) then
-			dx=sgn(dx)
-			dy=0
-		else
-			dx=0
-			dy=sgn(dy)
-		end
-
-		if not (GameMap:isBlocked(self.x+dx,self.y+dy) or getBlockingEntitiesAt(self.x+dx,self.y+dy)) then
-			self:move(self.x+dx,self.y+dy)
+		local path=pathfind(self.x,self.y,tx,ty,blocks)
+		if path and #path>=3 then
+			self:move(unpack(path[2]))
 		end
 	end,
 
