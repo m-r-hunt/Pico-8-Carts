@@ -63,7 +63,7 @@ global Entity = Class{
 
 	method moveTowards(tx, ty, entities) {
 		var path = pathfind(self.x, self.y, tx, ty, blocks)
-		if (path && #path >= 3) {
+		if (path && #path >= 3 && !getBlockingEntitiesAt(unpack(path[2]))) {
 			self:move(unpack(path[2]))
 		}
 	},
