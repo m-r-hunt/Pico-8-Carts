@@ -43,11 +43,11 @@ fn main() {
 					memory:unionWith(fov_map)
 				}
 
-				for (e in all(entities)) {
+				foreach(entities, fn(e) {
 					if (e.ai) {
 						e.ai:takeTurn()
 					}
-				}
+				})
 			}
 		}
 	}
@@ -77,11 +77,11 @@ fn _draw() {
 
 	game_map:draw(player.pos, memory, fov_map)
 
-	for (e in all(entities)) {
+	foreach(entities, fn(e) {
 		if (fov_map:get(e.pos)) {
 			e:draw()
 		}
-	}
+	})
 
 	camera()
 	print(message, 0, 0, 7)

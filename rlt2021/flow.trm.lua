@@ -43,11 +43,11 @@ local function main()
 					memory:unionWith(fov_map)
 				end
 
-				for e in all(entities) do
+				foreach(entities,function(e)
 					if e.ai then
 						e.ai:takeTurn()
 					end
-				end
+				end)
 			end
 		end
 	end
@@ -77,11 +77,11 @@ local function _draw()
 
 	game_map:draw(player.pos,memory,fov_map)
 
-	for e in all(entities) do
+	foreach(entities,function(e)
 		if fov_map:get(e.pos) then
 			e:draw()
 		end
-	end
+	end)
 
 	camera()
 	print(message,0,0,7)

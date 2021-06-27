@@ -1,5 +1,7 @@
 global Class, V2, Grid // core.trm
 
+var neighbours = {V2(-1, 0), V2(1, 0), V2(0, -1), V2(0, 1)}
+
 global fn pathfind(s, t, blocks) {
 	var frontier = {s}
 	var came_from = Grid()
@@ -14,26 +16,14 @@ global fn pathfind(s, t, blocks) {
 			break
 		}
 
-		var n = current - V2(1, 0)
-		if (!came_from:get(n) && !blocks(n)) {
-			add(frontier, n)
-			came_from:add(n, current)
-		}
-		n = current + V2(1, 0)
-		if (!came_from:get(n) && !blocks(n)) {
-			add(frontier, n)
-			came_from:add(n, current)
-		}
-		n = current - V2(0, 1)
-		if (!came_from:get(n) && !blocks(n)) {
-			add(frontier, n)
-			came_from:add(n, current)
-		}
-		n = current + V2(0, 1)
-		if (!came_from:get(n) && !blocks(n)) {
-			add(frontier, n)
-			came_from:add(n, current)
-		}
+		foreach(neighbours, fn(v) {
+			var n = current + v
+			if (!came_from:get(n) && !blocks(n)) {
+				add(frontier, n)
+				came_from:add(n, current)
+			}
+
+		})
 	}
 
 	if (!came_from:get(t)) {

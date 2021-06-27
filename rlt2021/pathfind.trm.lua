@@ -1,5 +1,7 @@
 
 
+local neighbours={V2(-1,0),V2(1,0),V2(0,-1),V2(0,1)}
+
 function pathfind(s,t,blocks)
 	local frontier={s}
 	local came_from=Grid()
@@ -14,27 +16,15 @@ function pathfind(s,t,blocks)
 			break
 		end
 
-		local n=current-V2(1,0)
-		if not came_from:get(n) and not blocks(n) then
-			add(frontier,n)
-			came_from:add(n,current)
-		end
-		n=current+V2(1,0)
-		if not came_from:get(n) and not blocks(n) then
-			add(frontier,n)
-			came_from:add(n,current)
-		end
-		n=current-V2(0,1)
-		if not came_from:get(n) and not blocks(n) then
-			add(frontier,n)
-			came_from:add(n,current)
-		end
-		n=current+V2(0,1)
-		if not came_from:get(n) and not blocks(n) then
-			add(frontier,n)
-			came_from:add(n,current)
-		end
+		foreach(neighbours,function(v)
+			local n=current+v
+			if not came_from:get(n) and not blocks(n) then
+				add(frontier,n)
+				came_from:add(n,current)
+			end
+		end)
 	end
+
 
 	if not came_from:get(t) then
 		return nil
