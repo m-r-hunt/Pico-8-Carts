@@ -20,6 +20,9 @@ local function handleKeys()
 	if btnp(3) then
 		return {move=V2(0,1)}
 	end
+	if btnp(4) then
+		return {wait=true}
+	end
 
 	return {}
 end
@@ -69,7 +72,9 @@ local function main()
 	while true do
 		yield()
 		local action=handleKeys()
+		local turn_taken=false
 		if action.move then
+			turn_taken=true
 			local dx=player.pos+action.move
 			if not game_map:isBlocked(dx) then
 				local target=getBlockingEntitiesAt(dx)
@@ -82,16 +87,21 @@ local function main()
 					fov_map=calculateFOV(blocks_fov,player.pos,10)
 					memory:unionWith(fov_map)
 				end
+			end
+		elseif action.wait then
+			turn_taken=true
+			addNumber("z",6,player.pos*8,V2(0,-0.5),180)
+		end
 
-				foreach(entities,function(e)
-					if e.ai then
-						e.ai:takeTurn()
-					end
-				end)
-
-				if player.fighter.hp<=0 then
-					return gameOver()
+		if turn_taken then
+			foreach(entities,function(e)
+				if e.ai then
+					e.ai:takeTurn()
 				end
+			end)
+
+			if player.fighter.hp<=0 then
+				return gameOver()
 			end
 		end
 	end

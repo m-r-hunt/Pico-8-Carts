@@ -3,7 +3,7 @@ global game_map, makeMap // map.trm
 global entities, getBlockingEntitiesAt, Entity, Fighter, cleanupDeads // gameplay.trm
 global calculateFOV // fov.trm
 global fov_map, memory, player, message // state.trm
-global tickParticles, drawParticles // particles.trm
+global tickParticles, drawParticles, addNumber // particles.trm
 
 var draw = null
 
@@ -19,6 +19,9 @@ fn handleKeys() {
 	}
 	if (btnp(3)) {
 		return {move = V2(0, 1)}
+	}
+	if (btnp(4)) {
+		return {wait = true}
 	}
 
 	return {}
@@ -69,7 +72,9 @@ fn main() {
 	while (true) {
 		yield()
 		var action = handleKeys()
+		var turn_taken = false
 		if (action.move) {
+			turn_taken = true
 			var dx = player.pos + action.move
 			if (!game_map:isBlocked(dx)) {
 				var target = getBlockingEntitiesAt(dx)
@@ -82,16 +87,21 @@ fn main() {
 					fov_map = calculateFOV(blocks_fov, player.pos, 10)
 					memory:unionWith(fov_map)
 				}
+			}
+		} else if (action.wait) {
+			turn_taken = true
+			addNumber("z", 6, player.pos * 8, V2(0, -0.5), 180)
+		}
 
-				foreach(entities, fn(e) {
-					if (e.ai) {
-						e.ai:takeTurn()
-					}
-				})
-
-				if (player.fighter.hp <= 0) {
-					return gameOver()
+		if (turn_taken) {
+			foreach(entities, fn(e) {
+				if (e.ai) {
+					e.ai:takeTurn()
 				}
+			})
+
+			if (player.fighter.hp <= 0) {
+				return gameOver()
 			}
 		}
 	}
