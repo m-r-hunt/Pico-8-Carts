@@ -57,6 +57,9 @@ local function drawMain()
 
 	camera()
 	print(message,0,0,7)
+	print("HP",0,121,7)
+	rect(8,120,player.fighter.max_hp+10,127,7)
+	rectfill(9,121,player.fighter.hp+9,126,8)
 end
 
 local function main()
