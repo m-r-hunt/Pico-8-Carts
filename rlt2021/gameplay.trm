@@ -1,7 +1,10 @@
-global Class // core.trm
+global Class, V2 // core.trm
 global GameMap // map.trm
 global fov_map, message, player, entities // state.trm
 global pathfind // pathfind.trm
+global addNumber // particles.trm
+
+var animation_time = 6
 
 global fn getBlockingEntitiesAt(dx) {
 	for (e in all(entities)) {
@@ -18,6 +21,44 @@ global Fighter = Class{
 		self.defence = defence
 		self.power = power
 	},
+
+	method takeDamage(amount) {
+		self.hp -= amount
+		if (self.hp < 0 && self != player) {
+			self.owner.sprite += 16
+			self.owner.blocks = false
+			self.owner.name = "Remains of "..self.owner.name
+			self.owner.fighter = null
+			self.owner.ai = null
+		}
+	},
+
+	method attack(target) {
+		var damage = self.power - target.fighter.defence
+		target.fighter:takeDamage(damage)
+		addNumber(damage, 8, target.pos * 8 + V2(2, 0), V2(0, -1), 120)
+
+		var init = self.owner.pos
+		var dx = target.pos
+		var t = 0
+		while (t < animation_time/2) {
+			yield()
+			if (btnp() != 0) {
+				break
+			}
+			t += 1
+			self.owner.pos = init + (dx - init) * (t / animation_time)
+		}
+		while (t >= 0) {
+			yield()
+			if (btnp() != 0) {
+				break
+			}
+			t -= 1
+			self.owner.pos = init + (dx - init) * (t / animation_time)
+		}
+		self.owner.pos = init
+	},
 }
 
 global BasicMonster = Class{
@@ -26,7 +67,7 @@ global BasicMonster = Class{
 			if (self.owner:distanceTo(player) > 1) {
 				self.owner:moveTowards(player.pos)
 			} else if (player.fighter.hp > 0) {
-				message = "The "..self.owner.name.." hits you."
+				self.owner.fighter:attack(player)
 			}
 		}
 	},
@@ -35,8 +76,6 @@ global BasicMonster = Class{
 fn blocks(pos) {
 	return GameMap:isBlocked(pos)
 }
-
-var animation_time = 6
 
 global Entity = Class{
 	method construct(pos, sprite, name, blocks, fighter, ai) {

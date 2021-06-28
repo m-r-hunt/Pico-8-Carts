@@ -4,6 +4,9 @@
 
 
 
+
+local draw=nil
+
 local function handleKeys()
 	if btnp(0) then
 		return {move=V2(-1,0)}
@@ -25,7 +28,39 @@ local function blocks_fov(pos)
 	return fget(mget(pos:unpack()),1)
 end
 
+local function drawGameOver()
+	cls()
+	print("game over",40,64,7)
+end
+
+local function gameOver()
+	draw=drawGameOver
+	while true do
+		yield()
+	end
+end
+
+local function drawMain()
+	cls()
+
+	camera((player.pos*8-V2(64,64)):unpack())
+
+	game_map:draw(player.pos,memory,fov_map)
+
+	foreach(entities,function(e)
+		if fov_map:get(e.pos:floored()) then
+			e:draw()
+		end
+	end)
+
+	drawParticles()
+
+	camera()
+	print(message,0,0,7)
+end
+
 local function main()
+	draw=drawMain
 	while true do
 		yield()
 		local action=handleKeys()
@@ -35,7 +70,7 @@ local function main()
 				local target=getBlockingEntitiesAt(dx)
 
 				if target then
-					message="you kick the "..target.name.." in the nuts"
+					player.fighter:attack(target)
 				else
 					message=""
 					player:move(dx)
@@ -48,6 +83,10 @@ local function main()
 						e.ai:takeTurn()
 					end
 				end)
+
+				if player.fighter.hp<=0 then
+					return gameOver()
+				end
 			end
 		end
 	end
@@ -67,22 +106,10 @@ local function _init()
 end
 
 local function _update60()
+	tickParticles()
 	assert(coresume(main_thread))
 end
 
 local function _draw()
-	cls()
-
-	camera((player.pos*8-V2(64,64)):unpack())
-
-	game_map:draw(player.pos,memory,fov_map)
-
-	foreach(entities,function(e)
-		if fov_map:get(e.pos:floored()) then
-			e:draw()
-		end
-	end)
-
-	camera()
-	print(message,0,0,7)
+	draw()
 end

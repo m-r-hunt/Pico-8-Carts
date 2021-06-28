@@ -3,6 +3,9 @@
 
 
 
+
+local animation_time=6
+
 function getBlockingEntitiesAt(dx)
 	for e in all(entities) do
 		if e.blocks and e.pos==dx then
@@ -17,6 +20,44 @@ Fighter=Class{
 		self.hp=hp
 		self.defence=defence
 		self.power=power
+	end,
+
+	takeDamage=function(self,amount)
+		self.hp-=amount
+		if self.hp<0 and self!=player then
+			self.owner.sprite+=16
+			self.owner.blocks=false
+			self.owner.name="Remains of "..self.owner.name
+			self.owner.fighter=nil
+			self.owner.ai=nil
+		end
+	end,
+
+	attack=function(self,target)
+		local damage=self.power-target.fighter.defence
+		target.fighter:takeDamage(damage)
+		addNumber(damage,8,target.pos*8+V2(2,0),V2(0,-1),120)
+
+		local init=self.owner.pos
+		local dx=target.pos
+		local t=0
+		while t<animation_time/2 do
+			yield()
+			if btnp()!=0 then
+				break
+			end
+			t+=1
+			self.owner.pos=init+(dx-init)*(t/animation_time)
+		end
+		while t>=0 do
+			yield()
+			if btnp()!=0 then
+				break
+			end
+			t-=1
+			self.owner.pos=init+(dx-init)*(t/animation_time)
+		end
+		self.owner.pos=init
 	end
 }
 
@@ -26,7 +67,7 @@ BasicMonster=Class{
 			if self.owner:distanceTo(player)>1 then
 				self.owner:moveTowards(player.pos)
 			elseif player.fighter.hp>0 then
-				message="The "..self.owner.name.." hits you."
+				self.owner.fighter:attack(player)
 			end
 		end
 	end
@@ -35,8 +76,6 @@ BasicMonster=Class{
 local function blocks(pos)
 	return GameMap:isBlocked(pos)
 end
-
-local animation_time=6
 
 Entity=Class{
 	construct=function(self,pos,sprite,name,blocks,fighter,ai)

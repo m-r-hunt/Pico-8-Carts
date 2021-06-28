@@ -1,0 +1,26 @@
+var number_particles = {}
+
+global fn tickParticles() {
+	foreach(number_particles, fn(p) {
+		p.lifetime -= 1
+		p.pos += p.dx
+	})
+	var i = 1
+	while (i <= #number_particles) {
+		if (number_particles[i].lifetime <= 0) {
+			deli(number_particles, i)
+		} else {
+			i += 1
+		}
+	}
+}
+
+global fn drawParticles() {
+	foreach(number_particles, fn(p) {
+		print(p.n, p.pos.x, p.pos.y, p.c)
+	})
+}
+
+global fn addNumber(n, c, pos, dx, lifetime) {
+	add(number_particles, {n = n, c = c, pos = pos, dx = dx, lifetime = lifetime})
+}

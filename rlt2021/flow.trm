@@ -1,8 +1,11 @@
 global V2, Grid // core.trm
 global game_map, makeMap // map.trm
-global entities, getBlockingEntitiesAt, Entity, Fighter // gameplay.trm
+global entities, getBlockingEntitiesAt, Entity, Fighter, cleanupDeads // gameplay.trm
 global calculateFOV // fov.trm
 global fov_map, memory, player, message // state.trm
+global tickParticles, drawParticles // particles.trm
+
+var draw = null
 
 fn handleKeys() {
 	if (btnp(0)) {
@@ -25,7 +28,39 @@ fn blocks_fov(pos) {
 	return fget(mget(pos:unpack()), 1)
 }
 
+fn drawGameOver() {
+	cls()
+	print("game over", 40, 64, 7)
+}
+
+fn gameOver() {
+	draw = drawGameOver
+	while(true) {
+		yield()
+	}
+}
+
+fn drawMain() {
+	cls()
+
+	camera((player.pos*8 - V2(64, 64)):unpack())
+
+	game_map:draw(player.pos, memory, fov_map)
+
+	foreach(entities, fn(e) {
+		if (fov_map:get(e.pos:floored())) {
+			e:draw()
+		}
+	})
+	
+	drawParticles()
+
+	camera()
+	print(message, 0, 0, 7)
+}
+
 fn main() {
+	draw = drawMain
 	while (true) {
 		yield()
 		var action = handleKeys()
@@ -35,7 +70,7 @@ fn main() {
 				var target = getBlockingEntitiesAt(dx)
 
 				if (target) {
-					message = "you kick the "..target.name.." in the nuts"
+					player.fighter:attack(target)
 				} else {
 					message = ""
 					player:move(dx)
@@ -48,6 +83,10 @@ fn main() {
 						e.ai:takeTurn()
 					}
 				})
+
+				if (player.fighter.hp <= 0) {
+					return gameOver()
+				}
 			}
 		}
 	}
@@ -67,22 +106,10 @@ fn _init() {
 }
 
 fn _update60() {
+	tickParticles()
 	assert(coresume(main_thread))
 }
 
 fn _draw() {
-	cls()
-
-	camera((player.pos*8 - V2(64, 64)):unpack())
-
-	game_map:draw(player.pos, memory, fov_map)
-
-	foreach(entities, fn(e) {
-		if (fov_map:get(e.pos:floored())) {
-			e:draw()
-		}
-	})
-
-	camera()
-	print(message, 0, 0, 7)
+	draw()
 }
