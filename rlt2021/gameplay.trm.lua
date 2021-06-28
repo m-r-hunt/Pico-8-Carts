@@ -30,6 +30,7 @@ Fighter=Class{
 			self.owner.name="Remains of "..self.owner.name
 			self.owner.fighter=nil
 			self.owner.ai=nil
+			self.owner.z=1
 		end
 	end,
 
@@ -85,6 +86,7 @@ Entity=Class{
 		self.blocks=blocks
 		self.fighter=fighter
 		self.ai=ai
+		self.z=3
 
 		if self.fighter then
 			self.fighter.owner=self

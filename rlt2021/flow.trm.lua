@@ -47,11 +47,13 @@ local function drawMain()
 
 	game_map:draw(player.pos,memory,fov_map)
 
-	foreach(entities,function(e)
-		if fov_map:get(e.pos:floored()) then
-			e:draw()
-		end
-	end)
+	for z=1,3 do
+		foreach(entities,function(e)
+			if e.z==z and fov_map:get(e.pos:floored()) then
+				e:draw()
+			end
+		end)
+	end
 
 	drawParticles()
 

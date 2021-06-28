@@ -30,6 +30,7 @@ global Fighter = Class{
 			self.owner.name = "Remains of "..self.owner.name
 			self.owner.fighter = null
 			self.owner.ai = null
+			self.owner.z = 1
 		}
 	},
 
@@ -85,6 +86,7 @@ global Entity = Class{
 		self.blocks = blocks
 		self. fighter = fighter
 		self.ai = ai
+		self.z = 3
 
 		if (self.fighter) {
 			self.fighter.owner = self
