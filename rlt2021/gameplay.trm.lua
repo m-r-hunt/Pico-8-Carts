@@ -34,6 +34,10 @@ Fighter=Class{
 		end
 	end,
 
+	heal=function(self,amount)
+		self.hp=min(self.hp+amount,self.max_hp)
+	end,
+
 	attack=function(self,target)
 		local damage=self.power-target.fighter.defence
 		target.fighter:takeDamage(damage)
@@ -74,18 +78,53 @@ BasicMonster=Class{
 	end
 }
 
+Inventory=Class{
+	construct=function(self,capacity)
+		self.capacity=capacity
+		self.items={}
+	end,
+
+	addItem=function(self,item)
+		if #self.items>=self.capacity then
+			message="Inventory is full"
+		else
+			add(self.items,item)
+			del(entities,item)
+		end
+	end,
+
+	hasItem=function(self)
+		return #self.items>=1
+	end,
+
+	useItem=function(self)
+		local consumed=self.items[1].item:use_function()
+		if consumed then
+			deli(self.items,1)
+		end
+	end
+}
+
+Item=Class{
+	construct=function(self,use_function)
+		self.use_function=use_function
+	end
+}
+
 local function blocks(pos)
 	return GameMap:isBlocked(pos)
 end
 
 Entity=Class{
-	construct=function(self,pos,sprite,name,blocks,fighter,ai)
+	construct=function(self,pos,sprite,name,blocks,fighter,ai,item,inventory)
 		self.pos=pos
 		self.sprite=sprite
 		self.name=name
 		self.blocks=blocks
 		self.fighter=fighter
 		self.ai=ai
+		self.item=item
+		self.inventory=inventory
 		self.z=3
 
 		if self.fighter then

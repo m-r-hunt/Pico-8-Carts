@@ -1,47 +1,11 @@
 global V2, Grid // core.trm
 global game_map, makeMap // map.trm
-global entities, getBlockingEntitiesAt, Entity, Fighter, cleanupDeads // gameplay.trm
+global entities, getBlockingEntitiesAt, Entity, Fighter, Inventory // gameplay.trm
 global calculateFOV // fov.trm
 global fov_map, memory, player, message // state.trm
 global tickParticles, drawParticles, addNumber // particles.trm
 
 var draw = null
-
-fn handleKeys() {
-	if (btnp(0)) {
-		return {move = V2(-1, 0)}
-	}
-	if (btnp(1)) {
-		return {move = V2(1, 0)}
-	}
-	if (btnp(2)) {
-		return {move = V2(0, -1)}
-	}
-	if (btnp(3)) {
-		return {move = V2(0, 1)}
-	}
-	if (btnp(4)) {
-		return {wait = true}
-	}
-
-	return {}
-}
-
-fn blocks_fov(pos) {
-	return fget(mget(pos:unpack()), 1)
-}
-
-fn drawGameOver() {
-	cls()
-	print("game over", 40, 64, 7)
-}
-
-fn gameOver() {
-	draw = drawGameOver
-	while(true) {
-		yield()
-	}
-}
 
 fn drawMain() {
 	cls()
@@ -67,41 +31,141 @@ fn drawMain() {
 	rectfill(9, 121, player.fighter.hp + 9, 126, 8)
 }
 
+var options = {"pickup", "use item"}
+var selected = 1
+
+fn drawActionMenu() {
+	drawMain()
+	for (i = 1, #options) {
+		print(options[i], 20, 20 + i * 8, 8)
+		if (i == selected) {
+			print(">", 17, 20 + i * 8, 8)
+		}
+	}
+}
+
+fn actionMenu() {
+	draw = drawActionMenu
+	selected = 1
+	while (true) {
+		yield()
+		if (btnp(2)) {
+			selected -= 1
+			if (selected <= 0) {
+				selected = #options
+			}
+		}
+		if (btnp(3)) {
+			selected += 1
+			if (selected > #options) {
+				selected = 1
+			}
+		}
+		if (btnp(4)) {
+			draw = drawMain
+			if (options[selected] == "pickup") {
+				return {pickup = true}
+			} else if (options[selected] == "use item") {
+				return {use_item = true}
+			}
+		}
+		if (btnp(5)) {
+			draw = drawMain
+			return null
+		}
+	}
+}
+
+fn handleKeys() {
+	if (btnp(0)) {
+		return {move = V2(-1, 0)}
+	}
+	if (btnp(1)) {
+		return {move = V2(1, 0)}
+	}
+	if (btnp(2)) {
+		return {move = V2(0, -1)}
+	}
+	if (btnp(3)) {
+		return {move = V2(0, 1)}
+	}
+	if (btnp(4)) {
+		return {wait = true}
+	}
+	if (btnp(5)) {
+		return actionMenu()
+	}
+
+	return {}
+}
+
+fn blocks_fov(pos) {
+	return fget(mget(pos:unpack()), 1)
+}
+
+fn drawGameOver() {
+	cls()
+	print("game over", 40, 64, 7)
+}
+
+fn gameOver() {
+	draw = drawGameOver
+	while(true) {
+		yield()
+	}
+}
+
 fn main() {
 	draw = drawMain
 	while (true) {
 		yield()
 		var action = handleKeys()
-		var turn_taken = false
-		if (action.move) {
-			turn_taken = true
-			var dx = player.pos + action.move
-			if (!game_map:isBlocked(dx)) {
-				var target = getBlockingEntitiesAt(dx)
+		if (action) {
+			var turn_taken = false
+			if (action.move) {
+				turn_taken = true
+				var dx = player.pos + action.move
+				if (!game_map:isBlocked(dx)) {
+					var target = getBlockingEntitiesAt(dx)
 
-				if (target) {
-					player.fighter:attack(target)
-				} else {
-					message = ""
-					player:move(dx)
-					fov_map = calculateFOV(blocks_fov, player.pos, 10)
-					memory:unionWith(fov_map)
+					if (target) {
+						player.fighter:attack(target)
+					} else {
+						message = ""
+						player:move(dx)
+						fov_map = calculateFOV(blocks_fov, player.pos, 10)
+						memory:unionWith(fov_map)
+					}
+				}
+			} else if (action.wait) {
+				turn_taken = true
+				addNumber("z", 6, player.pos * 8, V2(0, -0.5), 180)
+			} else if (action.pickup) {
+				for (e in all(entities)) {
+					if (e.item && e.x == player.x && e.y == player.y) {
+						turn_taken = true
+						player.inventory:addItem(e)
+						break
+					}
+
+				}
+			} else if (action.use_item) {
+				if (player.inventory:hasItem()) {
+					turn_taken = true
+					player.inventory:useItem()
 				}
 			}
-		} else if (action.wait) {
-			turn_taken = true
-			addNumber("z", 6, player.pos * 8, V2(0, -0.5), 180)
-		}
 
-		if (turn_taken) {
-			foreach(entities, fn(e) {
-				if (e.ai) {
-					e.ai:takeTurn()
+			if (turn_taken) {
+				foreach(entities, fn(e) {
+					if (e.ai) {
+						e.ai:takeTurn()
+					}
+				})
+
+				if (player.fighter.hp <= 0) {
+					return gameOver()
 				}
-			})
-
-			if (player.fighter.hp <= 0) {
-				return gameOver()
 			}
 		}
 	}
@@ -111,7 +175,7 @@ var main_thread = null
 fn _init() {
 	main_thread = cocreate(main)
 
-	player = Entity(V2(8, 8), 1, "player", true, Fighter(30, 2, 5))
+	player = Entity(V2(8, 8), 1, "player", true, Fighter(30, 2, 5), null, null, Inventory(26))
 	entities = {player}
 	player.pos = makeMap(entities)
 	fov_map = calculateFOV(blocks_fov, player.pos, 10)

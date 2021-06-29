@@ -1,6 +1,7 @@
 
 
 
+
 local function setShadowPal()
 	for c=4,15 do
 		pal(c,band(c,3))
@@ -80,10 +81,21 @@ local function anyEntitiesAt(entities,pos)
 	return false
 end
 
-local function placeEntities(room,entities,max_monsters_per_room)
-	local n=flr(rnd(max_monsters_per_room))
+local function heal()
+	if player.fighter.hp==player.fighter.max_hp then
+		message="Already at max hp"
+		return false
+	else
+		player.fighter:heal(10)
+		return true
+	end
+end
 
-	for i=1,n do
+local function placeEntities(room,entities,max_monsters_per_room,max_items_per_room)
+	local n_monsters=flr(rnd(max_monsters_per_room))
+	local n_items=flr(rnd(max_items_per_room))
+
+	for i=1,n_monsters do
 		local x=room.x1+1+flr(rnd(room.x2-room.x1-2))
 		local y=room.y1+1+flr(rnd(room.y2-room.y1-2))
 
@@ -97,6 +109,17 @@ local function placeEntities(room,entities,max_monsters_per_room)
 			add(entities,monster)
 		end
 	end
+
+	for i=1,n_items do
+		local x=room.x1+1+flr(rnd(room.x2-room.x1-2))
+		local y=room.y1+1+flr(rnd(room.y2-room.y1-2))
+
+		if not anyEntitiesAt(entities,V2(x,y)) then
+			local item=Entity(V2(x,y),48,"health potion",false,nil,nil,Item(heal))
+			item.z=2
+			add(entities,item)
+		end
+	end
 end
 
 local room_max_size=10
@@ -106,6 +129,7 @@ local map_width=128
 local map_height=64
 local wall_sprite=64
 local max_monsters_per_room=3
+local max_items_per_room=2
 local save_map=false
 
 function makeMap(entities)
@@ -146,7 +170,7 @@ function makeMap(entities)
 					createHTunnel(px,nx,ny)
 				end
 			end
-			placeEntities(new_room,entities,max_monsters_per_room)
+			placeEntities(new_room,entities,max_monsters_per_room,max_items_per_room)
 			add(rooms,new_room)
 		end
 	end

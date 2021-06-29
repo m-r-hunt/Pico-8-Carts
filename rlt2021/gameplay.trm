@@ -34,6 +34,10 @@ global Fighter = Class{
 		}
 	},
 
+	method heal(amount) {
+		self.hp = min(self.hp + amount, self.max_hp)
+	},
+
 	method attack(target) {
 		var damage = self.power - target.fighter.defence
 		target.fighter:takeDamage(damage)
@@ -74,18 +78,53 @@ global BasicMonster = Class{
 	},
 }
 
+global Inventory = Class{
+	method construct(capacity) {
+		self.capacity = capacity
+		self.items = {}
+	},
+
+	method addItem(item) {
+		if (#self.items >= self.capacity) {
+			message = "Inventory is full"
+		} else {
+			add(self.items, item)
+			del(entities, item)
+		}
+	},
+
+	method hasItem() {
+		return #self.items >= 1
+	},
+
+	method useItem() {
+		var consumed = self.items[1].item:use_function()
+		if (consumed) {
+			deli(self.items, 1)
+		}
+	}
+}
+
+global Item = Class{
+	method construct(use_function) {
+		self.use_function = use_function
+	},
+}
+
 fn blocks(pos) {
 	return GameMap:isBlocked(pos)
 }
 
 global Entity = Class{
-	method construct(pos, sprite, name, blocks, fighter, ai) {
+	method construct(pos, sprite, name, blocks, fighter, ai, item, inventory) {
 		self.pos = pos
 		self.sprite = sprite
 		self.name = name
 		self.blocks = blocks
 		self. fighter = fighter
 		self.ai = ai
+		self.item = item
+		self.inventory = inventory
 		self.z = 3
 
 		if (self.fighter) {
