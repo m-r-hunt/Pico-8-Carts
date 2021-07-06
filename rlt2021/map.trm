@@ -1,6 +1,6 @@
 global Class, V2 // core.trm
 global Entity, Fighter, BasicMonster, Item // gameplay.trm
-global player, message // state.trm
+global player, message, entities // state.trm
 
 fn setShadowPal() {
 	for (c = 4, 15) {
@@ -88,6 +88,26 @@ fn heal() {
 	} else {
 		player.fighter:heal(10)
 		return true
+	}
+}
+
+fn lightningSpell() {
+	var closest_dist = 6
+	var target = null
+	for (e in all(entities)) {
+		var dist = player.distanceTo(e)
+
+		if (dist < closest_dist) {
+			target = e
+			closest_dist = dist
+		}
+	}
+
+	if (target) {
+		target.fighter:takeDamage(20)
+		return true
+	} else {
+		return false
 	}
 }
 

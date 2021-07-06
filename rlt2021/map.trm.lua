@@ -91,6 +91,26 @@ local function heal()
 	end
 end
 
+local function lightningSpell()
+	local closest_dist=6
+	local target=nil
+	for e in all(entities) do
+		local dist=player.distanceTo(e)
+
+		if dist<closest_dist then
+			target=e
+			closest_dist=dist
+		end
+	end
+
+	if target then
+		target.fighter:takeDamage(20)
+		return true
+	else
+		return false
+	end
+end
+
 local function placeEntities(room,entities,max_monsters_per_room,max_items_per_room)
 	local n_monsters=flr(rnd(max_monsters_per_room))
 	local n_items=flr(rnd(max_items_per_room))
