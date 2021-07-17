@@ -7,7 +7,7 @@ global tickParticles, drawParticles, addNumber // particles.trm
 
 var draw = null
 
-fn drawMain() {
+fn drawGameplay() {
 	cls()
 
 	camera((player.pos*8 - V2(64, 64)):unpack())
@@ -35,7 +35,7 @@ var options = {"pickup", "use item"}
 var selected = 1
 
 fn drawActionMenu() {
-	drawMain()
+	drawGameplay()
 	for (i = 1, #options) {
 		print(options[i], 20, 20 + i * 8, 8)
 		if (i == selected) {
@@ -62,7 +62,7 @@ fn actionMenu() {
 			}
 		}
 		if (btnp(4)) {
-			draw = drawMain
+			draw = drawGameplay
 			if (options[selected] == "pickup") {
 				return {pickup = true}
 			} else if (options[selected] == "use item") {
@@ -70,7 +70,7 @@ fn actionMenu() {
 			}
 		}
 		if (btnp(5)) {
-			draw = drawMain
+			draw = drawGameplay
 			return null
 		}
 	}
@@ -105,18 +105,23 @@ fn blocks_fov(pos) {
 
 fn drawGameOver() {
 	cls()
-	print("game over", 40, 64, 7)
+	print("game over", 40, 34, 7)
+	print("press (x) or (o) to quit", 22, 60, 7)
 }
 
 fn gameOver() {
 	draw = drawGameOver
 	while(true) {
 		yield()
+
+		if (btnp(4) || btnp(5)) {
+			return
+		}
 	}
 }
 
-fn main() {
-	draw = drawMain
+fn gameplay() {
+	draw = drawGameplay
 	while (true) {
 		yield()
 		var action = handleKeys()
@@ -167,6 +172,23 @@ fn main() {
 					return gameOver()
 				}
 			}
+		}
+	}
+}
+
+fn drawMain() {
+	cls()
+	print("roguelike tutorial project", 14, 20, 7)
+	print("by maximilian hunt", 24, 26, 7)
+	print("press (x) or (o) to start", 22, 60, 7)
+}
+
+fn main() {
+	while (true) {
+		draw = drawMain
+		yield()
+		if (btnp(4) || btnp(5)) {
+			gameplay()
 		}
 	}
 }

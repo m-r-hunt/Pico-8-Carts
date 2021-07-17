@@ -7,7 +7,7 @@
 
 local draw=nil
 
-local function drawMain()
+local function drawGameplay()
 	cls()
 
 	camera((player.pos*8-V2(64,64)):unpack())
@@ -35,7 +35,7 @@ local options={"pickup","use item"}
 local selected=1
 
 local function drawActionMenu()
-	drawMain()
+	drawGameplay()
 	for i=1,#options do
 		print(options[i],20,20+i*8,8)
 		if i==selected then
@@ -62,7 +62,7 @@ local function actionMenu()
 			end
 		end
 		if btnp(4) then
-			draw=drawMain
+			draw=drawGameplay
 			if options[selected]=="pickup" then
 				return {pickup=true}
 			elseif options[selected]=="use item" then
@@ -70,7 +70,7 @@ local function actionMenu()
 			end
 		end
 		if btnp(5) then
-			draw=drawMain
+			draw=drawGameplay
 			return nil
 		end
 	end
@@ -105,18 +105,23 @@ end
 
 local function drawGameOver()
 	cls()
-	print("game over",40,64,7)
+	print("game over",40,34,7)
+	print("press (x) or (o) to quit",22,60,7)
 end
 
 local function gameOver()
 	draw=drawGameOver
 	while true do
 		yield()
+
+		if btnp(4) or btnp(5) then
+			return
+		end
 	end
 end
 
-local function main()
-	draw=drawMain
+local function gameplay()
+	draw=drawGameplay
 	while true do
 		yield()
 		local action=handleKeys()
@@ -167,6 +172,23 @@ local function main()
 					return gameOver()
 				end
 			end
+		end
+	end
+end
+
+local function drawMain()
+	cls()
+	print("roguelike tutorial project",14,20,7)
+	print("by maximilian hunt",24,26,7)
+	print("press (x) or (o) to start",22,60,7)
+end
+
+local function main()
+	while true do
+		draw=drawMain
+		yield()
+		if btnp(4) or btnp(5) then
+			gameplay()
 		end
 	end
 end
