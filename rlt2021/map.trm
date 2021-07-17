@@ -92,12 +92,12 @@ fn heal() {
 }
 
 fn lightningSpell() {
-	var closest_dist = 6
+	var closest_dist = 10
 	var target = null
 	for (e in all(entities)) {
-		var dist = player.distanceTo(e)
+		var dist = player:distanceTo(e)
 
-		if (dist < closest_dist) {
+		if (e != player && e.fighter && dist < closest_dist) {
 			target = e
 			closest_dist = dist
 		}
@@ -133,9 +133,16 @@ fn placeEntities(room, entities, max_monsters_per_room, max_items_per_room) {
 	for (i = 1, n_items) {
 		var x = room.x1 + 1 + flr(rnd(room.x2 - room.x1 - 2))
 		var y = room.y1 + 1 + flr(rnd(room.y2 - room.y1 - 2))
+		var item_chance = rnd()
 
 		if (!anyEntitiesAt(entities, V2(x, y))) {
-			var item = Entity(V2(x, y), 48, "health potion", false, null, null, Item(heal))
+			var item = null
+			if (item_chance < 0.7) {
+				item = Entity(V2(x, y), 48, "health potion", false, null, null, Item(heal))
+			} else {
+				item = Entity(V2(x, y), 49, "lightning scroll", false, null, null, Item(lightningSpell))
+			}
+
 			item.z = 2
 			add(entities, item)
 		}

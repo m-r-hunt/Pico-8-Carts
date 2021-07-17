@@ -92,12 +92,12 @@ local function heal()
 end
 
 local function lightningSpell()
-	local closest_dist=6
+	local closest_dist=10
 	local target=nil
 	for e in all(entities) do
-		local dist=player.distanceTo(e)
+		local dist=player:distanceTo(e)
 
-		if dist<closest_dist then
+		if e!=player and e.fighter and dist<closest_dist then
 			target=e
 			closest_dist=dist
 		end
@@ -133,9 +133,16 @@ local function placeEntities(room,entities,max_monsters_per_room,max_items_per_r
 	for i=1,n_items do
 		local x=room.x1+1+flr(rnd(room.x2-room.x1-2))
 		local y=room.y1+1+flr(rnd(room.y2-room.y1-2))
+		local item_chance=rnd()
 
 		if not anyEntitiesAt(entities,V2(x,y)) then
-			local item=Entity(V2(x,y),48,"health potion",false,nil,nil,Item(heal))
+			local item=nil
+			if item_chance<0.7 then
+				item=Entity(V2(x,y),48,"health potion",false,nil,nil,Item(heal))
+			else
+				item=Entity(V2(x,y),49,"lightning scroll",false,nil,nil,Item(lightningSpell))
+			end
+
 			item.z=2
 			add(entities,item)
 		end
