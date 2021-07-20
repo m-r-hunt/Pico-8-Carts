@@ -1,6 +1,6 @@
 global Class, V2 // core.trm
 global Entity, Fighter, BasicMonster, Item // gameplay.trm
-global player, message, entities // state.trm
+global player, entities // state.trm
 
 fn setShadowPal() {
 	for (c = 4, 15) {
@@ -83,7 +83,6 @@ fn anyEntitiesAt(entities, pos) {
 
 fn heal() {
 	if (player.fighter.hp == player.fighter.max_hp) {
-		message = "Already at max hp"
 		return false
 	} else {
 		player.fighter:heal(10)

@@ -1,6 +1,6 @@
 global Class, V2 // core.trm
 global GameMap // map.trm
-global fov_map, message, player, entities // state.trm
+global fov_map, player, entities // state.trm
 global pathfind // pathfind.trm
 global addNumber // particles.trm
 
@@ -86,7 +86,6 @@ global Inventory = Class{
 
 	method addItem(item) {
 		if (#self.items >= self.capacity) {
-			message = "Inventory is full"
 		} else {
 			add(self.items, item)
 			del(entities, item)

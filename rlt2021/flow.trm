@@ -2,7 +2,7 @@ global V2, Grid // core.trm
 global game_map, makeMap // map.trm
 global entities, getBlockingEntitiesAt, Entity, Fighter, Inventory // gameplay.trm
 global calculateFOV // fov.trm
-global fov_map, memory, player, message // state.trm
+global fov_map, memory, player // state.trm
 global tickParticles, drawParticles, addNumber // particles.trm
 
 var draw = null
@@ -25,7 +25,6 @@ fn drawGameplay() {
 	drawParticles()
 
 	camera()
-	print(message, 0, 0, 7)
 	print("HP", 0, 121, 7)
 	rect(8, 120, player.fighter.max_hp+10, 127, 7)
 	rectfill(9, 121, player.fighter.hp + 9, 126, 8)
@@ -136,7 +135,6 @@ fn gameplay() {
 					if (target) {
 						player.fighter:attack(target)
 					} else {
-						message = ""
 						player:move(dx)
 						fov_map = calculateFOV(blocks_fov, player.pos, 10)
 						memory:unionWith(fov_map)
@@ -203,7 +201,6 @@ fn _init() {
 	fov_map = calculateFOV(blocks_fov, player.pos, 10)
 	memory = Grid()
 	memory:unionWith(fov_map)
-	message = ""
 }
 
 fn _update60() {

@@ -25,7 +25,6 @@ local function drawGameplay()
 	drawParticles()
 
 	camera()
-	print(message,0,0,7)
 	print("HP",0,121,7)
 	rect(8,120,player.fighter.max_hp+10,127,7)
 	rectfill(9,121,player.fighter.hp+9,126,8)
@@ -136,7 +135,6 @@ local function gameplay()
 					if target then
 						player.fighter:attack(target)
 					else
-						message=""
 						player:move(dx)
 						fov_map=calculateFOV(blocks_fov,player.pos,10)
 						memory:unionWith(fov_map)
@@ -203,7 +201,6 @@ local function _init()
 	fov_map=calculateFOV(blocks_fov,player.pos,10)
 	memory=Grid()
 	memory:unionWith(fov_map)
-	message=""
 end
 
 local function _update60()

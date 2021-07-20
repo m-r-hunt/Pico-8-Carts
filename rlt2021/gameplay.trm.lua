@@ -86,13 +86,12 @@ Inventory=Class{
 
 	addItem=function(self,item)
 		if #self.items>=self.capacity then
-			message="Inventory is full"
+			
 		else
 			add(self.items,item)
 			del(entities,item)
 		end
 	end,
-
 	hasItem=function(self)
 		return #self.items>=1
 	end,

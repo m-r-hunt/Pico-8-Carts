@@ -83,7 +83,6 @@ end
 
 local function heal()
 	if player.fighter.hp==player.fighter.max_hp then
-		message="Already at max hp"
 		return false
 	else
 		player.fighter:heal(10)
