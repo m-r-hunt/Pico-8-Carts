@@ -14,9 +14,9 @@ local function drawGameplay()
 
 	game_map:draw(player.pos,memory,fov_map)
 
-	for z=1,3 do
+	for z=0,3 do
 		foreach(entities,function(e)
-			if e.z==z and fov_map:get(e.pos:floored()) then
+			if e.z==z and (fov_map:get(e.pos:floored()) or (e.stairs and memory:get(e.pos:floored()))) then
 				e:draw()
 			end
 		end)
@@ -89,6 +89,11 @@ local function handleKeys()
 		return {move=V2(0,1)}
 	end
 	if btnp(4) then
+		for e in all(entities) do
+			if e.stairs and e.pos==player.pos then
+				return {take_stairs=true}
+			end
+		end
 		return {wait=true}
 	end
 	if btnp(5) then
@@ -119,7 +124,20 @@ local function gameOver()
 	end
 end
 
+local function new_floor()
+	entities={player}
+	player.pos=makeMap(entities)
+	fov_map=calculateFOV(blocks_fov,player.pos,10)
+	memory=Grid()
+	memory:unionWith(fov_map)
+end
+
 local function gameplay()
+	dungeon_level=1
+
+	player=Entity(V2(8,8),1,"player",true,Fighter(30,2,5),nil,nil,Inventory(26))
+	new_floor()
+
 	draw=drawGameplay
 	while true do
 		yield()
@@ -157,6 +175,9 @@ local function gameplay()
 					turn_taken=true
 					player.inventory:useItem()
 				end
+			elseif action.take_stairs then
+				new_floor()
+				turn_taken=true
 			end
 
 			if turn_taken then
@@ -194,13 +215,6 @@ end
 local main_thread=nil
 local function _init()
 	main_thread=cocreate(main)
-
-	player=Entity(V2(8,8),1,"player",true,Fighter(30,2,5),nil,nil,Inventory(26))
-	entities={player}
-	player.pos=makeMap(entities)
-	fov_map=calculateFOV(blocks_fov,player.pos,10)
-	memory=Grid()
-	memory:unionWith(fov_map)
 end
 
 local function _update60()

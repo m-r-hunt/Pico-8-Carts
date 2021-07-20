@@ -166,6 +166,8 @@ function makeMap(entities)
 	end
 	local start_x=0
 	local start_y=0
+	local last_x=0
+	local last_y=0
 	local rooms={}
 	for r=1,max_rooms do
 		local w=room_min_size+flr(rnd(room_max_size))
@@ -183,6 +185,8 @@ function makeMap(entities)
 		if not any_clash then
 			new_room:create()
 			local nx,ny=new_room:center()
+			last_x=nx
+			last_y=ny
 			if #rooms==0 then
 				start_x=nx
 				start_y=ny
@@ -204,5 +208,10 @@ function makeMap(entities)
 	if save_map then
 		cstore(0x1000,0x1000,0x2000)
 	end
+
+	local down_stairs=Entity(V2(last_x,last_y),15,"stairs",false,nil,nil,nil,nil,Stairs(dungeon_level+1))
+	down_stairs.z=0
+	add(entities,down_stairs)
+
 	return V2(start_x,start_y)
 end

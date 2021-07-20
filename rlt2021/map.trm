@@ -1,6 +1,6 @@
 global Class, V2 // core.trm
-global Entity, Fighter, BasicMonster, Item // gameplay.trm
-global player, entities // state.trm
+global Entity, Fighter, BasicMonster, Item, Stairs // gameplay.trm
+global player, entities, dungeon_level // state.trm
 
 fn setShadowPal() {
 	for (c = 4, 15) {
@@ -166,6 +166,8 @@ global fn makeMap(entities) {
 	}
 	var start_x = 0
 	var start_y = 0
+	var last_x = 0
+	var last_y = 0
 	var rooms = {}
 	for (r = 1, max_rooms) {
 		var w = room_min_size + flr(rnd(room_max_size))
@@ -183,6 +185,8 @@ global fn makeMap(entities) {
 		if (!any_clash) {
 			new_room:create()
 			var nx, ny = new_room:center()
+			last_x = nx
+			last_y = ny
 			if (#rooms == 0) {
 				start_x = nx
 				start_y = ny
@@ -204,5 +208,10 @@ global fn makeMap(entities) {
 	if (save_map) {
 		cstore(0x1000, 0x1000, 0x2000)
 	}
+
+	var down_stairs = Entity(V2(last_x, last_y), 15, "stairs", false, null, null, null, null, Stairs(dungeon_level + 1))
+	down_stairs.z = 0
+	add(entities, down_stairs)
+
 	return V2(start_x, start_y)
 }

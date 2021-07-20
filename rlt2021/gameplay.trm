@@ -114,8 +114,14 @@ fn blocks(pos) {
 	return GameMap:isBlocked(pos)
 }
 
+global Stairs = Class{
+	method construct(floor) {
+		self.floor = floor
+	}
+}
+
 global Entity = Class{
-	method construct(pos, sprite, name, blocks, fighter, ai, item, inventory) {
+	method construct(pos, sprite, name, blocks, fighter, ai, item, inventory, stairs) {
 		self.pos = pos
 		self.sprite = sprite
 		self.name = name
@@ -124,6 +130,7 @@ global Entity = Class{
 		self.ai = ai
 		self.item = item
 		self.inventory = inventory
+		self.stairs = stairs
 		self.z = 3
 
 		if (self.fighter) {
@@ -131,6 +138,9 @@ global Entity = Class{
 		}
 		if (self.ai) {
 			self.ai.owner = self
+		}
+		if (self.stairs) {
+			self.stairs.owner = self
 		}
 	},
 

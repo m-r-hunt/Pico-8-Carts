@@ -114,8 +114,14 @@ local function blocks(pos)
 	return GameMap:isBlocked(pos)
 end
 
+Stairs=Class{
+	construct=function(self,floor)
+		self.floor=floor
+	end
+}
+
 Entity=Class{
-	construct=function(self,pos,sprite,name,blocks,fighter,ai,item,inventory)
+	construct=function(self,pos,sprite,name,blocks,fighter,ai,item,inventory,stairs)
 		self.pos=pos
 		self.sprite=sprite
 		self.name=name
@@ -124,6 +130,7 @@ Entity=Class{
 		self.ai=ai
 		self.item=item
 		self.inventory=inventory
+		self.stairs=stairs
 		self.z=3
 
 		if self.fighter then
@@ -131,6 +138,9 @@ Entity=Class{
 		end
 		if self.ai then
 			self.ai.owner=self
+		end
+		if self.stairs then
+			self.stairs.owner=self
 		end
 	end,
 
