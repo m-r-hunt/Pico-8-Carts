@@ -15,11 +15,12 @@ global fn getBlockingEntitiesAt(dx) {
 }
 
 global Fighter = Class{
-	method construct(hp, defence, power) {
+	method construct(hp, defence, power, xp) {
 		self.max_hp = hp
 		self.hp = hp
 		self.defence = defence
 		self.power = power
+		self.xp = xp
 	},
 
 	method takeDamage(amount) {
@@ -31,7 +32,10 @@ global Fighter = Class{
 			self.owner.fighter = null
 			self.owner.ai = null
 			self.owner.z = 1
+
+			return self.xp
 		}
+		return 0
 	},
 
 	method heal(amount) {
@@ -40,7 +44,7 @@ global Fighter = Class{
 
 	method attack(target) {
 		var damage = self.power - target.fighter.defence
-		target.fighter:takeDamage(damage)
+		var xp = target.fighter:takeDamage(damage)
 		addNumber(damage, 8, target.pos * 8 + V2(2, 0), V2(0, -1), 120)
 
 		var init = self.owner.pos
@@ -63,6 +67,7 @@ global Fighter = Class{
 			self.owner.pos = init + (dx - init) * (t / animation_time)
 		}
 		self.owner.pos = init
+		return xp
 	},
 }
 

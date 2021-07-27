@@ -1,0 +1,18 @@
+global current_level, current_xp, level_up_base, level_up_factor // state.trm
+
+global fn xpToNextLevel() {
+	return level_up_base + current_level * level_up_factor
+}
+
+global fn addXp(xp) {
+	current_xp += xp
+
+	if (current_xp > xpToNextLevel()) {
+		current_xp -= xpToNextLevel()
+		current_level += 1
+
+		return true
+	} else {
+		return false
+	}
+}

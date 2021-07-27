@@ -121,9 +121,9 @@ local function placeEntities(room,entities,max_monsters_per_room,max_items_per_r
 		if not anyEntitiesAt(entities,V2(x,y)) then
 			local monster=nil
 			if rnd(1)<0.8 then
-				monster=Entity(V2(x,y),16,"orc",true,Fighter(10,0,3),BasicMonster())
+				monster=Entity(V2(x,y),16,"orc",true,Fighter(10,0,3,35),BasicMonster())
 			else
-				monster=Entity(V2(x,y),17,"troll",true,Fighter(16,1,4),BasicMonster())
+				monster=Entity(V2(x,y),17,"troll",true,Fighter(16,1,4,100),BasicMonster())
 			end
 			add(entities,monster)
 		end

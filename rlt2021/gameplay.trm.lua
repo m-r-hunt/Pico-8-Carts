@@ -15,11 +15,12 @@ function getBlockingEntitiesAt(dx)
 end
 
 Fighter=Class{
-	construct=function(self,hp,defence,power)
+	construct=function(self,hp,defence,power,xp)
 		self.max_hp=hp
 		self.hp=hp
 		self.defence=defence
 		self.power=power
+		self.xp=xp
 	end,
 
 	takeDamage=function(self,amount)
@@ -31,7 +32,10 @@ Fighter=Class{
 			self.owner.fighter=nil
 			self.owner.ai=nil
 			self.owner.z=1
+
+			return self.xp
 		end
+		return 0
 	end,
 
 	heal=function(self,amount)
@@ -40,7 +44,7 @@ Fighter=Class{
 
 	attack=function(self,target)
 		local damage=self.power-target.fighter.defence
-		target.fighter:takeDamage(damage)
+		local xp=target.fighter:takeDamage(damage)
 		addNumber(damage,8,target.pos*8+V2(2,0),V2(0,-1),120)
 
 		local init=self.owner.pos
@@ -63,6 +67,7 @@ Fighter=Class{
 			self.owner.pos=init+(dx-init)*(t/animation_time)
 		end
 		self.owner.pos=init
+		return xp
 	end
 }
 

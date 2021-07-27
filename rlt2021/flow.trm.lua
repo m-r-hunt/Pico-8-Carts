@@ -5,6 +5,7 @@
 
 
 
+
 local draw=nil
 
 local function drawGameplay()
@@ -25,10 +26,11 @@ local function drawGameplay()
 	drawParticles()
 
 	camera()
-	print("HP",0,121,7)
-	rect(8,120,player.fighter.max_hp+10,127,7)
-	rectfill(9,121,player.fighter.hp+9,126,8)
-	print("level "..dungeon_level,100,121)
+	print("lv"..current_level,0,121,7)
+	print("hp",16,121,7)
+	rect(24,120,24+player.fighter.max_hp+10,127,7)
+	rectfill(25,121,24+player.fighter.hp+9,126,8)
+	print("floor "..dungeon_level,100,121)
 end
 
 local options={"pickup","use item"}
@@ -137,6 +139,8 @@ local function gameplay()
 	dungeon_level=1
 
 	player=Entity(V2(8,8),1,"player",true,Fighter(30,2,5),nil,nil,Inventory(26))
+	current_level=1
+	current_xp=0
 	new_floor()
 
 	draw=drawGameplay
@@ -152,7 +156,8 @@ local function gameplay()
 					local target=getBlockingEntitiesAt(dx)
 
 					if target then
-						player.fighter:attack(target)
+						local xp=player.fighter:attack(target)
+						addXp(xp)
 					else
 						player:move(dx)
 						fov_map=calculateFOV(blocks_fov,player.pos,10)
