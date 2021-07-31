@@ -240,7 +240,7 @@ global fn makeMap(entities) {
 		cstore(0x1000, 0x1000, 0x2000)
 	}
 
-	var down_stairs = Entity(V2(last_x, last_y), 15, "stairs", false, null, null, null, null, Stairs(dungeon_level + 1))
+	var down_stairs = Entity(V2(last_x, last_y), 15, "stairs", false, null, null, null, Stairs(dungeon_level + 1))
 	down_stairs.z = 0
 	add(entities, down_stairs)
 

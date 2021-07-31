@@ -240,7 +240,7 @@ function makeMap(entities)
 		cstore(0x1000,0x1000,0x2000)
 	end
 
-	local down_stairs=Entity(V2(last_x,last_y),15,"stairs",false,nil,nil,nil,nil,Stairs(dungeon_level+1))
+	local down_stairs=Entity(V2(last_x,last_y),15,"stairs",false,nil,nil,nil,Stairs(dungeon_level+1))
 	down_stairs.z=0
 	add(entities,down_stairs)
 
