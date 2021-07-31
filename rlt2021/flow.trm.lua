@@ -36,7 +36,7 @@ end
 local options={"pickup","use item"}
 local selected=1
 
-local function drawActionMenu()
+local function drawMenu()
 	drawGameplay()
 	for i=1,#options do
 		print(options[i],20,20+i*8,8)
@@ -47,8 +47,9 @@ local function drawActionMenu()
 end
 
 local function actionMenu()
-	draw=drawActionMenu
+	draw=drawMenu
 	selected=1
+	options={"pickup","use item"}
 	while true do
 		yield()
 		if btnp(2) then
@@ -135,6 +136,40 @@ local function new_floor()
 	memory:unionWith(fov_map)
 end
 
+local function levelUp()
+	draw=drawMenu
+	selected=1
+	options={"+20 hp","+1 str","+1 def"}
+	while true do
+		yield()
+		if btnp(2) then
+			selected-=1
+			if selected<=0 then
+				selected=#options
+			end
+		end
+		if btnp(3) then
+			selected+=1
+			if selected>#options then
+				selected=1
+			end
+		end
+		if btnp(4) then
+			draw=drawGameplay
+			if options[selected]=="+20 hp" then
+				player.fighter.max_hp+=20
+				player.fighter.hp+=20
+			elseif options[selected]=="+1 str" then
+				player.fighter.power+=1
+			elseif options[selected]=="+1 def" then
+				player.fighter.defence+=1
+			end
+			return
+		end
+	end
+end
+
+
 local function gameplay()
 	dungeon_level=1
 
@@ -157,7 +192,10 @@ local function gameplay()
 
 					if target then
 						local xp=player.fighter:attack(target)
-						addXp(xp)
+						local levelled=addXp(xp)
+						if levelled then
+							levelUp()
+						end
 					else
 						player:move(dx)
 						fov_map=calculateFOV(blocks_fov,player.pos,10)

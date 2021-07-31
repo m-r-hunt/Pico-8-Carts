@@ -36,7 +36,7 @@ fn drawGameplay() {
 var options = {"pickup", "use item"}
 var selected = 1
 
-fn drawActionMenu() {
+fn drawMenu() {
 	drawGameplay()
 	for (i = 1, #options) {
 		print(options[i], 20, 20 + i * 8, 8)
@@ -47,8 +47,9 @@ fn drawActionMenu() {
 }
 
 fn actionMenu() {
-	draw = drawActionMenu
+	draw = drawMenu
 	selected = 1
+	options = {"pickup", "use item"}
 	while (true) {
 		yield()
 		if (btnp(2)) {
@@ -135,6 +136,40 @@ fn new_floor() {
 	memory:unionWith(fov_map)
 }
 
+fn levelUp() {
+	draw = drawMenu
+	selected = 1
+	options = {"+20 hp", "+1 str", "+1 def"}
+	while (true) {
+		yield()
+		if (btnp(2)) {
+			selected -= 1
+			if (selected <= 0) {
+				selected = #options
+			}
+		}
+		if (btnp(3)) {
+			selected += 1
+			if (selected > #options) {
+				selected = 1
+			}
+		}
+		if (btnp(4)) {
+			draw = drawGameplay
+			if (options[selected] == "+20 hp") {
+				player.fighter.max_hp += 20
+				player.fighter.hp += 20
+			} else if (options[selected] == "+1 str") {
+				player.fighter.power += 1
+			} else if (options[selected] == "+1 def") {
+				player.fighter.defence += 1
+			}
+			return
+		}
+
+	}
+}
+
 fn gameplay() {
 	dungeon_level = 1
 
@@ -157,7 +192,10 @@ fn gameplay() {
 
 					if (target) {
 						var xp = player.fighter:attack(target)
-						addXp(xp)
+						var levelled = addXp(xp)
+						if (levelled) {
+							levelUp()
+						}
 					} else {
 						player:move(dx)
 						fov_map = calculateFOV(blocks_fov, player.pos, 10)
