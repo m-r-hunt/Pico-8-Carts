@@ -83,31 +83,23 @@ BasicMonster=Class{
 	end
 }
 
-Inventory=Class{
-	construct=function(self,capacity)
-		self.capacity=capacity
-		self.items={}
-	end,
+function pickupItem(item)
+	if held_item then
+		held_item.pos=item.pos
+		add(entities,held_item)
+	end
+	held_item=item
+	del(entities,item)
+end
 
-	addItem=function(self,item)
-		if #self.items>=self.capacity then
-			
-		else
-			add(self.items,item)
-			del(entities,item)
-		end
-	end,
-	hasItem=function(self)
-		return #self.items>=1
-	end,
-
-	useItem=function(self)
-		local consumed=self.items[1].item:use_function()
+function useItem()
+	if held_item then
+		local consumed=held_item.item:use_function()
 		if consumed then
-			deli(self.items,1)
+			held_item=nil
 		end
 	end
-}
+end
 
 Item=Class{
 	construct=function(self,use_function)
@@ -126,7 +118,7 @@ Stairs=Class{
 }
 
 Entity=Class{
-	construct=function(self,pos,sprite,name,blocks,fighter,ai,item,inventory,stairs)
+	construct=function(self,pos,sprite,name,blocks,fighter,ai,item,stairs)
 		self.pos=pos
 		self.sprite=sprite
 		self.name=name
@@ -134,7 +126,6 @@ Entity=Class{
 		self.fighter=fighter
 		self.ai=ai
 		self.item=item
-		self.inventory=inventory
 		self.stairs=stairs
 		self.z=3
 

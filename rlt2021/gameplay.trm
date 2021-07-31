@@ -1,6 +1,6 @@
 global Class, V2 // core.trm
 global GameMap // map.trm
-global fov_map, player, entities // state.trm
+global fov_map, player, entities, held_item // state.trm
 global pathfind // pathfind.trm
 global addNumber // particles.trm
 
@@ -83,28 +83,20 @@ global BasicMonster = Class{
 	},
 }
 
-global Inventory = Class{
-	method construct(capacity) {
-		self.capacity = capacity
-		self.items = {}
-	},
+global fn pickupItem(item) {
+	if (held_item) {
+		held_item.pos = item.pos
+		add(entities, held_item)
+	}
+	held_item = item
+	del(entities, item)
+}
 
-	method addItem(item) {
-		if (#self.items >= self.capacity) {
-		} else {
-			add(self.items, item)
-			del(entities, item)
-		}
-	},
-
-	method hasItem() {
-		return #self.items >= 1
-	},
-
-	method useItem() {
-		var consumed = self.items[1].item:use_function()
+global fn useItem() {
+	if (held_item) {
+		var consumed = held_item.item:use_function()
 		if (consumed) {
-			deli(self.items, 1)
+			held_item = null
 		}
 	}
 }
@@ -126,7 +118,7 @@ global Stairs = Class{
 }
 
 global Entity = Class{
-	method construct(pos, sprite, name, blocks, fighter, ai, item, inventory, stairs) {
+	method construct(pos, sprite, name, blocks, fighter, ai, item, stairs) {
 		self.pos = pos
 		self.sprite = sprite
 		self.name = name
@@ -134,7 +126,6 @@ global Entity = Class{
 		self. fighter = fighter
 		self.ai = ai
 		self.item = item
-		self.inventory = inventory
 		self.stairs = stairs
 		self.z = 3
 

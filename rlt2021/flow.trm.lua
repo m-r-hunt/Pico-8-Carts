@@ -31,6 +31,10 @@ local function drawGameplay()
 	rectfill(25,121,25+player.fighter.hp,126,8)
 	rect(24,120,24+player.fighter.max_hp+2,127,7)
 	print("floor "..dungeon_level,100,121)
+	if held_item then
+		spr(held_item.sprite,90,120)
+	end
+	rect(90,120,98,127,7)
 end
 
 local options={"pickup","use item"}
@@ -173,7 +177,7 @@ end
 local function gameplay()
 	dungeon_level=1
 
-	player=Entity(V2(8,8),1,"player",true,Fighter(30,2,5),nil,nil,Inventory(26))
+	player=Entity(V2(8,8),1,"player",true,Fighter(30,2,5))
 	current_level=1
 	current_xp=0
 	new_floor()
@@ -207,17 +211,17 @@ local function gameplay()
 				addNumber("z",6,player.pos*8,V2(0,-0.5),180)
 			elseif action.pickup then
 				for e in all(entities) do
-					if e.item and e.x==player.x and e.y==player.y then
+					if e.item and e.pos==player.pos then
 						turn_taken=true
-						player.inventory:addItem(e)
+						pickupItem(e)
 						break
 					end
 				end
 			elseif action.use_item then
 
-				if player.inventory:hasItem() then
+				if held_item then
 					turn_taken=true
-					player.inventory:useItem()
+					useItem()
 				end
 			elseif action.take_stairs then
 				new_floor()

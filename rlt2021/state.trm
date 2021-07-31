@@ -10,3 +10,5 @@ global current_level
 global current_xp
 global level_up_base = 200
 global level_up_factor = 150
+
+global held_item

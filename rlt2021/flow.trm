@@ -1,8 +1,8 @@
 global V2, Grid // core.trm
 global game_map, makeMap // map.trm
-global entities, getBlockingEntitiesAt, Entity, Fighter, Inventory // gameplay.trm
+global entities, getBlockingEntitiesAt, Entity, Fighter, pickupItem, useItem // gameplay.trm
 global calculateFOV // fov.trm
-global fov_map, memory, player, dungeon_level // state.trm
+global fov_map, memory, player, dungeon_level, held_item // state.trm
 global tickParticles, drawParticles, addNumber // particles.trm
 global addXp, current_level, current_xp // level.trm
 
@@ -31,6 +31,10 @@ fn drawGameplay() {
 	rectfill(25, 121, 25+player.fighter.hp, 126, 8)
 	rect(24, 120, 24+player.fighter.max_hp+2, 127, 7)
 	print("floor "..dungeon_level, 100, 121)
+	if (held_item) {
+		spr(held_item.sprite, 90, 120)
+	}
+	rect(90, 120, 98, 127, 7)
 }
 
 var options = {"pickup", "use item"}
@@ -173,7 +177,7 @@ fn levelUp() {
 fn gameplay() {
 	dungeon_level = 1
 
-	player = Entity(V2(8, 8), 1, "player", true, Fighter(30, 2, 5), null, null, Inventory(26))
+	player = Entity(V2(8, 8), 1, "player", true, Fighter(30, 2, 5))
 	current_level = 1
 	current_xp = 0
 	new_floor()
@@ -207,17 +211,17 @@ fn gameplay() {
 				addNumber("z", 6, player.pos * 8, V2(0, -0.5), 180)
 			} else if (action.pickup) {
 				for (e in all(entities)) {
-					if (e.item && e.x == player.x && e.y == player.y) {
+					if (e.item && e.pos == player.pos) {
 						turn_taken = true
-						player.inventory:addItem(e)
+						pickupItem(e)
 						break
 					}
 
 				}
 			} else if (action.use_item) {
-				if (player.inventory:hasItem()) {
+				if (held_item) {
 					turn_taken = true
-					player.inventory:useItem()
+					useItem()
 				}
 			} else if (action.take_stairs) {
 				new_floor()
