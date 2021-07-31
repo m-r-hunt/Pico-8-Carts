@@ -114,13 +114,17 @@ fn placeEntities(room, entities, max_monsters_per_room, max_items_per_room) {
 	var n_monsters = flr(rnd(max_monsters_per_room))
 	var n_items = flr(rnd(max_items_per_room))
 
+	var monster_choices = {"orc", "orc", "orc", "orc", "troll"}
+	var item_choices = {"potion", "potion", "potion", "potion", "scroll"}
+
 	for (i = 1, n_monsters) {
 		var x = room.x1 + 1 + flr(rnd(room.x2 - room.x1 - 2))
 		var y = room.y1 + 1 + flr(rnd(room.y2 - room.y1 - 2))
 
 		if (!anyEntitiesAt(entities, V2(x, y))) {
+			var choice = rnd(monster_choices)
 			var monster = null
-			if (rnd(1) < 0.8) {
+			if (choice == "orc") {
 				monster = Entity(V2(x, y), 16, "orc", true, Fighter(10, 0, 3, 35), BasicMonster())
 			} else {
 				monster = Entity(V2(x, y), 17, "troll", true, Fighter(16, 1, 4, 100), BasicMonster())
@@ -132,11 +136,11 @@ fn placeEntities(room, entities, max_monsters_per_room, max_items_per_room) {
 	for (i = 1, n_items) {
 		var x = room.x1 + 1 + flr(rnd(room.x2 - room.x1 - 2))
 		var y = room.y1 + 1 + flr(rnd(room.y2 - room.y1 - 2))
-		var item_chance = rnd()
+		var choice = rnd(item_choices)
 
 		if (!anyEntitiesAt(entities, V2(x, y))) {
 			var item = null
-			if (item_chance < 0.7) {
+			if (choice == "potion") {
 				item = Entity(V2(x, y), 48, "health potion", false, null, null, Item(heal))
 			} else {
 				item = Entity(V2(x, y), 49, "lightning scroll", false, null, null, Item(lightningSpell))

@@ -114,13 +114,17 @@ local function placeEntities(room,entities,max_monsters_per_room,max_items_per_r
 	local n_monsters=flr(rnd(max_monsters_per_room))
 	local n_items=flr(rnd(max_items_per_room))
 
+	local monster_choices={"orc","orc","orc","orc","troll"}
+	local item_choices={"potion","potion","potion","potion","scroll"}
+
 	for i=1,n_monsters do
 		local x=room.x1+1+flr(rnd(room.x2-room.x1-2))
 		local y=room.y1+1+flr(rnd(room.y2-room.y1-2))
 
 		if not anyEntitiesAt(entities,V2(x,y)) then
+			local choice=rnd(monster_choices)
 			local monster=nil
-			if rnd(1)<0.8 then
+			if choice=="orc" then
 				monster=Entity(V2(x,y),16,"orc",true,Fighter(10,0,3,35),BasicMonster())
 			else
 				monster=Entity(V2(x,y),17,"troll",true,Fighter(16,1,4,100),BasicMonster())
@@ -132,11 +136,11 @@ local function placeEntities(room,entities,max_monsters_per_room,max_items_per_r
 	for i=1,n_items do
 		local x=room.x1+1+flr(rnd(room.x2-room.x1-2))
 		local y=room.y1+1+flr(rnd(room.y2-room.y1-2))
-		local item_chance=rnd()
+		local choice=rnd(item_choices)
 
 		if not anyEntitiesAt(entities,V2(x,y)) then
 			local item=nil
-			if item_chance<0.7 then
+			if choice=="potion" then
 				item=Entity(V2(x,y),48,"health potion",false,nil,nil,Item(heal))
 			else
 				item=Entity(V2(x,y),49,"lightning scroll",false,nil,nil,Item(lightningSpell))
