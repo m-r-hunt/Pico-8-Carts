@@ -110,12 +110,39 @@ fn lightningSpell() {
 	}
 }
 
-fn placeEntities(room, entities, max_monsters_per_room, max_items_per_room) {
-	var n_monsters = flr(rnd(max_monsters_per_room))
-	var n_items = flr(rnd(max_items_per_room))
+var max_monsters = {2, 2, 2, 3, 4}
+var max_items = {1, 1, 1, 2, 2}
+var monsters = {
+	{orc = 4, troll = 1},
+	{orc = 4, troll = 1},
+	{orc = 3, troll = 2},
+	{orc = 3, troll = 2},
+	{orc = 1, troll = 1},
+}
+var items = {
+	{potion = 4, scroll = 1},
+	{potion = 4, scroll = 1},
+	{potion = 4, scroll = 1},
+	{potion = 4, scroll = 1},
+	{potion = 4, scroll = 1},
+}
 
-	var monster_choices = {"orc", "orc", "orc", "orc", "troll"}
-	var item_choices = {"potion", "potion", "potion", "potion", "scroll"}
+fn toRndTable(t) {
+	var out = {}
+	for (k, v in pairs(t)) {
+		for (i = 1, v) {
+			add(out, k)
+		}
+	}
+	return out
+}
+
+fn placeEntities(room, entities) {
+	var n_monsters = flr(rnd(max_monsters[dungeon_level]+1))
+	var n_items = flr(rnd(max_items[dungeon_level]+1))
+
+	var monster_choices = toRndTable(monsters[dungeon_level])
+	var item_choices = toRndTable(items[dungeon_level])
 
 	for (i = 1, n_monsters) {
 		var x = room.x1 + 1 + flr(rnd(room.x2 - room.x1 - 2))

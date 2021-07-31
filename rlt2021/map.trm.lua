@@ -110,12 +110,39 @@ local function lightningSpell()
 	end
 end
 
-local function placeEntities(room,entities,max_monsters_per_room,max_items_per_room)
-	local n_monsters=flr(rnd(max_monsters_per_room))
-	local n_items=flr(rnd(max_items_per_room))
+local max_monsters={2,2,2,3,4}
+local max_items={1,1,1,2,2}
+local monsters={
+	{orc=4,troll=1},
+	{orc=4,troll=1},
+	{orc=3,troll=2},
+	{orc=3,troll=2},
+	{orc=1,troll=1}
+}
+local items={
+	{potion=4,scroll=1},
+	{potion=4,scroll=1},
+	{potion=4,scroll=1},
+	{potion=4,scroll=1},
+	{potion=4,scroll=1}
+}
 
-	local monster_choices={"orc","orc","orc","orc","troll"}
-	local item_choices={"potion","potion","potion","potion","scroll"}
+local function toRndTable(t)
+	local out={}
+	for k,v in pairs(t) do
+		for i=1,v do
+			add(out,k)
+		end
+	end
+	return out
+end
+
+local function placeEntities(room,entities)
+	local n_monsters=flr(rnd(max_monsters[dungeon_level]+1))
+	local n_items=flr(rnd(max_items[dungeon_level]+1))
+
+	local monster_choices=toRndTable(monsters[dungeon_level])
+	local item_choices=toRndTable(items[dungeon_level])
 
 	for i=1,n_monsters do
 		local x=room.x1+1+flr(rnd(room.x2-room.x1-2))
