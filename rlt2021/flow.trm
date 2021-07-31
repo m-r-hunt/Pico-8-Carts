@@ -28,8 +28,8 @@ fn drawGameplay() {
 	camera()
 	print("lv"..current_level, 0, 121, 7)
 	print("hp", 16, 121, 7)
-	rect(24, 120, 24+player.fighter.max_hp+10, 127, 7)
-	rectfill(25, 121, 24+player.fighter.hp + 9, 126, 8)
+	rectfill(25, 121, 25+player.fighter.hp, 126, 8)
+	rect(24, 120, 24+player.fighter.max_hp, 127, 7)
 	print("floor "..dungeon_level, 100, 121)
 }
 

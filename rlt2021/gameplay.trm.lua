@@ -25,7 +25,7 @@ Fighter=Class{
 
 	takeDamage=function(self,amount)
 		self.hp-=amount
-		if self.hp<0 and self!=player then
+		if self.hp<0 and self.owner!=player then
 			self.owner.sprite+=16
 			self.owner.blocks=false
 			self.owner.name="Remains of "..self.owner.name
