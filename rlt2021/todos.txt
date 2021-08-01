@@ -1,0 +1,17 @@
+TODOs
+
+5 level dungeon with tilesets
+final boss level
+many enemies even if they're reskins
+several items
+several powers
+several weapons
+
+good pause UI
+contextual key works properly
+contextual key display
+
+implement equipment
+put in all the equips
+implement powers
+put in some powers
